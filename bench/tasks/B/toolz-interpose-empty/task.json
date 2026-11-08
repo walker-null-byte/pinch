@@ -1,0 +1,38 @@
+{
+  "id": "B/toolz-interpose-empty",
+  "set": "B",
+  "title": "toolz: interpose() on an empty sequence raises StopIteration",
+  "prompt": "`toolz.interpose` raises `StopIteration` when it is given an empty sequence:\n\n    >>> from toolz import interpose\n    >>> list(interpose(\"a\", []))\n    StopIteration                    # wrong: the result should be an empty iterator, so list(...) == []\n\n`list(interpose(\"a\", [1, 2, 3])) == [1, 'a', 2, 'a', 3]` must keep working.\n\nThe code is in toolz/itertoolz.py. Run the existing tests with: python -m pytest -q toolz/tests/test_itertoolz.py",
+  "authored_by": "upstream commit; prompt written by pinch-team",
+  "env": {
+    "pip": [
+      "pytest==8.4.2"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider toolz/tests/test_itertoolz.py",
+    "timeout": 600
+  },
+  "solution_files": [
+    "toolz/itertoolz.py"
+  ],
+  "test_command": "python -m pytest -q toolz/tests/test_itertoolz.py",
+  "source": {
+    "repo": "https://github.com/pytoolz/toolz",
+    "base_commit": "55ce42dc3b6f786ed9d4e38633cc5cfe3622a526",
+    "fix_commit": "d2eba0374a452c2b18fe188b04527e22bda3548c",
+    "fix_date": "2026-09-18",
+    "license": "BSD-3-Clause",
+    "fix_url": "https://github.com/pytoolz/toolz/commit/d2eba0374a452c2b18fe188b04527e22bda3548c",
+    "changed_source_files": [
+      "toolz/itertoolz.py"
+    ],
+    "hidden_test_files": [
+      "toolz/tests/test_itertoolz.py"
+    ],
+    "added_generated_files": []
+  }
+}

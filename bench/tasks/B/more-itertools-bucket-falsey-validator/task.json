@@ -1,0 +1,38 @@
+{
+  "id": "B/more-itertools-bucket-falsey-validator",
+  "set": "B",
+  "title": "more-itertools: bucket() ignores a validator that is falsey",
+  "prompt": "`more_itertools.bucket` silently ignores its `validator` argument when the validator object is falsey (for example an empty `set` subclass that defines `__call__`):\n\n    >>> import more_itertools as mi\n    >>> class AllowedKeys(set):\n    ...     def __call__(self, key):\n    ...         return key in self\n    >>> allowed = AllowedKeys()          # empty, so bool(allowed) is False\n    >>> D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=allowed)\n    >>> list(D[10])\n    [10]                                 # wrong: the validator rejects every key, so this should be []\n    >>> 10 in D\n    True                                 # wrong: should be False\n    >>> set(D)\n    {10, 20, 11, 21}                     # wrong: should be set()\n\nAny validator that was passed (anything that is not None) must be used. Calling `bucket` without a validator must behave as before.\n\nThe code is in more_itertools/more.py. Run the existing tests with: python -m pytest -q tests/test_more.py -k Bucket",
+  "authored_by": "upstream commit; prompt written by pinch-team",
+  "env": {
+    "pip": [
+      "pytest==8.4.2"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider tests/test_more.py -k Bucket",
+    "timeout": 600
+  },
+  "solution_files": [
+    "more_itertools/more.py"
+  ],
+  "test_command": "python -m pytest -q tests/test_more.py -k Bucket",
+  "source": {
+    "repo": "https://github.com/more-itertools/more-itertools",
+    "base_commit": "1ea82a711c69f590054987b5cb194157f8ce8ac4",
+    "fix_commit": "67fcf640477c78605580f5ee703a54c73c1e7a8a",
+    "fix_date": "2026-10-06",
+    "license": "MIT",
+    "fix_url": "https://github.com/more-itertools/more-itertools/commit/67fcf640477c78605580f5ee703a54c73c1e7a8a",
+    "changed_source_files": [
+      "more_itertools/more.py"
+    ],
+    "hidden_test_files": [
+      "tests/test_more.py"
+    ],
+    "added_generated_files": []
+  }
+}

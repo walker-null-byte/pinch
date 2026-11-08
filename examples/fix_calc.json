@@ -1,0 +1,6 @@
+[
+  {"tool_calls": [{"name": "call_tool", "arguments": {"name": "read_file", "arguments": {"file_path": "calc.py"}}}]},
+  {"tool_calls": [{"name": "call_tool", "arguments": {"name": "edit_file", "arguments": {"file_path": "calc.py", "old_string": "a - b", "new_string": "a + b"}}}]},
+  {"tool_calls": [{"name": "call_tool", "arguments": {"name": "run_command", "arguments": {"command": "python -m pytest -q"}}}]},
+  {"content": "Fixed add(): it subtracted instead of adding. Tests pass."}
+]

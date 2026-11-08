@@ -1,0 +1,31 @@
+{
+  "id": "A/food-chain",
+  "set": "A",
+  "title": "Exercism Python exercise: food-chain",
+  "prompt": "# Instructions\n\nGenerate the lyrics of the song 'I Know an Old Lady Who Swallowed a Fly'.\n\nWhile you could copy/paste the lyrics, or read them from a file, this problem is much more interesting if you approach it algorithmically.\n\nThis is a [cumulative song][cumulative-song] of unknown origin.\n\nThis is one of many common variants.\n\n```text\nI know an old lady who swallowed a fly.\nI don't know why she swallowed the fly. Perhaps she'll die.\n\nI know an old lady who swallowed a spider.\nIt wriggled and jiggled and tickled inside her.\nShe swallowed the spider to catch the fly.\nI don't know why she swallowed the fly. Perhaps she'll die.\n\nI know an old lady who swallowed a bird.\nHow absurd to swallow a bird!\nShe swallowed the bird to catch the spider that wriggled and jiggled and tickled inside her.\nShe swallowed the spider to catch the fly.\nI don't know why she swallowed the fly. Perhaps she'll die.\n\nI know an old lady who swallowed a cat.\nImagine that, to swallow a cat!\nShe swallowed the cat to catch the bird.\nShe swallowed the bird to catch the spider that wriggled and jiggled and tickled inside her.\nShe swallowed the spider to catch the fly.\nI don't know why she swallowed the fly. Perhaps she'll die.\n\nI know an old lady who swallowed a dog.\nWhat a hog, to swallow a dog!\nShe swallowed the dog to catch the cat.\nShe swallowed the cat to catch the bird.\nShe swallowed the bird to catch the spider that wriggled and jiggled and tickled inside her.\nShe swallowed the spider to catch the fly.\nI don't know why she swallowed the fly. Perhaps she'll die.\n\nI know an old lady who swallowed a goat.\nJust opened her throat and swallowed a goat!\nShe swallowed the goat to catch the dog.\nShe swallowed the dog to catch the cat.\nShe swallowed the cat to catch the bird.\nShe swallowed the bird to catch the spider that wriggled and jiggled and tickled inside her.\nShe swallowed the spider to catch the fly.\nI don't know why she swallowed the fly. Perhaps she'll die.\n\nI know an old lady who swallowed a cow.\nI don't know how she swallowed a cow!\nShe swallowed the cow to catch the goat.\nShe swallowed the goat to catch the dog.\nShe swallowed the dog to catch the cat.\nShe swallowed the cat to catch the bird.\nShe swallowed the bird to catch the spider that wriggled and jiggled and tickled inside her.\nShe swallowed the spider to catch the fly.\nI don't know why she swallowed the fly. Perhaps she'll die.\n\nI know an old lady who swallowed a horse.\nShe's dead, of course!\n```\n\n[cumulative-song]: https://en.wikipedia.org/wiki/Cumulative_song\n\n####\n\nUse the above instructions to modify the supplied file: food_chain.py\nDon't change the names of existing functions or classes, as they may be called by hidden tests.\nOnly use the Python standard library. The tests are in food_chain_test.py; you can run them with: python -m pytest -q food_chain_test.py\nDo not edit the test file.",
+  "authored_by": "exercism (via Aider polyglot-benchmark)",
+  "env": {
+    "pip": [
+      "pytest==8.4.2"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider food_chain_test.py",
+    "timeout": 300
+  },
+  "solution_files": [
+    "food_chain.py"
+  ],
+  "test_command": "python -m pytest -q food_chain_test.py",
+  "source": {
+    "benchmark": "Aider-AI/polyglot-benchmark",
+    "url": "https://github.com/Aider-AI/polyglot-benchmark",
+    "commit": "7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f",
+    "path": "python/exercises/practice/food-chain",
+    "license": "MIT",
+    "attribution": "Exercism python track exercise (c) Exercism, MIT licence; see ../LICENSE-exercism-python.txt"
+  }
+}

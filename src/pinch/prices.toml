@@ -1,0 +1,83 @@
+# Price table: USD per 1 million tokens. Edit freely; it is only used for cost estimates.
+# A copy at ~/.config/pinch/prices.toml overrides these entries.
+# Models are matched by exact name, then by the part after a "provider/" prefix.
+# "cached" is the price of cached input tokens; leave it out to charge them at the input price.
+
+# mock-small matches the demo price in gateway/config.json (pricing_overrides), so pinch's estimate
+# and Bifrost's accounting agree in the mock setup.
+[models."mock-small"]
+input = 1.00
+cached = 0.10
+output = 4.00
+
+[models."mock-big"]
+input = 3.00
+cached = 0.30
+output = 12.00
+
+# Used for budget estimates when a model has no entry. Deliberately expensive: better to stop early.
+[models."default"]
+input = 5.00
+output = 20.00
+
+[models."gpt-4o-mini"]
+input = 0.15
+cached = 0.075
+output = 0.60
+
+[models."gpt-4o"]
+input = 2.50
+cached = 1.25
+output = 10.00
+
+[models."claude-haiku-4-5"]
+input = 1.00
+cached = 0.10
+output = 5.00
+
+[models."claude-sonnet-4-5"]
+input = 3.00
+cached = 0.30
+output = 15.00
+
+# Local models cost nothing per token.
+[models."local"]
+input = 0.0
+output = 0.0
+
+# --- Real providers (gateway/config.real.json). Same list prices as the gateway's pricing_overrides, USD per 1M tokens, ---
+# so pinch's pre-call estimate and Bifrost's budget accounting agree. A test checks the two files match.
+# Gemini (aistudio.google.com/docs/pricing; the 3.6 and 3.8 prices hold through 2026-12-31).
+[models."gemini-3.5-flash-lite"]
+input = 0.30
+cached = 0.03
+output = 2.50
+
+[models."gemini-3.6-flash"]
+input = 0.75
+cached = 0.075
+output = 3.75
+
+[models."gemini-3.8-flash"]
+input = 0.75
+cached = 0.075
+output = 3.75
+
+# Groq (the failover provider; console.groq.com/docs/models). Bifrost names them with the "openai/" or "qwen/" part.
+[models."openai/gpt-oss-120b"]
+input = 0.15
+output = 0.60
+
+[models."openai/gpt-oss-20b"]
+input = 0.075
+output = 0.30
+
+[models."qwen/qwen3.8-27b"]
+input = 0.80
+output = 4.00
+
+# Local gemma4 on LM Studio costs nothing per token.
+[models."gemma4"]
+input = 0.0
+cached = 0.0
+output = 0.0

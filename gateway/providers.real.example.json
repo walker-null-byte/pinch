@@ -1,0 +1,40 @@
+{
+  "_comment": "TEMPLATES, NOT LOADED. Bifrost never reads this file. To use a provider, copy its block into the \"providers\" object of config.json, put its key in ../.env, pass that env var to the container, and add the provider to the virtual keys' provider_configs and the routing rule's fallbacks. Provider names and key formats: https://docs.getbifrost.ai/quickstart/gateway/provider-configuration . Every block here is disabled until copied.",
+
+  "providers": {
+    "gemini": {
+      "keys": [{ "name": "gemini-key", "value": "env.GEMINI_API_KEY", "models": ["*"], "weight": 1.0 }],
+      "network_config": { "max_retries": 2, "retry_backoff_initial": 500, "retry_backoff_max": 5000 }
+    },
+    "groq": {
+      "keys": [{ "name": "groq-key", "value": "env.GROQ_API_KEY", "models": ["*"], "weight": 1.0 }],
+      "network_config": { "max_retries": 2 }
+    },
+    "openrouter": {
+      "keys": [{ "name": "openrouter-key", "value": "env.OPENROUTER_API_KEY", "models": ["*"], "weight": 1.0 }],
+      "network_config": { "max_retries": 2 }
+    },
+    "anthropic": {
+      "keys": [{ "name": "anthropic-key", "value": "env.ANTHROPIC_API_KEY", "models": ["*"], "weight": 1.0 }],
+      "network_config": { "max_retries": 2 }
+    },
+    "local": {
+      "_comment": "Replaces the mock 'local' provider. Gemma 4 E2B served by Ollama (or any OpenAI-compatible server such as llama.cpp or vLLM). Check the exact model tag with `ollama list`. With the gateway in Docker host networking, 127.0.0.1 is the host. Ollama ignores the key, but Bifrost wants one.",
+      "keys": [{ "name": "local-key", "value": "env.LOCAL_PROVIDER_KEY", "models": ["*"], "weight": 1.0 }],
+      "network_config": { "base_url": "http://127.0.0.1:11434", "max_retries": 0, "default_request_timeout_in_seconds": 300 },
+      "custom_provider_config": {
+        "base_provider_type": "openai",
+        "allowed_requests": { "chat_completion": true },
+        "request_path_overrides": { "chat_completion": "/v1/chat/completions" }
+      }
+    }
+  },
+
+  "model_name_notes": {
+    "local": "gemma4:e2b  (placeholder: use the tag Ollama shows)",
+    "gemini": "see the Gemini model list",
+    "groq": "see the Groq model list",
+    "openrouter": "provider/model form",
+    "anthropic": "see the Anthropic model list"
+  }
+}

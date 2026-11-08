@@ -1,0 +1,38 @@
+{
+  "id": "B/parse-tt-matches-empty",
+  "set": "B",
+  "title": "parse: the {:tt} time type matches an empty string",
+  "prompt": "In the `parse` library the `tt` format type (a time of day) can match an empty string, which gives a bogus result and an endless loop:\n\n    >>> import parse\n    >>> parse.parse(\"{:tt}\", \"\")\n    <Result (datetime.time(0, 0),) {}>            # wrong: there is no time in the text, should be None\n    >>> parse.parse(\"Meet at {:tt}\", \"Meet at \")   # should be None as well\n    >>> parse.search(\"{:tt}\", \"there is no time here\")   # wrongly reports a match at position 0, should be None\n    >>> list(parse.findall(\"{:tt}\", \"no time\"))   # never terminates; it should be []\n\nOnly the AM/PM and timezone parts of `tt` are optional. The time itself is required. Valid input must keep working:\n`parse.parse(\"{:tt}\", \"10:21:36 PM\")[0] == datetime.time(22, 21, 36)` and `parse.parse(\"Meet at {:tt}\", \"Meet at 10:21\")[0] == datetime.time(10, 21)`.\n\nThe code is in parse/__init__.py. Run the existing tests with: python -m pytest -q -o addopts= tests/test_bugs.py tests/test_parse.py",
+  "authored_by": "upstream commit; prompt written by pinch-team",
+  "env": {
+    "pip": [
+      "pytest==8.4.2"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider -o addopts= tests/test_bugs.py tests/test_parse.py",
+    "timeout": 600
+  },
+  "solution_files": [
+    "parse/__init__.py"
+  ],
+  "test_command": "python -m pytest -q -o addopts= tests/test_bugs.py tests/test_parse.py",
+  "source": {
+    "repo": "https://github.com/r1chardj0n3s/parse",
+    "base_commit": "cc86df74f565265a4c03326bbcef06e08f01cec2",
+    "fix_commit": "52bf0b3862c6e21271e9582a3a98915247228763",
+    "fix_date": "2026-10-27",
+    "license": "MIT",
+    "fix_url": "https://github.com/r1chardj0n3s/parse/commit/52bf0b3862c6e21271e9582a3a98915247228763",
+    "changed_source_files": [
+      "parse/__init__.py"
+    ],
+    "hidden_test_files": [
+      "tests/test_bugs.py"
+    ],
+    "added_generated_files": []
+  }
+}

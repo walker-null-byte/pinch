@@ -1,0 +1,40 @@
+{
+  "id": "B/python-dotenv-empty-value-inline-comment",
+  "set": "B",
+  "title": "python-dotenv: an empty unquoted value followed by an inline comment is parsed as the comment",
+  "prompt": "python-dotenv mis-parses an empty unquoted value that is followed by an inline comment:\n\n    >>> import io, dotenv\n    >>> dotenv.dotenv_values(stream=io.StringIO(\"KEY= # comment\"))\n    {'KEY': '# comment'}            # wrong, the value is empty: {'KEY': ''}\n\nExpected results (value of KEY):\n- `KEY= # comment` -> \"\"   and   `KEY=  # comment` -> \"\"   and   `KEY=<tab># comment` -> \"\"\n- `KEY= # comment` followed by a new line `OTHER=val` -> KEY is \"\" and OTHER is \"val\"\n- `KEY=val # comment` -> \"val\"  (unchanged)\n- No whitespace before the `#` means it is part of the value, as before: `KEY=a#b` -> \"a#b\", `KEY=#novalue` -> \"#novalue\", `KEY=# # comment` -> \"#\"\n\nThe low-level parser must agree: `dotenv.parser.parse_stream` should give a binding with value \"\" (and error False) for the text `a= #b` and for `a=  # b`.\n\nThe code is in src/dotenv/parser.py. Run the existing tests with: python -m pytest -q tests/test_parser.py tests/test_main.py",
+  "authored_by": "upstream commit; prompt written by pinch-team",
+  "env": {
+    "pip": [
+      "pytest==8.4.2",
+      "click"
+    ],
+    "pythonpath": [
+      "src"
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider tests/test_parser.py tests/test_main.py",
+    "timeout": 600
+  },
+  "solution_files": [
+    "src/dotenv/parser.py"
+  ],
+  "test_command": "python -m pytest -q tests/test_parser.py tests/test_main.py",
+  "source": {
+    "repo": "https://github.com/theskumar/python-dotenv",
+    "base_commit": "49515afee2d50c33cad9419b3800b3a0dc93fc59",
+    "fix_commit": "f5485a61eefa5e686d6d5bdc7aa9ad6b104b1e92",
+    "fix_date": "2026-08-17",
+    "license": "BSD-3-Clause",
+    "fix_url": "https://github.com/theskumar/python-dotenv/commit/f5485a61eefa5e686d6d5bdc7aa9ad6b104b1e92",
+    "changed_source_files": [
+      "src/dotenv/parser.py"
+    ],
+    "hidden_test_files": [
+      "tests/test_main.py",
+      "tests/test_parser.py"
+    ],
+    "added_generated_files": []
+  }
+}

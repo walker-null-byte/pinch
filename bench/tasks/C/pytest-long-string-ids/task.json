@@ -1,0 +1,33 @@
+{
+  "id": "C/pytest-long-string-ids",
+  "set": "C",
+  "title": "pytest 9.2: test ids for long string parameters",
+  "prompt": "The parametrized tests in tests/test_slugs.py have long string parameters, and pytest's automatic test ids for them are unhelpful (they fall back to `text0`, `text1`). Configure pytest in a pytest.ini so that a long string parameter gets the SHA-256 hex digest of its value as its test id, while short strings keep their own value as their id. Configuration only: do not edit the tests and do not pass ids yourself.\nPackage versions in this environment are fixed: click 8.5.1, pytest 9.2.0, anyio 4.16.0.",
+  "authored_by": "pinch-team",
+  "env": {
+    "pip": [
+      "pytest==9.2.0",
+      "click==8.5.1",
+      "anyio==4.16.0"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python _bench_check.py",
+    "timeout": 120
+  },
+  "solution_files": [
+    "pytest.ini"
+  ],
+  "source": {
+    "written_by": "pinch-team (this project)",
+    "note": "Written by us for the Tavily on/off comparison; not from any public benchmark.",
+    "libraries": [
+      "click==8.5.1",
+      "pytest==9.2.0",
+      "anyio==4.16.0"
+    ]
+  }
+}

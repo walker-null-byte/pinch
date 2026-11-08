@@ -1,0 +1,32 @@
+[project]
+name = "pinch"
+version = "0.1.0"
+description = "A command-line coding agent that finishes real coding tasks on the fewest tokens."
+readme = "README.md"
+license = { text = "AGPL-3.0-or-later" }
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27",
+    "turbomcp>=0.3.0",
+]
+
+[project.optional-dependencies]
+yaml = ["pyyaml>=6"]
+
+[project.scripts]
+pinch = "pinch.cli:main"
+pinch-mock = "pinch.mock_provider:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "pyyaml>=6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pinch"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

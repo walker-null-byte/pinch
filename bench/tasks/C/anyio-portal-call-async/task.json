@@ -1,0 +1,33 @@
+{
+  "id": "C/anyio-portal-call-async",
+  "set": "C",
+  "title": "anyio 4.16: await a function in another event loop through a BlockingPortal",
+  "prompt": "bridge.py connects request handlers to a worker that runs its own event loop in a separate thread (reached through an anyio BlockingPortal). Implement `lookup_in_worker(portal, name)` so that it runs `lookup(name)` inside the worker's event loop and returns its result, with these two properties: (1) it must not block the caller's event loop (other tasks of the caller keep running while it waits), and (2) if the calling task is cancelled, the work in the worker loop is cancelled as well. Use the BlockingPortal API of the installed anyio.\nPackage versions in this environment are fixed: click 8.5.1, pytest 9.2.0, anyio 4.16.0.",
+  "authored_by": "pinch-team",
+  "env": {
+    "pip": [
+      "pytest==9.2.0",
+      "click==8.5.1",
+      "anyio==4.16.0"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python _bench_check.py",
+    "timeout": 120
+  },
+  "solution_files": [
+    "bridge.py"
+  ],
+  "source": {
+    "written_by": "pinch-team (this project)",
+    "note": "Written by us for the Tavily on/off comparison; not from any public benchmark.",
+    "libraries": [
+      "click==8.5.1",
+      "pytest==9.2.0",
+      "anyio==4.16.0"
+    ]
+  }
+}

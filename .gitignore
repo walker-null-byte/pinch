@@ -1,0 +1,26 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# pinch runtime files
+sessions/
+*.jsonl
+.pinch-sessions/
+mock-requests.jsonl
+
+# pinch output files saved inside a worked-on repo
+.pinch/
+
+# benchmark harness: tool venvs, work dirs and image layers live in bench/.cache; result files are kept
+bench/.cache/
+!bench/results/*.jsonl

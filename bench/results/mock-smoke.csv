@@ -1,0 +1,13 @@
+table,set,mode,n,solved,pass_rate,tokens_mean,tokens_median,input_mean,output_mean,cached_mean,tokens_per_solved,cost_per_solved,cost_mean,calls_mean,time_median_s,token_runs,extra_tokens_without,share_of_savings,tavily_calls,tavily_credits,cache_hits,cache_saved_tokens,mock
+main,A,baseline,2,1,0.5,10556.0,10556.0,9913.5,642.5,0.0,21112.0,0.024966999999999996,0.012483499999999998,5.0,6.0,2,,,,,,,MOCK
+main,A,none,2,1,0.5,10299.0,10299.0,9816.5,482.5,0.0,20598.0,0.023493,0.0117465,4.0,2.2,2,,,,,,,MOCK
+main,A,all,2,1,0.5,6149.5,6149.5,5777.5,372.0,0.0,12299.0,0.014530999999999999,0.007265499999999999,2.0,2.35,2,,,,,,,MOCK
+main,A,no-pretest,2,1,0.5,8575.5,8575.5,8136.5,439.0,0.0,17151.0,0.019785,0.0098925,3.0,2.05,2,,,,,,,MOCK
+main,B,baseline,1,1,1.0,16993.0,16993,16495.0,498.0,0.0,16993.0,0.018487,0.018487,5.0,6.5,1,,,,,,,MOCK
+main,B,none,1,1,1.0,17219.0,17219,16794.0,425.0,0.0,17219.0,0.018494,0.018494,5.0,3.1,1,,,,,,,MOCK
+main,B,all,1,1,1.0,26533.0,26533,26178.0,355.0,0.0,26533.0,0.027598,0.027598,4.0,3.8,1,,,,,,,MOCK
+main,B,no-pretest,1,1,1.0,34104.0,34104,33679.0,425.0,0.0,34104.0,0.035379,0.035379,5.0,3.8,1,,,,,,,MOCK
+ablation,A,no-pretest,2,,0.5,,,,,,17151.0,,,,,,4852.0,0.5846487528617906,,,,,MOCK
+ablation,B,no-pretest,1,,1.0,,,,,,34104.0,,,,,,7571.0,-0.812862357741035,,,,,MOCK
+cache-twice,*,cache-twice#1,3,,,12944.0,,,,,,,,,,,,,,,0,0,MOCK
+cache-twice,*,cache-twice#2,3,,,2536.3333333333335,,,,,,,,,,,,,,,7,31223,MOCK

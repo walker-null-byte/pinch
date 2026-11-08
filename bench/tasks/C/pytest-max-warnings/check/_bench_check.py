@@ -1,0 +1,28 @@
+import subprocess
+import sys
+
+def fail(msg):
+    print("FAIL:", msg)
+    sys.exit(1)
+
+def run(*extra):
+    return subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", *extra],
+                          capture_output=True, text=True, timeout=120)
+
+full = run()
+text = full.stdout + full.stderr
+if full.returncode == 0:
+    fail("the run with 4 warnings passed; it should fail:\n" + text)
+if "4 passed" not in text:
+    fail("the tests must all still pass (4 passed), got:\n" + text)
+if "4 warnings" not in text:
+    fail("expected pytest to report the 4 warnings:\n" + text)
+if "warning" not in text.split("warnings summary")[-1].lower() or "max" not in text.lower():
+    fail("the failure should come from the max-warnings limit:\n" + text)
+fewer = run("-k", "not test_c")  # 2 warnings, under the limit
+if fewer.returncode != 0:
+    fail("with 2 warnings the run should pass:\n" + fewer.stdout + fewer.stderr)
+exactly = run("-k", "not test_b")  # 3 warnings, exactly the limit: allowed
+if exactly.returncode != 0:
+    fail("with exactly 3 warnings the run should pass:\n" + exactly.stdout + exactly.stderr)
+print("PASS")

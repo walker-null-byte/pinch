@@ -1,0 +1,31 @@
+{
+  "id": "A/poker",
+  "set": "A",
+  "title": "Exercism Python exercise: poker",
+  "prompt": "# Instructions\n\nPick the best hand(s) from a list of poker hands.\n\nSee [Wikipedia][poker-hands] for an overview of poker hands.\n\n[poker-hands]: https://en.wikipedia.org/wiki/List_of_poker_hands\n\n####\n\nUse the above instructions to modify the supplied file: poker.py\nDon't change the names of existing functions or classes, as they may be called by hidden tests.\nOnly use the Python standard library. The tests are in poker_test.py; you can run them with: python -m pytest -q poker_test.py\nDo not edit the test file.",
+  "authored_by": "exercism (via Aider polyglot-benchmark)",
+  "env": {
+    "pip": [
+      "pytest==8.4.2"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider poker_test.py",
+    "timeout": 300
+  },
+  "solution_files": [
+    "poker.py"
+  ],
+  "test_command": "python -m pytest -q poker_test.py",
+  "source": {
+    "benchmark": "Aider-AI/polyglot-benchmark",
+    "url": "https://github.com/Aider-AI/polyglot-benchmark",
+    "commit": "7e0611e77b54e2dea774cdc0aa00cf9f7ed6144f",
+    "path": "python/exercises/practice/poker",
+    "license": "MIT",
+    "attribution": "Exercism python track exercise (c) Exercism, MIT licence; see ../LICENSE-exercism-python.txt"
+  }
+}

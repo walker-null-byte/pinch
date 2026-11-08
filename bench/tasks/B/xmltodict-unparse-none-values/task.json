@@ -1,0 +1,38 @@
+{
+  "id": "B/xmltodict-unparse-none-values",
+  "set": "B",
+  "title": "xmltodict: unparse() writes the text 'None' for None values",
+  "prompt": "`xmltodict.unparse` writes the literal text \"None\" when a None value is inside an element dict:\n\n    >>> from xmltodict import unparse\n    >>> unparse({\"a\": {\"@param\": \"test\", \"#text\": None}}, full_document=False)\n    '<a param=\"test\">None</a>'      # wrong, should be '<a param=\"test\"></a>'\n\nNone must be written as an empty value, for text and for attributes:\n- `unparse({\"a\": {\"@param\": \"test\", \"#text\": None}}, full_document=False) == '<a param=\"test\"></a>'`\n- `unparse({\"x\": {\"@pro\": None}}, full_document=False) == '<x pro=\"\"></x>'`\n- `unparse({\"x\": {\"#text\": None, \"@pro\": None}, \"y\": None}, short_empty_elements=True, full_document=False) == '<x pro=\"\"/><y/>'`\n- `unparse({\"a\": None}, full_document=False)` equals `unparse({\"a\": {\"#text\": None}}, full_document=False)`.\nOther non-string text (True, numbers) keeps its current output.\n\nOne existing test in tests/test_dicttoxml.py (test_non_string_text_with_attributes) asserts the old, wrong output for a None #text. It will be replaced by a corrected version, so update that line as needed.\nThe code is in xmltodict.py. Run the existing tests with: python -m pytest -q tests/test_dicttoxml.py",
+  "authored_by": "upstream commit; prompt written by pinch-team",
+  "env": {
+    "pip": [
+      "pytest==8.4.2"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider tests/test_dicttoxml.py",
+    "timeout": 600
+  },
+  "solution_files": [
+    "xmltodict.py"
+  ],
+  "test_command": "python -m pytest -q tests/test_dicttoxml.py",
+  "source": {
+    "repo": "https://github.com/martinblech/xmltodict",
+    "base_commit": "f7d76c96fc0141238947abcc5fa925d3ffd9eb78",
+    "fix_commit": "aa165113bef2b3a1a822209863343b9dc9ffe43a",
+    "fix_date": "2026-02-15",
+    "license": "MIT",
+    "fix_url": "https://github.com/martinblech/xmltodict/commit/aa165113bef2b3a1a822209863343b9dc9ffe43a",
+    "changed_source_files": [
+      "xmltodict.py"
+    ],
+    "hidden_test_files": [
+      "tests/test_dicttoxml.py"
+    ],
+    "added_generated_files": []
+  }
+}

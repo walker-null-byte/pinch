@@ -1,0 +1,38 @@
+{
+  "id": "B/cachetools-tlru-overwrite-expired",
+  "set": "B",
+  "title": "cachetools: TLRUCache keeps a stale value when overwritten with an already-expired one",
+  "prompt": "A `cachetools.TLRUCache` silently keeps the OLD value when an existing key is overwritten with a value whose time-to-use is already over. `cache[key] = value` must either store the value or leave the key absent; it must never leave the previous value in place.\n\n    from cachetools import TLRUCache\n\n    def ttu(_key, value, now):\n        return now + value               # a value of 0 is expired the moment it is stored\n\n    cache = TLRUCache(maxsize=2, ttu=ttu, timer=some_timer)\n    cache[1] = 5                         # stored; cache[1] == 5, len(cache) == 1, cache.currsize == 1\n    cache[1] = 0                         # expired on arrival\n    cache[1]                             # currently still returns 5; the key should be gone\n\nAfter `cache[1] = 0` the key must be removed: `1 not in cache`, `cache.get(1) is None`, `len(cache) == 0`, `cache.currsize == 0` and `set(cache) == set()`.\n\nThe code is in src/cachetools/__init__.py. Run the existing tests with: python -m pytest -q tests/test_tlru.py",
+  "authored_by": "upstream commit; prompt written by pinch-team",
+  "env": {
+    "pip": [
+      "pytest==8.4.2"
+    ],
+    "pythonpath": [
+      "src"
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider tests/test_tlru.py",
+    "timeout": 600
+  },
+  "solution_files": [
+    "src/cachetools/__init__.py"
+  ],
+  "test_command": "python -m pytest -q tests/test_tlru.py",
+  "source": {
+    "repo": "https://github.com/tkem/cachetools",
+    "base_commit": "978d34d40cdbf3b4cbfce104f3166032cc4ea028",
+    "fix_commit": "c0fdf6abab38040947d6fe2e38c507401d5e2350",
+    "fix_date": "2026-07-23",
+    "license": "MIT",
+    "fix_url": "https://github.com/tkem/cachetools/commit/c0fdf6abab38040947d6fe2e38c507401d5e2350",
+    "changed_source_files": [
+      "src/cachetools/__init__.py"
+    ],
+    "hidden_test_files": [
+      "tests/test_tlru.py"
+    ],
+    "added_generated_files": []
+  }
+}

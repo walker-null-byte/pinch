@@ -1,0 +1,33 @@
+{
+  "id": "C/click-argument-help",
+  "set": "C",
+  "title": "click 8.5: help text for arguments",
+  "prompt": "cli.py is a small click command with two positional arguments, NAME and COUNT. Give them help text, 'Who to greet.' for NAME and 'How many times to greet.' for COUNT, so that `python cli.py --help` lists them in click's own dedicated section for positional arguments. Use click's built-in support for argument help; do not put the text in the docstring or in an epilog. The command's behaviour must not change.\nPackage versions in this environment are fixed: click 8.5.1, pytest 9.2.0, anyio 4.16.0.",
+  "authored_by": "pinch-team",
+  "env": {
+    "pip": [
+      "pytest==9.2.0",
+      "click==8.5.1",
+      "anyio==4.16.0"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python _bench_check.py",
+    "timeout": 120
+  },
+  "solution_files": [
+    "cli.py"
+  ],
+  "source": {
+    "written_by": "pinch-team (this project)",
+    "note": "Written by us for the Tavily on/off comparison; not from any public benchmark.",
+    "libraries": [
+      "click==8.5.1",
+      "pytest==9.2.0",
+      "anyio==4.16.0"
+    ]
+  }
+}

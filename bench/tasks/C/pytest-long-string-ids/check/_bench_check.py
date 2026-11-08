@@ -1,0 +1,19 @@
+import hashlib
+import subprocess
+import sys
+
+def fail(msg):
+    print("FAIL:", msg)
+    sys.exit(1)
+
+out = subprocess.run([sys.executable, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", "tests/test_slugs.py"],
+                     capture_output=True, text=True, timeout=120)
+lines = [ln.strip() for ln in out.stdout.splitlines() if ln.strip().startswith("tests/")]
+if len(lines) != 3:
+    fail("expected 3 collected tests:\n" + out.stdout + out.stderr)
+expected = ["tests/test_slugs.py::test_nonempty[" + hashlib.sha256(("alpha-" * 40).encode()).hexdigest() + "]",
+            "tests/test_slugs.py::test_nonempty[" + hashlib.sha256(("beta-" * 50).encode()).hexdigest() + "]",
+            "tests/test_slugs.py::test_nonempty[short]"]
+if lines != expected:
+    fail("test ids are\n  " + "\n  ".join(lines) + "\nexpected\n  " + "\n  ".join(expected))
+print("PASS")

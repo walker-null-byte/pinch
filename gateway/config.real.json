@@ -1,0 +1,404 @@
+{
+  "$schema": "https://www.getbifrost.ai/schema",
+  "client": {
+    "enable_logging": true,
+    "enforce_auth_on_inference": true
+  },
+  "providers": {
+    "gemini": {
+      "keys": [
+        {
+          "name": "gemini-key",
+          "value": "env.GEMINI_API_KEY",
+          "models": [
+            "*"
+          ],
+          "weight": 1.0
+        }
+      ],
+      "network_config": {
+        "max_retries": 2,
+        "retry_backoff_initial": 500,
+        "retry_backoff_max": 5000,
+        "default_request_timeout_in_seconds": 120
+      }
+    },
+    "groq": {
+      "keys": [
+        {
+          "name": "groq-key",
+          "value": "env.GROQ_API_KEY",
+          "models": [
+            "*"
+          ],
+          "weight": 1.0
+        }
+      ],
+      "network_config": {
+        "max_retries": 1,
+        "retry_backoff_initial": 500,
+        "retry_backoff_max": 5000,
+        "default_request_timeout_in_seconds": 120
+      }
+    },
+    "local": {
+      "keys": [
+        {
+          "name": "local-key",
+          "value": "env.LOCAL_PROVIDER_KEY",
+          "models": [
+            "*"
+          ],
+          "weight": 1.0
+        }
+      ],
+      "network_config": {
+        "base_url": "http://127.0.0.1:1234",
+        "max_retries": 0,
+        "default_request_timeout_in_seconds": 300
+      },
+      "custom_provider_config": {
+        "base_provider_type": "openai",
+        "allowed_requests": {
+          "chat_completion": true
+        },
+        "request_path_overrides": {
+          "chat_completion": "/v1/chat/completions"
+        }
+      }
+    },
+    "gemini-down": {
+      "keys": [
+        {
+          "name": "gemini-down-key",
+          "value": "env.LOCAL_PROVIDER_KEY",
+          "models": [
+            "*"
+          ],
+          "weight": 1.0
+        }
+      ],
+      "network_config": {
+        "base_url": "http://127.0.0.1:9",
+        "max_retries": 0,
+        "default_request_timeout_in_seconds": 5
+      },
+      "custom_provider_config": {
+        "base_provider_type": "openai",
+        "allowed_requests": {
+          "chat_completion": true
+        }
+      }
+    }
+  },
+  "governance": {
+    "virtual_keys": [
+      {
+        "id": "vk-me",
+        "name": "me",
+        "value": "env.PINCH_GATEWAY_KEY",
+        "is_active": true,
+        "provider_configs": [
+          {
+            "provider": "gemini",
+            "allowed_models": [
+              "gemini-3.5-flash-lite",
+              "gemini-3.6-flash"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          },
+          {
+            "provider": "groq",
+            "allowed_models": [
+              "qwen/qwen3.8-27b",
+              "openai/gpt-oss-120b"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          },
+          {
+            "provider": "local",
+            "allowed_models": [
+              "gemma4"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          }
+        ]
+      },
+      {
+        "id": "vk-bench",
+        "name": "bench",
+        "value": "env.PINCH_BENCH_KEY",
+        "is_active": true,
+        "provider_configs": [
+          {
+            "provider": "gemini",
+            "allowed_models": [
+              "gemini-3.5-flash-lite",
+              "gemini-3.6-flash"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          }
+        ]
+      },
+      {
+        "id": "vk-confidential",
+        "name": "confidential",
+        "value": "env.PINCH_CONFIDENTIAL_KEY",
+        "is_active": true,
+        "allow_all_providers": false,
+        "provider_configs": [
+          {
+            "provider": "local",
+            "allowed_models": [
+              "gemma4"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          }
+        ]
+      },
+      {
+        "id": "vk-demo-low",
+        "name": "demo-low",
+        "value": "env.PINCH_DEMO_LOW_KEY",
+        "is_active": true,
+        "provider_configs": [
+          {
+            "provider": "gemini",
+            "allowed_models": [
+              "gemini-3.5-flash-lite",
+              "gemini-3.6-flash"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          }
+        ]
+      },
+      {
+        "id": "vk-failover-demo",
+        "name": "failover-demo",
+        "value": "env.PINCH_FAILOVER_DEMO_KEY",
+        "is_active": true,
+        "provider_configs": [
+          {
+            "provider": "gemini",
+            "allowed_models": [
+              "gemini-3.5-flash-lite",
+              "gemini-3.6-flash"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          },
+          {
+            "provider": "gemini-down",
+            "allowed_models": [
+              "gemini-3.5-flash-lite",
+              "gemini-3.6-flash"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          },
+          {
+            "provider": "groq",
+            "allowed_models": [
+              "qwen/qwen3.8-27b",
+              "openai/gpt-oss-120b"
+            ],
+            "key_ids": [
+              "*"
+            ],
+            "weight": 1
+          }
+        ]
+      }
+    ],
+    "budgets": [
+      {
+        "id": "budget-me",
+        "max_limit": 2.0,
+        "reset_duration": "1M",
+        "virtual_key_id": "vk-me"
+      },
+      {
+        "id": "budget-bench",
+        "max_limit": 15.0,
+        "reset_duration": "1M",
+        "virtual_key_id": "vk-bench"
+      },
+      {
+        "id": "budget-demo-low",
+        "max_limit": 0.01,
+        "reset_duration": "1M",
+        "virtual_key_id": "vk-demo-low"
+      },
+      {
+        "id": "budget-failover-demo",
+        "max_limit": 0.5,
+        "reset_duration": "1M",
+        "virtual_key_id": "vk-failover-demo"
+      }
+    ],
+    "routing_rules": [
+      {
+        "id": "route-me",
+        "name": "me: gemini, then groq qwen/qwen3.8-27b, then local gemma4",
+        "cel_expression": "true",
+        "scope": "virtual_key",
+        "scope_id": "vk-me",
+        "priority": 1,
+        "targets": [
+          {
+            "provider": "gemini",
+            "weight": 1.0
+          }
+        ],
+        "fallbacks": [
+          "groq/qwen/qwen3.8-27b",
+          "local/gemma4"
+        ]
+      },
+      {
+        "id": "route-failover-demo",
+        "name": "failover-demo: gemini-down (closed port), then groq qwen/qwen3.8-27b",
+        "cel_expression": "true",
+        "scope": "virtual_key",
+        "scope_id": "vk-failover-demo",
+        "priority": 1,
+        "targets": [
+          {
+            "provider": "gemini-down",
+            "weight": 1.0
+          }
+        ],
+        "fallbacks": [
+          "groq/qwen/qwen3.8-27b"
+        ]
+      }
+    ],
+    "pricing_overrides": [
+      {
+        "id": "00000000-0000-4000-8000-000000000101",
+        "name": "gemini-3.5-flash-lite list price",
+        "scope_kind": "global",
+        "match_type": "exact",
+        "pattern": "gemini-3.5-flash-lite",
+        "request_types": [
+          "chat_completion"
+        ],
+        "pricing_patch": "{\"input_cost_per_token\":3e-07,\"output_cost_per_token\":2.5e-06,\"cache_read_input_token_cost\":3e-08}"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000102",
+        "name": "gemini-3.6-flash list price",
+        "scope_kind": "global",
+        "match_type": "exact",
+        "pattern": "gemini-3.6-flash",
+        "request_types": [
+          "chat_completion"
+        ],
+        "pricing_patch": "{\"input_cost_per_token\":7.5e-07,\"output_cost_per_token\":3.75e-06,\"cache_read_input_token_cost\":7.5e-08}"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000103",
+        "name": "gemini-3.8-flash list price",
+        "scope_kind": "global",
+        "match_type": "exact",
+        "pattern": "gemini-3.8-flash",
+        "request_types": [
+          "chat_completion"
+        ],
+        "pricing_patch": "{\"input_cost_per_token\":7.5e-07,\"output_cost_per_token\":3.75e-06,\"cache_read_input_token_cost\":7.5e-08}"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000104",
+        "name": "groq gpt-oss-120b list price",
+        "scope_kind": "global",
+        "match_type": "exact",
+        "pattern": "openai/gpt-oss-120b",
+        "request_types": [
+          "chat_completion"
+        ],
+        "pricing_patch": "{\"input_cost_per_token\":1.5e-07,\"output_cost_per_token\":6e-07}"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000105",
+        "name": "groq gpt-oss-20b list price",
+        "scope_kind": "global",
+        "match_type": "exact",
+        "pattern": "openai/gpt-oss-20b",
+        "request_types": [
+          "chat_completion"
+        ],
+        "pricing_patch": "{\"input_cost_per_token\":7.5e-08,\"output_cost_per_token\":3e-07}"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000106",
+        "name": "groq qwen3.8-27b list price",
+        "scope_kind": "global",
+        "match_type": "exact",
+        "pattern": "qwen/qwen3.8-27b",
+        "request_types": [
+          "chat_completion"
+        ],
+        "pricing_patch": "{\"input_cost_per_token\":8.000000000000001e-07,\"output_cost_per_token\":4e-06}"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000107",
+        "name": "local gemma4 costs nothing",
+        "scope_kind": "global",
+        "match_type": "exact",
+        "pattern": "gemma4",
+        "request_types": [
+          "chat_completion"
+        ],
+        "pricing_patch": "{\"input_cost_per_token\":0.0,\"output_cost_per_token\":0.0,\"cache_read_input_token_cost\":0.0}"
+      }
+    ],
+    "auth_config": {
+      "is_enabled": true,
+      "admin_username": "env.PINCH_GATEWAY_ADMIN_USER",
+      "admin_password": "env.PINCH_GATEWAY_ADMIN_PASSWORD",
+      "disable_auth_on_inference": true
+    }
+  },
+  "setup_token": "env.PINCH_GATEWAY_SETUP_TOKEN",
+  "vector_store": {
+    "enabled": true,
+    "type": "chromem"
+  },
+  "plugins": [
+    {
+      "enabled": true,
+      "name": "semantic_cache",
+      "config": {
+        "dimension": 1,
+        "ttl": "1h",
+        "conversation_history_threshold": 50,
+        "cache_tool_call_responses": true,
+        "cache_by_model": true,
+        "cache_by_provider": true,
+        "default_cache_key": ""
+      }
+    }
+  ]
+}

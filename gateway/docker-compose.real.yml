@@ -1,0 +1,39 @@
+# Bifrost in front of the REAL providers (Gemini, Groq) and the local LM Studio model.
+# Start it from the pinch/ folder (so ../.env is found):
+#   docker compose --env-file .env -f gateway/docker-compose.real.yml up -d
+# The image tag is pinned on purpose. Never use :latest.
+#
+# Only the variables listed under `environment:` reach the container. The `${NAME:?}` form makes compose stop with a
+# message if one is missing from .env. TAVILY_API_KEY, OPENROUTER_API_KEY and ANTHROPIC_API_KEY are deliberately NOT here:
+# the gateway never needs them (pinch calls Tavily itself).
+services:
+  bifrost:
+    image: maximhq/bifrost:v2.5.0
+    container_name: pinch-bifrost-real
+    # Host networking: Bifrost reaches LM Studio on 127.0.0.1:1234 (Linux) and listens on 127.0.0.1:8180 only.
+    network_mode: host
+    restart: "no"
+    environment:
+      APP_HOST: 127.0.0.1
+      APP_PORT: "8180"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?GEMINI_API_KEY is missing from .env}
+      GROQ_API_KEY: ${GROQ_API_KEY:?GROQ_API_KEY is missing from .env}
+      LOCAL_PROVIDER_KEY: ${LOCAL_PROVIDER_KEY:?LOCAL_PROVIDER_KEY is missing from .env}
+      PINCH_GATEWAY_KEY: ${PINCH_GATEWAY_KEY:?PINCH_GATEWAY_KEY is missing from .env}
+      PINCH_BENCH_KEY: ${PINCH_BENCH_KEY:?PINCH_BENCH_KEY is missing from .env}
+      PINCH_CONFIDENTIAL_KEY: ${PINCH_CONFIDENTIAL_KEY:?PINCH_CONFIDENTIAL_KEY is missing from .env}
+      PINCH_DEMO_LOW_KEY: ${PINCH_DEMO_LOW_KEY:?PINCH_DEMO_LOW_KEY is missing from .env}
+      PINCH_FAILOVER_DEMO_KEY: ${PINCH_FAILOVER_DEMO_KEY:?PINCH_FAILOVER_DEMO_KEY is missing from .env}
+      PINCH_GATEWAY_ADMIN_USER: ${PINCH_GATEWAY_ADMIN_USER:?PINCH_GATEWAY_ADMIN_USER is missing from .env}
+      PINCH_GATEWAY_ADMIN_PASSWORD: ${PINCH_GATEWAY_ADMIN_PASSWORD:?PINCH_GATEWAY_ADMIN_PASSWORD is missing from .env}
+      PINCH_GATEWAY_SETUP_TOKEN: ${PINCH_GATEWAY_SETUP_TOKEN:?PINCH_GATEWAY_SETUP_TOKEN is missing from .env}
+    volumes:
+      # Bifrost's data folder (its config store and request log) lives in a named volume, so a restart or `docker compose down`
+      # keeps the virtual keys' spend. Remove it on purpose with `docker compose ... down -v` to start the budgets from zero.
+      - bifrost-real-data:/app/data
+      # The config is read-only and always comes from this file.
+      - ./config.real.json:/app/data/config.json:ro
+
+volumes:
+  bifrost-real-data:
+    name: pinch-bifrost-real-data

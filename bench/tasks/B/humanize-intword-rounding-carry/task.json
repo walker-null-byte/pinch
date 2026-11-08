@@ -1,0 +1,41 @@
+{
+  "id": "B/humanize-intword-rounding-carry",
+  "set": "B",
+  "title": "humanize: intword() does not carry to the next unit for very large numbers",
+  "prompt": "`humanize.intword` renders a number that rounds up to the next unit incorrectly when the number is very large (above roughly 10**22):\n\n    >>> import humanize\n    >>> humanize.intword(10**6 - 1)\n    '1.0 million'                 # correct: 999999 rounds up and carries to the next unit\n    >>> humanize.intword(10**24 - 1)\n    '1000.0 sextillion'           # wrong, should be '1.0 septillion'\n\nThe same carry must happen with a custom format, e.g. `humanize.intword(10**24 - 1, \"%.0f\") == \"1 septillion\"`, and for every unit boundary from million up to (and including) decillion, i.e. for values 10**e - 1 with e in 6, 9, ..., 33 the result is `1.0 <next unit>`. The mantissa must never render as 1000 or more below a decillion.\n\nThe gap beyond decillion is documented and must stay unchanged: `humanize.intword(10**36) == \"1000.0 decillion\"` and `humanize.intword(2 * 10**100) == \"2.0 googol\"`.\n\nThe code is in src/humanize/number.py. Run the existing tests with: python -m pytest -q tests/test_number.py",
+  "authored_by": "upstream commit; prompt written by pinch-team",
+  "env": {
+    "pip": [
+      "pytest==9.2.0",
+      "freezegun"
+    ],
+    "pythonpath": [
+      "src"
+    ]
+  },
+  "check": {
+    "command": "python -m pytest -q -p no:cacheprovider tests/test_number.py",
+    "timeout": 600
+  },
+  "solution_files": [
+    "src/humanize/number.py"
+  ],
+  "test_command": "python -m pytest -q tests/test_number.py",
+  "source": {
+    "repo": "https://github.com/python-humanize/humanize",
+    "base_commit": "f971127ce7e7770d3ff5be05cfc484bdf9302e04",
+    "fix_commit": "ca892b368a535a79cc5e2181d052245b94fd6652",
+    "fix_date": "2026-09-16",
+    "license": "MIT",
+    "fix_url": "https://github.com/python-humanize/humanize/commit/ca892b368a535a79cc5e2181d052245b94fd6652",
+    "changed_source_files": [
+      "src/humanize/number.py"
+    ],
+    "hidden_test_files": [
+      "tests/test_number.py"
+    ],
+    "added_generated_files": [
+      "src/humanize/_version.py"
+    ]
+  }
+}

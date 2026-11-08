@@ -1,0 +1,33 @@
+{
+  "id": "C/pytest-max-warnings",
+  "set": "C",
+  "title": "pytest 9.1: fail the run when there are too many warnings",
+  "prompt": "Our CI should fail the test run when the suite emits more than 3 warnings, but the tests themselves must still pass: do not turn warnings into errors and do not edit the tests. The suite in tests/test_legacy.py currently emits 4 warnings. Add a pytest.ini that sets pytest's built-in limit for this (configuration only, no plugin and no conftest.py code).\nPackage versions in this environment are fixed: click 8.5.1, pytest 9.2.0, anyio 4.16.0.",
+  "authored_by": "pinch-team",
+  "env": {
+    "pip": [
+      "pytest==9.2.0",
+      "click==8.5.1",
+      "anyio==4.16.0"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python _bench_check.py",
+    "timeout": 120
+  },
+  "solution_files": [
+    "pytest.ini"
+  ],
+  "source": {
+    "written_by": "pinch-team (this project)",
+    "note": "Written by us for the Tavily on/off comparison; not from any public benchmark.",
+    "libraries": [
+      "click==8.5.1",
+      "pytest==9.2.0",
+      "anyio==4.16.0"
+    ]
+  }
+}

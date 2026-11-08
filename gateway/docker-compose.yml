@@ -1,0 +1,14 @@
+# Bifrost in front of the mock providers. Start the mocks first: see README.md.
+# Image tag is pinned on purpose. Never use :latest.
+services:
+  bifrost:
+    image: maximhq/bifrost:v2.5.0
+    container_name: pinch-bifrost
+    # Host networking so Bifrost can reach the mock servers on 127.0.0.1:8101-8103 (Linux).
+    network_mode: host
+    env_file: demo.env
+    environment:
+      APP_HOST: 127.0.0.1
+      APP_PORT: "8190"
+    volumes:
+      - ./config.json:/app/data/config.json:ro

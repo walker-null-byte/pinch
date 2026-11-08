@@ -1,0 +1,33 @@
+{
+  "id": "C/click-custom-version-option",
+  "set": "C",
+  "title": "click 8.5: --version whose output comes from a callback",
+  "prompt": "tool.py is a click command group. Add a `--version` option to the `cli` group. It prints exactly one line, `<command path> 1.4.2 (config: <value>)`, and exits. `<command path>` is the click context's command path (the name the program was invoked as), and `<value>` is the value of the environment variable TOOL_CONFIG at the moment the option is processed, or `default` when it is not set. For example, with TOOL_CONFIG=/etc/tool.toml and the program invoked as `tool`, the output is `tool 1.4.2 (config: /etc/tool.toml)`. Use click's built-in decorator for a --version option whose output is produced by a callback; do not write the eager option by hand. The `hello` command must keep working.\nPackage versions in this environment are fixed: click 8.5.1, pytest 9.2.0, anyio 4.16.0.",
+  "authored_by": "pinch-team",
+  "env": {
+    "pip": [
+      "pytest==9.2.0",
+      "click==8.5.1",
+      "anyio==4.16.0"
+    ],
+    "pythonpath": [
+      "."
+    ]
+  },
+  "check": {
+    "command": "python _bench_check.py",
+    "timeout": 120
+  },
+  "solution_files": [
+    "tool.py"
+  ],
+  "source": {
+    "written_by": "pinch-team (this project)",
+    "note": "Written by us for the Tavily on/off comparison; not from any public benchmark.",
+    "libraries": [
+      "click==8.5.1",
+      "pytest==9.2.0",
+      "anyio==4.16.0"
+    ]
+  }
+}
