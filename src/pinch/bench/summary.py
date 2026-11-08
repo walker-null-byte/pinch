@@ -66,8 +66,8 @@ def stats(rows: list[dict]) -> dict:
         "tokens_mean": mean(tokens), "tokens_median": median(tokens),
         "input_mean": mean([r["input_tokens"] for r in tok_rows]), "output_mean": mean([r["output_tokens"] for r in tok_rows]),
         "cached_mean": mean([r["cached_tokens"] for r in tok_rows]),
-        "calls_mean": mean([r["calls"] for r in rows]), "time_median_s": median([r["agent_s"] for r in rows if "agent_s" in r]),
-        "time_mean_s": mean([r["agent_s"] for r in rows if "agent_s" in r]),
+        "calls_mean": mean([r["calls"] for r in rows]), "time_median_s": median([active_s(r) for r in rows if "agent_s" in r]),
+        "time_mean_s": mean([active_s(r) for r in rows if "agent_s" in r]),
         "token_runs": len(tok_rows),
     }
     solved_in_tok = sum(1 for r in tok_rows if r.get("passed"))
@@ -169,7 +169,7 @@ def build(path: Path) -> tuple[str, list[dict]]:
         task_count = len({r["task"] for r in rows_s})
         md.append(f"### Set {s}: {task_count} task{'s' if task_count != 1 else ''}{tag}\n")
         md.append(table(["mode", "runs", "solved", "avg tokens", "median tokens", "tokens / solved", "vs baseline", "cost / solved",
-                         "avg calls", "median time"], lines) + "\n")
+                         "avg calls", "median time (no waits)"], lines) + "\n")
 
     # 2. ablation
     abl_modes = [m for m in ["none", "all"] + [f"no-{t}" for t in ABLATABLE] if any(r["mode"] == m for r in counted)]
@@ -256,7 +256,7 @@ def build(path: Path) -> tuple[str, list[dict]]:
             if rs:
                 lines.append([f"run {phase}" + (" (cold)" if phase == 1 else " (same task again)"), len(rs), fmt(mean([r['total_tokens'] for r in rs])),
                               fmt(mean([r['calls'] for r in rs]), "f1"), fmt(sum(r['cache_hits'] for r in rs)), fmt(sum(r['cache_saved_tokens'] for r in rs)),
-                              fmt(mean([r['agent_s'] for r in rs]), "s")])
+                              fmt(mean([active_s(r) for r in rs]), "s")])
                 csv_rows.append({"table": "cache-twice", "set": "*", "mode": f"cache-twice#{phase}", "n": len(rs),
                                  "tokens_mean": mean([r["total_tokens"] for r in rs]), "cache_hits": sum(r["cache_hits"] for r in rs),
                                  "cache_saved_tokens": sum(r["cache_saved_tokens"] for r in rs)})
@@ -294,6 +294,11 @@ def trim_vs_prefix(set_: str, st: dict) -> str:
     return "\n".join(out) + "\n"
 
 
+def active_s(row: dict) -> float:
+    """Agent wall time without the seconds spent in pacing and rate-limit waits (rows from before waits were recorded have none)."""
+    return max(float(row.get("agent_s") or 0) - float(row.get("wait_seconds") or 0), 0.0)
+
+
 def methodology(metas: list[dict], counted: list[dict], excluded: list[dict], mock: bool) -> str:
     meta = metas[0] if metas else {}
     approvals = sum(r.get("auto_approvals") or 0 for r in counted + excluded)
@@ -310,6 +315,13 @@ def methodology(metas: list[dict], counted: list[dict], excluded: list[dict], mo
     L(f"- **Who answered.** Models the gateway reported as serving the calls: {', '.join('`%s`' % m for m in served) or 'not reported'}. "
       f"Calls answered by a fallback provider (recorded per call for pinch; for mini-swe-agent only when its response carries it): {fallbacks}. "
       "The benchmark key has no fallback chain, so a different model should never answer silently.")
+    waits = sum(r.get("wait_seconds") or 0 for r in counted + excluded)
+    rl = sum(r.get("rate_limit_waits") or 0 for r in counted + excluded)
+    L(f"- **Pacing and rate limits.** Both agents are paced the same way: at least {meta.get('min_call_interval', 'n/a')} s between model requests inside each agent process "
+      "(`--min-call-interval`; pinch through `PINCH_MIN_CALL_INTERVAL`, mini-swe-agent through a wrapper around its model call that changes nothing else), and both wait out a per-minute "
+      "HTTP 429 (the provider's \"retry in N s\", at most 120 s, up to 8 times) instead of failing. Only a per-day limit stops a run. "
+      f"This report: {rl} rate-limit waits, {waits:,.0f} s spent waiting in total. **Times in the tables exclude those waits.** "
+      "Pacing is per process, so with `--jobs` above 1 the runs share one limit and the pacing no longer keeps each agent under it.")
     L(f"- **Agents.** pinch (this repository, `--auto-approve`) versus mini-swe-agent `{tools.get('mini-swe-agent', '?')}` (MIT, SWE-agent team) with litellm "
       f"`{tools.get('litellm', '?')}`, its default tool-calling config (`mini.yaml`), no changes except the connection. Each run: at most {meta.get('max_steps', '?')} model calls, "
       f"{meta.get('max_tokens', '?')} output tokens per call, {meta.get('agent_timeout', '?')} s wall time, for both agents. pinch tool mode: `{meta.get('tool_mode', '?')}`.")

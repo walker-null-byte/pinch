@@ -10,7 +10,7 @@ Tokens are provider-reported `usage` (input + output) through Bifrost. *Tokens p
 
 ### Set A: 2 tasks (MOCK)
 
-| mode | runs | solved | avg tokens | median tokens | tokens / solved | vs baseline | cost / solved | avg calls | median time |
+| mode | runs | solved | avg tokens | median tokens | tokens / solved | vs baseline | cost / solved | avg calls | median time (no waits) |
 |---|---|---|---|---|---|---|---|---|---|
 | baseline | 2 | 1 (50%) | 10,556 | 10,556 | 21,112 | - | $0.0250 | 5.0 | 6s |
 | none | 2 | 1 (50%) | 10,299 | 10,299 | 20,598 | -2% | $0.0235 | 4.0 | 2s |
@@ -19,7 +19,7 @@ Tokens are provider-reported `usage` (input + output) through Bifrost. *Tokens p
 
 ### Set B: 1 task (MOCK)
 
-| mode | runs | solved | avg tokens | median tokens | tokens / solved | vs baseline | cost / solved | avg calls | median time |
+| mode | runs | solved | avg tokens | median tokens | tokens / solved | vs baseline | cost / solved | avg calls | median time (no waits) |
 |---|---|---|---|---|---|---|---|---|---|
 | baseline | 1 | 1 (100%) | 16,993 | 16,993 | 16,993 | - | $0.0185 | 5.0 | 6s |
 | none | 1 | 1 (100%) | 17,219 | 17,219 | 17,219 | +1% | $0.0185 | 5.0 | 3s |
@@ -63,6 +63,7 @@ None.
 
 - **Models.** Both agents use the same model through the same Bifrost gateway: `mock-small` (a scripted mock model: MOCK). Gateway: `http://127.0.0.1:8190/v1`; virtual-key header `x-bf-vk`. Cascade tiers: off / off.
 - **Who answered.** Models the gateway reported as serving the calls: `mock-small`. Calls answered by a fallback provider (recorded per call for pinch; for mini-swe-agent only when its response carries it): 0. The benchmark key has no fallback chain, so a different model should never answer silently.
+- **Pacing and rate limits.** Both agents are paced the same way: at least 0.0 s between model requests inside each agent process (`--min-call-interval`; pinch through `PINCH_MIN_CALL_INTERVAL`, mini-swe-agent through a wrapper around its model call that changes nothing else), and both wait out a per-minute HTTP 429 (the provider's "retry in N s", at most 120 s, up to 8 times) instead of failing. Only a per-day limit stops a run. This report: 0 rate-limit waits, 0 s spent waiting in total. **Times in the tables exclude those waits.** Pacing is per process, so with `--jobs` above 1 the runs share one limit and the pacing no longer keeps each agent under it.
 - **Agents.** pinch (this repository, `--auto-approve`) versus mini-swe-agent `2.4.6` (MIT, SWE-agent team) with litellm `1.108.3`, its default tool-calling config (`mini.yaml`), no changes except the connection. Each run: at most 12 model calls, 1024 output tokens per call, 240 s wall time, for both agents. pinch tool mode: `lazy`.
 - **Tasks.** Set A: Python exercises from Aider's polyglot benchmark (2 used in this run; Exercism, MIT; pinned commit 7e0611e, `bench/tasks/A/SOURCE.md`). Set B: real upstream bug fixes (1 used in this run; repository, fix commit and licence per task in `bench/tasks/B/SOURCE.md`; the starting tree is the commit before the fix, the fix's tests are the hidden check). Set C: docs tasks **written by us** (not part of this run; `bench/tasks/C/SOURCE.md`).
 - **How pass is checked.** Not by the agent. After an agent stops, the harness restores the exercise's tests (A), or adds the upstream fix's tests the agent never saw (B), or adds our check script (C), deletes cached bytecode, and runs the check in a fresh container. Pass = exit code 0.

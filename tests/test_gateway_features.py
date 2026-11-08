@@ -217,7 +217,7 @@ def test_client_retries_the_gateway_on_429_and_5xx_then_succeeds():
     with MockProvider(script) as mock:
         reply = ModelClient(mock.url, "m", retries=3, backoff=1.0, sleep=sleeps.append).chat(MSG)
     assert reply.message["content"] == "finally" and reply.attempts == 3
-    assert sleeps == [2.0, 2.0]          # Retry-After for the 429, then backoff (1s doubled) for the 500
+    assert 3.0 <= sleeps[0] <= 3.25 and sleeps[1] == 1.0   # the 429 waits Retry-After (2 s + up to 10% + 1 s cushion), then the 500 gets plain backoff
 
 
 def test_client_gives_up_after_three_tries():

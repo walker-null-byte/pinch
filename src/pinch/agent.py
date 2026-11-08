@@ -304,6 +304,7 @@ class Agent:
             finish_reason=reply.finish_reason, latency_ms=reply.latency_ms, usage_reported=u.reported,
             is_fallback=reply.is_fallback, primary_provider=reply.primary_provider, tries=reply.attempts, tier=self.tier,
             model_tier=self.model_tier, escalated=self.pending_escalation, embedding_tokens=reply.embedding_tokens,
+            wait_seconds=round(reply.waited, 2), rate_limit_waits=reply.rate_limit_waits,
         )
         self.pending_escalation = ""
         if reply.cache_hit:  # no provider was called: nothing billed, and the saving is what the same call would have cost
@@ -478,6 +479,13 @@ class Agent:
     def add(self, message: dict) -> None:
         self.messages.append(message)
         self.session.append("message", message=message)
+
+    def on_client_event(self, name: str, **data) -> None:
+        """Things the model client did on its own (retries, waits): record them, and say the waits out loud."""
+        self.emit(name, **data)
+        if name == "rate_limit_wait":
+            who = data.get("provider") or "the model provider"
+            self.say(f"Rate limited by {who}: waiting {data['seconds']:.0f} s, then retrying (try {data['attempt']} of {data['of']}). Your session is saved.")
 
     def emit(self, event: str, **data) -> None:
         self.session.append("event", event=event, **data)

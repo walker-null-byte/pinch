@@ -33,7 +33,7 @@ from .score import run_check
 from .tasks import SETS, SUBSETS, Task, load_tasks, overlay, prepare_workdir
 
 FATAL = {"quota", "budget", "config"}  # stop the whole run; resume later
-RETRYABLE = {"rate_limit", "provider_unavailable"}
+RETRYABLE = {"provider_unavailable"}  # rate limits are handled separately in Run.attempts
 
 
 @dataclass
@@ -48,6 +48,8 @@ class Options:
     delay: float = 0.0  # seconds between starting runs (grows after rate limits, shrinks after successes)
     infra_retries: int = 3
     rate_limit_sleep: float = 30.0  # first wait after a rate limit; doubles each time (up to 15 minutes)
+    rate_limit_window: float = 900.0  # a rate limit that still has not cleared after this many seconds is treated as the daily quota: stop
+    min_call_interval: float = 0.0  # seconds between model calls inside one agent process (both agents); 0 = no pacing
     max_consecutive_infra: int = 8
     budget_usd: float | None = None
     small_model: str = ""
@@ -153,6 +155,8 @@ def run_once(task: Task, mode: Mode, repeat: int, phase: int, attempt: int, opts
             savings = mode.savings(task.set, bool(opts.small_model and opts.big_model))
             row["savings_requested"] = savings
             env.update({"PINCH_MAX_TOKENS": str(opts.max_tokens), "PINCH_KEY_HEADER": "x-bf-vk"})
+            if opts.min_call_interval > 0:
+                env["PINCH_MIN_CALL_INTERVAL"] = str(opts.min_call_interval)
             if opts.small_model and opts.big_model:
                 env.update({"PINCH_SMALL_MODEL": opts.small_model, "PINCH_BIG_MODEL": opts.big_model})
             if opts.tavily_url:
@@ -165,7 +169,7 @@ def run_once(task: Task, mode: Mode, repeat: int, phase: int, attempt: int, opts
                                     max_steps=opts.max_steps, tool_mode=opts.tool_mode)
         else:
             spec = mini_spec(task.prompt, model=opts.model, base_url=opts.base_url, max_steps=opts.max_steps,
-                             max_tokens=opts.max_tokens, wall_time=opts.agent_timeout)
+                             max_tokens=opts.max_tokens, wall_time=opts.agent_timeout, min_call_interval=opts.min_call_interval)
             (out / "mini_spec.json").write_text(json.dumps(spec))
             command = mini_command()
         run = container_run(command, mounts=task_mounts(work, out), env=env, secrets=secrets, timeout=opts.agent_timeout + 120)
@@ -203,6 +207,7 @@ def apply_outcome(row: dict, o: Outcome) -> None:
         cache_saved_tokens=o.cache_saved_tokens, auto_approvals=o.auto_approvals, tavily_calls=o.tavily_calls,
         tavily_credits=o.tavily_credits, escalations=o.escalations, fallbacks=o.fallbacks, techniques_on=o.techniques_on,
         served_models=o.served_models, pretest=o.pretest, final_text=o.final_text,
+        wait_seconds=round(o.wait_seconds, 1), rate_limit_waits=o.rate_limit_waits,
     )
 
 
@@ -225,6 +230,7 @@ class Run:
         self.stop = threading.Event()
         self.stop_reason = ""
         self.consecutive_infra = 0
+        self.rate_limited_since: float | None = None  # when the current unbroken streak of rate-limited runs began
         self.lock = threading.Lock()
         self.count = 0
         self.total = sum(len(u.phases) for u in units)
@@ -256,7 +262,9 @@ class Run:
 
     def attempts(self, unit: Unit, phase: int, cache_key: str) -> None:
         opts = self.opts
-        for attempt in range(1, opts.infra_retries + 2):
+        attempt, other_failures = 0, 0
+        while True:
+            attempt += 1
             self.throttle.wait()
             row = run_once(unit.task, unit.mode, unit.repeat, phase, attempt, opts, cache_key)
             self.writer.write(row)
@@ -269,20 +277,38 @@ class Run:
             reason = row.get("infra_reason")
             if row["status"] != "infra_error":
                 self.consecutive_infra = 0
+                self.rate_limited_since = None
                 self.throttle.faster()
                 return
-            self.consecutive_infra += 1
             if reason in FATAL:
-                self.request_stop({"quota": "the provider's quota is used up", "budget": "the gateway budget is used up",
+                self.consecutive_infra += 1
+                self.request_stop({"quota": "the provider's daily quota is used up", "budget": "the gateway budget is used up",
                                    "config": "the gateway rejected the credentials or the model name"}[reason])
                 return
+            if reason == "rate_limit":
+                # A per-minute limit clears by waiting; keep waiting (the wait grows) until it has not cleared for rate_limit_window
+                # seconds, which means it is really the daily quota. These runs do not count towards the infrastructure streak.
+                now = time.time()
+                self.rate_limited_since = self.rate_limited_since or now
+                if now - self.rate_limited_since > opts.rate_limit_window:
+                    self.request_stop(f"the rate limit has not cleared for {opts.rate_limit_window / 60:.0f} minutes (probably the daily quota)")
+                    return
+                self.throttle.slower()
+                wait = min(900.0, opts.rate_limit_sleep * 2 ** min(attempt - 1, 5)) * random.uniform(0.9, 1.1)
+                self.say(f"   rate_limit: waiting {wait:.0f}s, then trying this run again (attempt {attempt + 1})")
+                self.sleep(wait)
+                if self.stop.is_set():
+                    return
+                continue
+            self.consecutive_infra += 1
             if self.consecutive_infra >= opts.max_consecutive_infra:
                 self.request_stop(f"{self.consecutive_infra} runs in a row failed on infrastructure ({reason}: {row.get('infra_detail', '')[:120]})")
                 return
-            if reason in RETRYABLE and attempt <= opts.infra_retries:
+            other_failures += 1
+            if reason in RETRYABLE and other_failures <= opts.infra_retries:
                 self.throttle.slower()
-                wait = min(900.0, opts.rate_limit_sleep * 2 ** (attempt - 1)) * random.uniform(0.9, 1.1)
-                self.say(f"   {reason}: waiting {wait:.0f}s, then trying this run again (attempt {attempt + 1} of {opts.infra_retries + 1})")
+                wait = min(900.0, opts.rate_limit_sleep * 2 ** (other_failures - 1)) * random.uniform(0.9, 1.1)
+                self.say(f"   {reason}: waiting {wait:.0f}s, then trying this run again (attempt {attempt + 1})")
                 self.sleep(wait)
                 if self.stop.is_set():
                     return
@@ -308,7 +334,7 @@ def describe(row: dict, n: int, total: int) -> str:
         return f"{head} INFRA ERROR ({row['infra_reason']}): {row.get('infra_detail', '')[:100]}"
     verdict = "PASS" if row["passed"] else "fail"
     return (f"{head} {verdict}  tokens={row.get('total_tokens', 0)} calls={row.get('calls', 0)} "
-            f"{row.get('agent_s', 0):.0f}s  {row.get('stop', '')}" + ("  [MOCK]" if row.get("mock") else ""))
+            f"{row.get('agent_s', 0):.0f}s" + (f" (waited {row['wait_seconds']:.0f}s, {row.get('rate_limit_waits', 0)} rate-limit waits)" if row.get("wait_seconds") else "") + f"  {row.get('stop', '')}" + ("  [MOCK]" if row.get("mock") else ""))
 
 
 # -- command line ---------------------------------------------------------------------------------
@@ -343,6 +369,8 @@ def add_run_parser(sub) -> None:
     s.add_argument("--tool-mode", choices=("lazy", "full"), default="lazy", help="pinch tool schemas (its default is lazy)")
     s.add_argument("--jobs", type=int, default=1, help="runs in parallel (free tiers rate-limit: keep it at 1 or 2)")
     s.add_argument("--delay", type=float, default=0.0, help="seconds between starting runs")
+    s.add_argument("--min-call-interval", type=float, default=4.5,
+                   help="seconds between model calls inside each agent process, the same for both agents (default 4.5: Gemini's free tier allows 15 a minute); 0 turns pacing off")
     s.add_argument("--infra-retries", type=int, default=3, help="times to wait out a rate limit or outage and try a run again")
     s.add_argument("--rate-limit-sleep", type=float, default=30.0, help="first wait after a rate limit (doubles each time, up to 15 min)")
     s.add_argument("--budget-usd", type=float, help="stop cleanly when the rows in --out add up to this much (needs a price for --model)")
@@ -430,6 +458,7 @@ def cmd_run(args) -> int:
                    agent_timeout=args.timeout, tool_mode=args.tool_mode, jobs=args.jobs, delay=args.delay,
                    infra_retries=args.infra_retries, rate_limit_sleep=args.rate_limit_sleep, budget_usd=args.budget_usd,
                    small_model=args.small_model, big_model=args.big_model, artifacts=not args.no_artifacts,
+                   min_call_interval=args.min_call_interval,
                    keep_workdirs=args.keep_workdirs, mock=getattr(args, "mock", False), tavily_url=getattr(args, "tavily_url", ""))
     return execute(args, modes, opts)
 
@@ -449,7 +478,7 @@ def execute(args, modes: list[Mode], opts: Options) -> int:
     writer = Writer(out)
     writer.write({"type": "meta", "ts": round(time.time(), 1), "mock": opts.mock, "model": opts.model, "base_url": opts.base_url,
                   "sets": args.sets, "modes": [m.name for m in modes], "repeat": args.repeat, "max_steps": opts.max_steps,
-                  "max_tokens": opts.max_tokens, "agent_timeout": opts.agent_timeout, "tool_mode": opts.tool_mode,
+                  "max_tokens": opts.max_tokens, "agent_timeout": opts.agent_timeout, "min_call_interval": opts.min_call_interval, "tool_mode": opts.tool_mode,
                   "image": IMAGE, "tools": tool_versions(), "pinned": PINNED, "cache_tag": opts.tag,
                   "small_model": opts.small_model, "big_model": opts.big_model,
                   "task_counts": {s: sum(1 for t in tasks if t.set == s) for s in args.sets},

@@ -42,7 +42,7 @@ def test_step_limit_stops_the_loop(make_rig):
 
 
 def test_rate_limit_stops_cleanly_and_keeps_the_session(make_rig):
-    rig = make_rig([{"tool_calls": [call("get_working_dir")]}, {"status": 429, "message": "slow down"}])
+    rig = make_rig([{"tool_calls": [call("get_working_dir")]}, {"status": 429, "message": "slow down"}], rate_limit_retries=0)
     result = rig.agent.run("task")
     assert result.stop == "error"
     assert "429" in result.text and f"pinch --resume {rig.session.id}" in result.text

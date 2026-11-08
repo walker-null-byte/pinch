@@ -220,3 +220,34 @@ def test_the_ablate15_subset_is_all_of_b_plus_seven_a_tasks():
     assert load_tasks(["A"], subset="ablate15") == [t for t in tasks if t.set == "A"]             # the set filter still applies
     with pytest.raises(Exception, match="unknown subset"):
         load_tasks(subset="nope")
+
+
+def test_rate_limits_keep_being_waited_out_past_the_other_error_retry_budget(tmp_path, fake):
+    tasks = load_tasks(["A"], only=["two-bucket"])
+    f = fake({("two-bucket", "all", a): "rate_limit" for a in range(1, 7)})
+    r, code, rows = run_all(tmp_path, build_units(tasks, resolve_modes(["all"]), 1), opts(infra_retries=1))
+    assert code == 0 and len(rows) == 7 and rows[-1]["status"] == "ok" and r.consecutive_infra == 0
+
+
+def test_a_rate_limit_that_never_clears_becomes_a_clean_stop_after_the_window(tmp_path, fake):
+    tasks = load_tasks(["A"], only=["two-bucket", "zipper"])
+    fake({("two-bucket", "all", a): "rate_limit" for a in range(1, 30)})
+    r, code, rows = run_all(tmp_path, build_units(tasks, resolve_modes(["all"]), 1), opts(rate_limit_window=-1.0))
+    assert code == 3 and "has not cleared" in r.stop_reason and "daily quota" in r.stop_reason
+
+
+def test_rate_limit_rows_are_not_counted_towards_the_infrastructure_streak(tmp_path, fake):
+    tasks = load_tasks(["A"], only=["two-bucket"])
+    fake({("two-bucket", "all", a): "rate_limit" for a in range(1, 12)})
+    r, code, rows = run_all(tmp_path, build_units(tasks, resolve_modes(["all"]), 1), opts(max_consecutive_infra=3))
+    assert code == 0 and rows[-1]["status"] == "ok"
+
+
+def test_options_and_command_line_carry_the_pacing_interval():
+    import argparse
+    parser = argparse.ArgumentParser()
+    runner.add_run_parser(parser.add_subparsers())
+    args = parser.parse_args(["run", "--model", "m"])
+    assert args.min_call_interval == 4.5
+    from pinch.bench.agents import mini_spec
+    assert mini_spec("t", model="m", base_url="u", max_steps=1, max_tokens=1, wall_time=1, min_call_interval=4.5)["min_call_interval"] == 4.5

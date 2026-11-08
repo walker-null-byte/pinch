@@ -11,8 +11,12 @@ run, and added to the request at call time, so it never lands in the trajectory 
 import json
 import os
 import sys
+import time
 import traceback
 from pathlib import Path
+
+sys.path.insert(0, "/opt/pinch/src")  # pinch's rate-limit policy (standard library only), so both agents wait the same way
+from pinch import ratelimit  # noqa: E402
 
 spec = json.loads(Path(sys.argv[1]).read_text())
 KEY = os.environ.pop("PINCH_GATEWAY_KEY", "")
@@ -27,11 +31,51 @@ litellm.telemetry = False
 _completion = litellm.completion
 
 
+# Pacing and rate-limit waits: the same policy pinch's client applies (pinch/ratelimit.py, pinch/client.py). Nothing about mini's prompts,
+# tools or config changes; only WHEN a request is sent, and waiting out a per-minute 429 instead of failing the run.
+MIN_INTERVAL = float(spec.get("min_call_interval") or 0)
+STATS = {"wait_seconds": 0.0, "rate_limit_waits": 0}
+_last_request = [0.0]
+
+
+def _pace():
+    if MIN_INTERVAL > 0:
+        gap = _last_request[0] + MIN_INTERVAL - time.monotonic()
+        if gap > 0:
+            time.sleep(gap)
+            STATS["wait_seconds"] += gap
+        _last_request[0] = time.monotonic()
+
+
+def _retry_after(exc):
+    response = getattr(exc, "response", None)
+    headers = getattr(response, "headers", None)
+    return headers.get("retry-after") if headers else None
+
+
 def completion(*args, **kwargs):
     headers = dict(kwargs.get("extra_headers") or {})
     headers["x-bf-vk"] = KEY
     kwargs["extra_headers"] = headers
-    return _completion(*args, **kwargs)
+    limited = 0
+    while True:
+        _pace()
+        try:
+            return _completion(*args, **kwargs)
+        except Exception as exc:
+            text = str(exc)
+            if not (getattr(exc, "status_code", None) == 429 or type(exc).__name__ == "RateLimitError"):
+                raise
+            if ratelimit.is_daily_limit(text):
+                raise  # a per-day limit does not clear by waiting
+            limited += 1
+            if limited > ratelimit.RATE_LIMIT_RETRIES:
+                raise
+            seconds = ratelimit.wait_seconds(text, _retry_after(exc), limited, 1.0)
+            print(f"rate limited: waiting {seconds:.0f} s, then retrying ({limited} of {ratelimit.RATE_LIMIT_RETRIES})", file=sys.stderr, flush=True)
+            time.sleep(seconds)
+            STATS["wait_seconds"] += seconds
+            STATS["rate_limit_waits"] += 1
 
 
 litellm.completion = completion
@@ -66,5 +110,6 @@ except BaseException as e:  # the harness classifies the exception; a crash here
     result["error"] = scrub(str(e) or "")[:2000]
     result["traceback"] = scrub(traceback.format_exc())[-3000:]
 finally:
+    result.update(wait_seconds=round(STATS["wait_seconds"], 1), rate_limit_waits=STATS["rate_limit_waits"])
     result_path.write_text(json.dumps(result))
 sys.exit(0 if result["exit_status"] == "Submitted" else 1)

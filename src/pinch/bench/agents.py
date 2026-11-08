@@ -17,12 +17,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..ledger import estimate_cost, load_prices
+from ..ratelimit import DAILY_MARKERS, classify_429
 from ..session import Session
 
 MINI_STOPS = {"Submitted": "done", "LimitsExceeded": "step_limit", "TimeExceeded": "timeout", "RepeatedFormatError": "format_errors"}
 CONTEXT_WORDS = ("context length", "context_length", "maximum context", "too long", "too many tokens", "reduce the length",
                  "context window", "contextwindow")
-QUOTA_WORDS = ("quota", "insufficient_quota", "resource_exhausted", "resource exhausted", "per day", "daily limit", "billing")
+# Only a per-day limit (or a hard "insufficient_quota") stops a benchmark. The word "quota" alone does not: Gemini's per-minute
+# error says "You exceeded your current quota ... requests per minute ... retry in 44s" (RESOURCE_EXHAUSTED), which clears by waiting.
+QUOTA_WORDS = (*DAILY_MARKERS, "insufficient_quota")
 BUDGET_WORDS = ("budget_exceeded", "budget exceeded", "budget limit", "budget has been exceeded")
 
 
@@ -47,6 +50,8 @@ class Outcome:
     fallbacks: int = 0
     techniques_on: list[str] = field(default_factory=list)
     served_models: list[str] = field(default_factory=list)
+    wait_seconds: float = 0.0  # seconds spent in pacing and rate-limit waits (inside the agent's wall time)
+    rate_limit_waits: int = 0
     pretest: str = ""  # pinch: red | green | skipped:<reason> | "" (technique off)
     final_text: str = ""
 
@@ -62,10 +67,10 @@ def classify_error(kind: str = "", status: int | None = None, text: str = "") ->
         return None  # the agent's history grew past the model's window: that is a result, not an outage
     if any(w in low for w in BUDGET_WORDS) or status == 402 or kind == "budget":
         return "budget"
+    if status == 429 or kind in ("rate_limit", "RateLimitError", "quota"):
+        return classify_429(low)  # per day -> "quota" (stop); any other 429, known or not, -> "rate_limit" (wait and retry)
     if any(w in low for w in QUOTA_WORDS):
         return "quota"
-    if status == 429 or kind in ("rate_limit", "RateLimitError"):
-        return "rate_limit"
     if status in (401, 403, 404) or kind in ("auth", "AuthenticationError", "NotFoundError", "PermissionDeniedError"):
         return "config"
     if kind in ("unreachable", "server", "APIConnectionError", "Timeout", "APITimeoutError", "InternalServerError",
@@ -103,6 +108,8 @@ def parse_pinch(out: Path, exit_code: int, stdout: str) -> Outcome:
         elif not r.get("usage_reported", True):
             o.usage_complete = False
         costs.append(r.get("cost_usd"))
+        o.wait_seconds += float(r.get("wait_seconds") or 0)
+        o.rate_limit_waits += int(r.get("rate_limit_waits") or 0)
         if r.get("is_fallback"):
             o.fallbacks += 1
         if (r.get("served_model") or r.get("model")) not in o.served_models:
@@ -143,8 +150,9 @@ def parse_pinch(out: Path, exit_code: int, stdout: str) -> Outcome:
 
 # -- mini-swe-agent -------------------------------------------------------------------------------
 
-def mini_spec(prompt: str, *, model: str, base_url: str, max_steps: int, max_tokens: int, wall_time: int) -> dict:
-    return {"task": prompt, "model": model, "api_base": base_url, "max_steps": max_steps, "max_tokens": max_tokens,
+def mini_spec(prompt: str, *, model: str, base_url: str, max_steps: int, max_tokens: int, wall_time: int,
+              min_call_interval: float = 0.0) -> dict:
+    return {"min_call_interval": min_call_interval, "task": prompt, "model": model, "api_base": base_url, "max_steps": max_steps, "max_tokens": max_tokens,
             "wall_time": wall_time, "command_timeout": 180, "trajectory": "/out/traj.json", "result": "/out/mini_result.json"}
 
 
@@ -184,6 +192,8 @@ def parse_mini(out: Path, exit_code: int, stdout: str) -> Outcome:
         if resp.get("model") and resp["model"] not in o.served_models:
             o.served_models.append(resp["model"])
         price_model = price_model or resp.get("model")
+    o.wait_seconds = float(result.get("wait_seconds") or 0)
+    o.rate_limit_waits = int(result.get("rate_limit_waits") or 0)
     status = result.get("exit_status", "")
     if not result and not traj:
         o.stop, o.infra, o.infra_detail = "error", "harness", "mini-swe-agent left no result: " + stdout[-300:].replace("\n", " ")

@@ -1,0 +1,17 @@
+diff --git a/proverb.py b/proverb.py
+index d1be410..2dbf4fb 100644
+--- a/proverb.py
++++ b/proverb.py
+@@ -1,2 +1,10 @@
+-def proverb():
+-    pass
++def proverb(*args, qualifier=None):
++    if not args:
++        return []
++    lines = [
++        f"For want of a {args[i]} the {args[i+1]} was lost."
++        for i in range(len(args) - 1)
++    ]
++    last_noun = f"{qualifier} {args[0]}" if qualifier else args[0]
++    lines.append(f"And all for the want of a {last_noun}.")
++    return lines

@@ -67,6 +67,8 @@ class Config:
     # reliability: tries per model call when the gateway is unreachable or answers 429/5xx
     retries: int = 3
     retry_backoff: float = 1.0  # seconds; doubles each retry
+    rate_limit_retries: int = 8  # waits for a per-minute rate limit (separate from `retries`), each at most 120 s
+    min_call_interval: float = 0.0  # seconds between model requests from this process (free tiers allow ~15 a minute); 0 = no pacing
     # Bifrost cache namespace. With the `cache` technique on, pinch sends x-bf-cache-key = this, or the session id
     # (a fresh namespace per run) when empty. Never sent for a confidential repo.
     cache_key: str = ""
@@ -129,7 +131,7 @@ def load_config(config_path: Path | None = None, overrides: dict | None = None) 
         raise SystemExit(f"pinch: cannot read {cfg.config_path}: {e}")
 
     for key in ("base_url", "model", "key_header", "mode", "style", "max_steps", "max_tokens", "budget_usd", "budget_vk_id",
-                "confidential_vk_id", "admin_url", "retries", "retry_backoff", "savings", "trim_after", "test_command",
+                "confidential_vk_id", "admin_url", "retries", "retry_backoff", "min_call_interval", "savings", "trim_after", "test_command",
                 "small_model", "big_model", "local_model", "escalate_after_failed_tests", "escalate_after_tool_errors", "tavily_url", "cache_key"):
         if key in data:
             setattr(cfg, key, data[key])
@@ -149,6 +151,7 @@ def load_config(config_path: Path | None = None, overrides: dict | None = None) 
         ("style", "PINCH_STYLE", str),
         ("max_steps", "PINCH_MAX_STEPS", int),
         ("max_tokens", "PINCH_MAX_TOKENS", int),
+        ("min_call_interval", "PINCH_MIN_CALL_INTERVAL", float),
     ):
         if env.get(name):
             setattr(cfg, key, cast(env[name]))

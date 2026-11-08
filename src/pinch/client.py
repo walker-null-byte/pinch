@@ -17,12 +17,14 @@ from dataclasses import dataclass, field
 
 import httpx
 
+from . import ratelimit
+
 
 class ProviderError(Exception):
     """The endpoint answered with an error, or could not be reached.
 
     `kind` is one of: unreachable, rate_limit, server, budget (HTTP 402, Bifrost's budget_exceeded),
-    auth (401/403), tool_use_failed (HTTP 400 whose body says `tool_use_failed`: the model wrote a malformed tool call), other.
+    auth (401/403), quota (a 429 that says per day: waiting will not help), tool_use_failed (HTTP 400 whose body says `tool_use_failed`: the model wrote a malformed tool call), other.
     """
 
     def __init__(self, message: str, status: int | None = None, retry_after: str | None = None, kind: str = "other"):
@@ -69,19 +71,25 @@ class ModelReply:
     attempts: int = 1  # tries needed to reach the gateway (>1 means pinch retried)
     cache_hit: bool = False  # Bifrost answered from its response cache: no provider was called
     embedding_tokens: int = 0  # tokens Bifrost spent embedding the request for the cache (0 for exact-match)
+    waited: float = 0.0  # seconds this call spent waiting (pacing between calls, rate-limit waits), not counting the request itself
+    rate_limit_waits: int = 0  # times this call waited out a rate limit
 
 
 class ModelClient:
     def __init__(self, base_url: str, model: str, gateway_key: str = "", key_header: str = "Authorization",
                  max_tokens: int = 2048, timeout: float = 120.0, transport: httpx.BaseTransport | None = None,
                  retries: int = 1, backoff: float = 1.0, sleep=time.sleep, extra_headers: dict | None = None,
-                 tool_retries: int = 2, on_event=None):
+                 tool_retries: int = 2, on_event=None, rate_limit_retries: int = ratelimit.RATE_LIMIT_RETRIES,
+                 min_call_interval: float = 0.0):
         self.url = base_url.rstrip("/") + "/chat/completions"
         self.model = model
         self.max_tokens = max_tokens
         self.key_header = key_header
         self.retries, self.backoff, self._sleep = max(retries, 1), backoff, sleep  # `retries` = total tries
         self.tool_retries = tool_retries  # extra tries when the model's own tool call was malformed (a provider 400 `tool_use_failed`)
+        self.rate_limit_retries = rate_limit_retries  # waits for a per-minute rate limit, separate from `retries`
+        self.min_call_interval = min_call_interval  # seconds between the start of one request and the next (per process)
+        self._last_request = 0.0
         self.on_event = on_event  # called as on_event("tool_use_failed_retry", attempt=..., ...) so the session can record it
         self.headers = {"Content-Type": "application/json", **(extra_headers or {})}
         self.set_key(gateway_key)
@@ -100,14 +108,26 @@ class ModelClient:
             # "Authorization" gets the usual Bearer prefix; any other header carries the raw key.
             self.headers[self.key_header] = f"Bearer {gateway_key}" if self.key_header.lower() == "authorization" else gateway_key
 
+    def _pace(self) -> float:
+        """Keep at least `min_call_interval` seconds between requests from this process. Returns the seconds waited."""
+        if self.min_call_interval <= 0:
+            return 0.0
+        gap = self._last_request + self.min_call_interval - time.monotonic()
+        if gap > 0:
+            self._sleep(gap)
+        self._last_request = time.monotonic()
+        return max(gap, 0.0)
+
     def chat(self, messages: list[dict], tools: list[dict] | None = None) -> ModelReply:
-        """One model call. Retries the gateway (not the providers behind it) on unreachable/429/5xx."""
-        attempt, malformed = 0, 0
+        """One model call. Retries the gateway (not the providers behind it) on unreachable/5xx, waits out per-minute rate limits
+        (up to `rate_limit_retries` times, honouring the provider's "retry in Ns"), and asks again when the model's tool call was malformed."""
+        attempt, malformed, limited, waited = 0, 0, 0, 0.0
         while True:
             attempt += 1
             try:
+                waited += self._pace()
                 reply = self._chat_once(messages, tools)
-                reply.attempts = attempt
+                reply.attempts, reply.waited, reply.rate_limit_waits = attempt, waited, limited
                 return reply
             except ProviderError as e:
                 if e.kind == "tool_use_failed":
@@ -118,9 +138,20 @@ class ModelClient:
                     if self.on_event:
                         self.on_event("tool_use_failed_retry", attempt=malformed, of=self.tool_retries, error=str(e)[:300])
                     continue
-                if e.kind not in ("unreachable", "rate_limit", "server") or attempt - malformed >= self.retries:
+                if e.kind == "rate_limit":
+                    limited += 1
+                    if limited > self.rate_limit_retries:
+                        raise
+                    seconds = ratelimit.wait_seconds(str(e), e.retry_after, limited, self.backoff)
+                    if self.on_event:
+                        self.on_event("rate_limit_wait", seconds=round(seconds, 1), attempt=limited, of=self.rate_limit_retries,
+                                      provider=self.model.split("/", 1)[0] if "/" in self.model else "", error=str(e)[:300])
+                    self._sleep(seconds)
+                    waited += seconds
+                    continue
+                if e.kind not in ("unreachable", "server") or attempt - malformed - limited >= self.retries:
                     raise
-                self._sleep(_wait(e, self.backoff * 2 ** (attempt - malformed - 1)))
+                self._sleep(_wait(e, self.backoff * 2 ** (attempt - malformed - limited - 1)))
 
     def _chat_once(self, messages: list[dict], tools: list[dict] | None) -> ModelReply:
         body = {"model": self.model, "max_tokens": self.max_tokens}
@@ -136,6 +167,8 @@ class ModelClient:
 
         if response.status_code != 200:
             kind = "tool_use_failed" if response.status_code == 400 and "tool_use_failed" in response.text else _kind(response.status_code)
+            if kind == "rate_limit" and ratelimit.is_daily_limit(response.text):
+                kind = "quota"  # a per-day limit does not clear in a minute: do not wait
             raise ProviderError(
                 f"The model endpoint answered HTTP {response.status_code}: {_error_text(response)}",
                 status=response.status_code, retry_after=response.headers.get("retry-after"), kind=kind,

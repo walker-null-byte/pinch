@@ -105,9 +105,10 @@ def build_agent(cfg: Config, policy: Policy, session: Session, ask=terminal_ask,
     if policy.confidential and cfg.local_model:
         model = cfg.local_model  # the local-only key may use only local models
     client = ModelClient(cfg.base_url, model, key, cfg.key_header,
-                         cfg.max_tokens, retries=cfg.retries, backoff=cfg.retry_backoff, extra_headers=headers)
+                         cfg.max_tokens, retries=cfg.retries, backoff=cfg.retry_backoff, extra_headers=headers,
+                         min_call_interval=cfg.min_call_interval, rate_limit_retries=cfg.rate_limit_retries)
     spend = SpendFile(cfg.spend_dir, cfg.budget_vk_id)
-    client.on_event = lambda name, **data: agent.emit(name, **data)  # `agent` exists by the time a call is made
+    client.on_event = lambda name, **data: agent.on_client_event(name, **data)  # `agent` exists by the time a call is made
     gate = Gate(repo=policy.repo, ask=ask, auto_approve=cfg.auto_approve, allowed_in_config=frozenset(cfg.allow_tools))
     agent = Agent(client, tools, gate, policy, session, cfg.style, cfg.max_steps, say=out, ask_budget=ask_budget,
                   local_key=local_key, local_providers=cfg.local_providers, vk_id=cfg.budget_vk_id, techniques=on, cascade=cascade,

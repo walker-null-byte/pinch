@@ -199,7 +199,7 @@ allow_tools = ["git_status", "git_log", "git_diff"]
 through the same Bifrost gateway, on the same model. Pass or fail is decided outside the agent; tokens come only from the provider-reported `usage` that Bifrost relays; every run is one row of JSONL.
 
 **Every number the harness produces from mock providers is labelled MOCK** (console banner, `"mock": true` in each row, MOCK in the report titles). The mock model is a script; those numbers only show that the pipeline works.
-The only real-model result so far is a 3-run smoke (`bench/results/real-smoke.*`: one easy exercise, baseline versus pinch `none` and `all`); the full run is not done.
+The only real-model result so far is a 3-run smoke on one easy exercise ([`bench/results/real-smoke.md`](bench/results/real-smoke.md): baseline versus pinch `none` and `all`). **One task is not evidence of savings**: it only shows the pipeline works against real models. The full run is not done.
 
 ### Commands
 
@@ -223,7 +223,9 @@ uv run python -m pinch.bench clean          # remove leftover bench containers a
 ```
 
 `run` options worth knowing: `--only <ids>`, `--limit N` (first N tasks of each set), `--subset ablate15` (all 8 set B tasks + 7 set A exercises spread over difficulty: proverb, dominoes, list-ops, wordy, react, forth, paasio; meant for the ablation and style runs, while `core` runs on all 47), `--jobs N` (parallel runs; free tiers want 1), `--delay S`, `--budget-usd X`, `--max-steps` and `--max-tokens` (the same for both agents),
-`--small-model`/`--big-model` (turns the cascade on), `--tool-mode lazy|full`.
+`--small-model`/`--big-model` (turns the cascade on), `--tool-mode lazy|full`, `--min-call-interval S` (default 4.5: seconds between model calls inside each agent process, the same for both agents; Gemini's free tier allows 15 a minute).
+
+Rate limits: a per-minute HTTP 429 is waited out, never fatal. pinch's client and mini-swe-agent (through a wrapper around its model call, nothing else changed) both honour the provider's "retry in N s" (at most 120 s, up to 8 times) and the report excludes those waits from its times. Only a per-day limit stops a run, or a rate limit that has not cleared for 15 minutes. Pacing is per process, so `--jobs` above 1 shares one limit.
 
 ### Modes
 

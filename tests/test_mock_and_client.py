@@ -29,7 +29,7 @@ def test_mock_replays_content_and_tool_calls_with_usage():
 def test_mock_returns_scripted_errors_on_chosen_calls(status):
     script = [{"content": "ok"}, {"status": status, "message": "boom", "headers": {"Retry-After": "7"}}, {"content": "ok again"}]
     with MockProvider(script) as mock:
-        client = ModelClient(mock.url, "mock-small")
+        client = ModelClient(mock.url, "mock-small", rate_limit_retries=0)
         assert client.chat(MSG).message["content"] == "ok"
         with pytest.raises(ProviderError) as err:
             client.chat(MSG)
@@ -39,7 +39,7 @@ def test_mock_returns_scripted_errors_on_chosen_calls(status):
 
 def test_times_repeats_an_entry_and_an_exhausted_script_is_a_500():
     with MockProvider([{"status": 429, "times": 2}, {"content": "ok"}]) as mock:
-        client = ModelClient(mock.url, "mock-small")
+        client = ModelClient(mock.url, "mock-small", rate_limit_retries=0)
         for _ in range(2):
             with pytest.raises(ProviderError):
                 client.chat(MSG)

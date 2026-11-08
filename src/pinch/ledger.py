@@ -63,6 +63,8 @@ class LedgerRecord:
     cache_hit: bool = False  # answered from Bifrost's cache; tokens above are then 0 and the saving is below
     cache_saved_tokens: int = 0  # input+output tokens that would have been billed without the cache hit
     embedding_tokens: int = 0  # tokens spent embedding the request for the cache
+    wait_seconds: float = 0.0  # seconds spent waiting before/within this call (pacing and rate-limit waits)
+    rate_limit_waits: int = 0  # rate-limit waits this call went through
 
     def as_fields(self) -> dict:
         return asdict(self)
