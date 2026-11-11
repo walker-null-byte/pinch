@@ -65,8 +65,8 @@ class Config:
     budget_vk_id: str = ""  # the user's virtual key id in Bifrost, to read the remaining budget
     budget_usd: float | None = None  # fallback limit for pinch's own ledger when Bifrost can't tell us
     # reliability: tries per model call when the gateway is unreachable or answers 429/5xx
-    retries: int = 3
-    retry_backoff: float = 1.0  # seconds; doubles each retry
+    retries: int = 5  # tries in all when the gateway is unreachable or answers 5xx: waits 2, 4, 8, 16 s (about 30 s), enough for a
+    retry_backoff: float = 2.0  # per-minute token limit behind a whole failed fallback chain, which Bifrost reports as its first provider's 5xx
     rate_limit_retries: int = 8  # waits for a per-minute rate limit (separate from `retries`), each at most 120 s
     min_call_interval: float = 0.0  # seconds between model requests from this process (free tiers allow ~15 a minute); 0 = no pacing
     # Bifrost cache namespace. With the `cache` technique on, pinch sends x-bf-cache-key = this, or the session id

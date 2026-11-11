@@ -24,7 +24,7 @@ def tool_messages(rig):
 # -- switches -------------------------------------------------------------------------------------
 
 def test_savings_spec_all_none_list_and_typos():
-    assert parse_savings("all") == frozenset(TECHNIQUES) and len(TECHNIQUES) == 11
+    assert parse_savings("all") == frozenset(TECHNIQUES) and len(TECHNIQUES) == 10
     assert parse_savings("none") == frozenset() == parse_savings("")
     assert parse_savings("trim, cache") == {"trim", "cache"}
     with pytest.raises(ValueError, match="unknown technique.*trimm"):
@@ -473,10 +473,10 @@ def test_cascade_stays_put_without_signals_and_when_not_configured_or_switched_o
         assert set(models_requested(off)) == {"mock-small"} and not off.session_events("escalated")
 
 
-# -- stable prefix ----------------------------------------------------------------------------------
+# -- stable prefix (always on, not a technique) ----------------------------------------------------------------------------------
 
 def test_system_prompt_and_tool_schemas_are_byte_identical_from_call_to_call(make_rig):
-    rig = make_rig([{"tool_calls": [call("get_working_dir")]}, {"tool_calls": [call("get_working_dir")]}, {"content": "ok"}], savings="prefix")
+    rig = make_rig([{"tool_calls": [call("get_working_dir")]}, {"tool_calls": [call("get_working_dir")]}, {"content": "ok"}], savings="none")
     rig.agent.run("go")
     first, *rest = rig.mock.recorded
     for other in rest:
@@ -486,16 +486,22 @@ def test_system_prompt_and_tool_schemas_are_byte_identical_from_call_to_call(mak
     assert list(first["body"])[:2] == ["model", "max_tokens"] and list(first["body"])[2] == "tools"      # tools before messages
 
 
-def test_without_the_prefix_technique_the_system_prompt_changes_every_call(make_rig):
+def test_system_prompt_has_no_per_step_content_even_with_every_technique_off(make_rig):
     rig = make_rig([{"tool_calls": [call("get_working_dir")]}, {"content": "ok"}], savings="none")
     rig.agent.run("go")
-    a, b = (r["body"]["messages"][0]["content"] for r in rig.mock.recorded)
-    assert a != b and a.startswith("[pinch step 1]") and b.startswith("[pinch step 2]")
+    a, b = (r["body"]["messages"][0] for r in rig.mock.recorded)
+    assert a == b and "[pinch step" not in a["content"]
+
+
+def test_the_retired_prefix_technique_name_is_still_accepted():
+    from pinch.savings import parse_savings, TECHNIQUES
+    assert "prefix" not in TECHNIQUES
+    assert parse_savings("prefix") == frozenset() and parse_savings("trim,prefix") == frozenset({"trim"})
 
 
 def test_cached_tokens_are_reported_separately_in_the_ledger(make_rig, capsys):
     rig = make_rig([{"tool_calls": [call("get_working_dir")], "usage": {"prompt_tokens": 1000, "completion_tokens": 20, "cached_tokens": 0}},
-                    {"content": "ok", "usage": {"prompt_tokens": 1100, "completion_tokens": 10, "cached_tokens": 900}}], savings="prefix")
+                    {"content": "ok", "usage": {"prompt_tokens": 1100, "completion_tokens": 10, "cached_tokens": 900}}], savings="none")
     rig.agent.run("go")
     rows = [r for r in rig.session.records() if r["type"] == "ledger"]
     assert [r["cached_tokens"] for r in rows] == [0, 900]

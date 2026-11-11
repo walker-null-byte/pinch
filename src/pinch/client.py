@@ -149,15 +149,21 @@ class ModelClient:
                     self._sleep(seconds)
                     waited += seconds
                     continue
-                if e.kind not in ("unreachable", "server") or attempt - malformed - limited >= self.retries:
+                tries = attempt - malformed - limited
+                if e.kind not in ("unreachable", "server") or tries >= self.retries:
                     raise
-                self._sleep(_wait(e, self.backoff * 2 ** (attempt - malformed - limited - 1)))
+                seconds = _wait(e, self.backoff * 2 ** (tries - 1))
+                if self.on_event:
+                    self.on_event("server_retry", seconds=round(seconds, 1), attempt=tries, of=self.retries - 1, kind=e.kind,
+                                  status=e.status, error=str(e)[:300])
+                self._sleep(seconds)
+                waited += seconds
 
     def _chat_once(self, messages: list[dict], tools: list[dict] | None) -> ModelReply:
         body = {"model": self.model, "max_tokens": self.max_tokens}
         if tools:
             body["tools"] = tools  # tools, then system, then messages: the order providers render the prompt in
-        body["messages"] = messages
+        body["messages"] = outgoing(messages)
         started = time.monotonic()
         try:
             response = self._http.post(self.url, json=body, headers=self.headers)
@@ -183,6 +189,23 @@ class ModelClient:
 
     def close(self) -> None:
         self._http.close()
+
+
+TOOL_CALL_KEYS = ("id", "type", "function")
+
+
+def outgoing(messages: list[dict]) -> list[dict]:
+    """The history as sent: assistant tool calls keep only the OpenAI request fields (id, type, function). Replies carry a
+    streaming-style `index` on each call; Gemini ignores it on the way back, but after a failover the same history sent through
+    Bifrost to Groq is refused (HTTP 502), so the session could not continue on the model that took over. Sessions saved
+    before this fix still hold the field, which is why it is dropped here and not only when a reply is stored."""
+    out = []
+    for m in messages:
+        calls = m.get("tool_calls") if m.get("role") == "assistant" else None
+        if calls and any(isinstance(c, dict) and set(c) - set(TOOL_CALL_KEYS) for c in calls):
+            m = {**m, "tool_calls": [{k: c[k] for k in TOOL_CALL_KEYS if k in c} if isinstance(c, dict) else c for c in calls]}
+        out.append(m)
+    return out
 
 
 def _wait(error: ProviderError, default: float) -> float:

@@ -103,13 +103,25 @@ def test_runs_without_usage_count_for_pass_rate_but_not_tokens(tmp_path):
     assert m["n"] == 2 and m["pass_rate"] == 1.0 and m["token_runs"] == 1 and m["tokens_mean"] == 500
 
 
-def test_trim_versus_stable_prefix_reports_real_cached_shares(tmp_path):
+def test_trim_versus_prompt_cache_reports_real_cached_shares(tmp_path):
     rows = []
     for t in "ab":
         rows += [row("none", t, True, 1000), row("all", t, True, 400, cached_tokens=300), row("no-trim", t, True, 500, cached_tokens=420),
-                 row("no-prefix", t, True, 800, cached_tokens=0)]
+                 row("no-prefix", t, True, 800, cached_tokens=0)]  # a row from an older run: its mode is not known any more and is ignored by this section
     f = tmp_path / "r.jsonl"
     write(f, rows)
     text, _ = build(f)
-    assert "Trim versus stable prefix" in text and "default is left as is" in text
-    assert "cached share 0%" in text and "cached input share" in text
+    assert "Trim versus the provider's prompt cache" in text and "default is left as is" in text
+    assert "cached share 93%" in text and "cached input share" in text
+    assert "no-prefix" not in text.split("Trim versus the provider's prompt cache")[1].split("##")[0]
+
+
+def test_trim_section_needs_no_prefix_mode_and_old_techniques_on_rows_load(tmp_path):
+    rows = []
+    for t in "ab":
+        rows += [row("none", t, True, 1000), row("all", t, True, 400, cached_tokens=300), row("no-trim", t, True, 500, cached_tokens=420)]
+    rows[0]["techniques_on"] = ["trim", "prefix"]
+    f = tmp_path / "r.jsonl"
+    write(f, rows)
+    text, _ = build(f)
+    assert "Trim versus the provider's prompt cache" in text

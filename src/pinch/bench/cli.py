@@ -1,4 +1,4 @@
-"""`python -m pinch.bench <command>`: setup, list, validate, run, summarize, smoke, clean."""
+"""`python -m pinch.bench <command>`: setup, list, validate, run, summarize, charts, smoke, clean."""
 
 from __future__ import annotations
 
@@ -110,6 +110,8 @@ def main(argv: list[str] | None = None) -> int:
     add_run_parser(sub)
     from .summary import add_summarize_parser
     add_summarize_parser(sub)
+    from .charts import add_charts_parser
+    add_charts_parser(sub)
     from .mock import add_smoke_parser
     add_smoke_parser(sub)
 

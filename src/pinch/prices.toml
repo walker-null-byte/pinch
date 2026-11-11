@@ -53,6 +53,11 @@ input = 0.30
 cached = 0.03
 output = 2.50
 
+[models."gemini-3.1-flash-lite"]
+input = 0.25
+cached = 0.025
+output = 1.50
+
 [models."gemini-3.6-flash"]
 input = 0.75
 cached = 0.075

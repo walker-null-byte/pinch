@@ -133,6 +133,14 @@ def git_diff(base: Path) -> tuple[str, list[str]]:
     return text, files
 
 
+def settle_timeout(outcome: Outcome, timed_out: bool) -> None:
+    """An agent killed at the outer wall-time limit, before it wrote its own result, ran out of time: the same rule for both
+    agents. It counts as a `timeout` stop (not an infrastructure error) and the work it left behind is still checked.
+    A clear outage it reported before that (rate limit, quota, budget, credentials, provider down) stays an outage."""
+    if timed_out and outcome.infra in (None, "bad_request", "harness"):
+        outcome.infra, outcome.infra_detail, outcome.stop = None, "", "timeout"
+
+
 def run_once(task: Task, mode: Mode, repeat: int, phase: int, attempt: int, opts: Options, cache_key: str = "") -> dict:
     """One attempt at one run. Always returns a row; never raises for an infrastructure problem."""
     run_id = uuid.uuid4().hex[:12]
@@ -175,8 +183,7 @@ def run_once(task: Task, mode: Mode, repeat: int, phase: int, attempt: int, opts
         run = container_run(command, mounts=task_mounts(work, out), env=env, secrets=secrets, timeout=opts.agent_timeout + 120)
         row["agent_s"] = round(run.seconds, 1)
         outcome = parse_pinch(out, run.returncode, run.stdout) if mode.agent == "pinch" else parse_mini(out, run.returncode, run.stdout)
-        if run.timed_out and not outcome.infra:
-            outcome.stop = "timeout"
+        settle_timeout(outcome, run.timed_out)
         fill_cost(outcome, opts.model)
         apply_outcome(row, outcome)
         if outcome.infra:

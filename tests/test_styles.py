@@ -22,7 +22,7 @@ def test_every_style_has_an_instruction_under_five_lines():
 
 @pytest.mark.parametrize("style", STYLES)
 def test_instruction_is_in_the_system_prompt_of_every_request(make_rig, style):
-    rig = make_rig([{"tool_calls": [call("get_working_dir")]}, {"content": "done"}], style=style, savings="prefix")
+    rig = make_rig([{"tool_calls": [call("get_working_dir")]}, {"content": "done"}], style=style, savings="none")
     rig.agent.run("go")
     for body in rig.sent():
         system = body["messages"][0]

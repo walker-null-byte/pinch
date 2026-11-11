@@ -251,3 +251,22 @@ def test_options_and_command_line_carry_the_pacing_interval():
     assert args.min_call_interval == 4.5
     from pinch.bench.agents import mini_spec
     assert mini_spec("t", model="m", base_url="u", max_steps=1, max_tokens=1, wall_time=1, min_call_interval=4.5)["min_call_interval"] == 4.5
+
+
+def test_an_agent_killed_at_the_wall_time_limit_is_a_timeout_and_still_checked(tmp_path):
+    """mini-swe-agent killed by the outer timeout leaves a trajectory but no result file. That is the agent running out of time
+    (counted, its work checked), the same as for pinch, not an infrastructure error that drops the run from the averages."""
+    import json as _json
+    from pinch.bench.agents import Outcome, parse_mini
+    (tmp_path / "traj.json").write_text(_json.dumps({"info": {"exit_status": ""}, "messages": []}))
+    o = parse_mini(tmp_path, -9, "")
+    runner.settle_timeout(o, timed_out=True)
+    assert o.infra is None and o.stop == "timeout"
+    # a real outage reported before the kill stays an outage
+    q = Outcome(agent="mini", infra="quota", stop="error")
+    runner.settle_timeout(q, timed_out=True)
+    assert q.infra == "quota"
+    # no timeout: nothing changes
+    b = Outcome(agent="mini", infra="bad_request", stop="error")
+    runner.settle_timeout(b, timed_out=False)
+    assert b.infra == "bad_request"

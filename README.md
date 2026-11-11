@@ -4,7 +4,7 @@ A command-line coding agent that finishes real coding tasks on the fewest tokens
 Built for Bifrost Problem Statement 01 (HackCulture global AI hackathon).
 
 **Status: Phase 4a.** Everything runs offline: mock providers behind a real Bifrost gateway (Docker). `uv run pinch prove`
-shows the four mandatory requirements working end to end, and eleven token-saving techniques (each switchable on its own, one of them the Tavily docs tool) are built and tested offline.
+shows the four mandatory requirements working end to end, and ten token-saving techniques (each switchable on its own, one of them the Tavily docs tool) are built and tested offline.
 The benchmark harness (pinch against mini-swe-agent, same model, same gateway) is built and validated with mock providers; running it with real models (Phase 4b) needs API keys. See [Benchmark](#benchmark).
 
 ## Libraries that existed before the hackathon
@@ -62,14 +62,16 @@ user -> pinch CLI -> agent loop -> model (OpenAI-compatible chat + tools)
 | Gateway client | `gateway.py` | read-only use of Bifrost's admin API: remaining budget, and "this key reaches only local providers" |
 | Budget | `budget.py` | the pre-call check |
 | Prove | `prove.py` | `pinch prove`: four scenarios through Bifrost, PASS/FAIL with evidence; no pytest needed |
-| Savings | `savings/`, `savings_smoke.py` | the eleven techniques; the offline smoke |
+| Savings | `savings/`, `savings_smoke.py` | the ten techniques; the offline smoke |
 | Docs lookup | `tavily.py`, `spend.py` | Tavily tool; per-user spend file |
 | Gateway setup | `gateway/` | Bifrost config as code (pinned image), demo users, fallback chain, templates for real providers |
 
 ## Token-saving techniques
 
 Every technique is switchable by itself: `--savings all` (default), `--savings none`, or a list such as `--savings context,trim`; the same in `config.toml` (`savings = "..."`) or `PINCH_SAVINGS`.
-The techniques on for a session are written to its session file and shown by `pinch ledger`, so a benchmark can turn them off one at a time.
+The techniques on for a session are written to its session file and shown by `pinch ledger`, so a benchmark can turn them off one at a time. (`prefix`, a name from an earlier version, is still accepted and ignored.)
+
+pinch always keeps the system prompt, response style and tool schemas byte-identical and first on every call (tools come first in the request body), like any ordinary agent, so provider prompt caching can work; this is not counted as a saving technique and cannot be switched off. An earlier version of the `none` reference added a changing line at the top of the system prompt, which blocked caching: on the first 22 set A tasks 0.3% of its input tokens were served from the provider's cache, against 71% for mini-swe-agent, so its cost per solved task was about twice the baseline's. Token counts were hardly affected (the line was about 7 tokens per call). Those runs are kept, marked, in [`bench/results/run1-superseded.jsonl`](bench/results/run1-superseded.jsonl) and are redone with the fixed code; [`real-smoke.md`](bench/results/real-smoke.md) is from before the fix. Cached input tokens are reported separately in the ledger.
 
 | Technique | What it does | Where |
 |---|---|---|
@@ -81,13 +83,12 @@ The techniques on for a session are written to its session file and shown by `pi
 | `pretest` | Before the first model call, pinch proposes running the repo's tests once (`test_command`, `PINCH_TEST_COMMAND`, or coding-tools' auto-detect). It is a normal shell approval in interactive use, and a logged auto-approval under `--auto-approve`. The result goes at the end of the first prompt, after the system prompt and tool schemas, so the cached prefix is untouched: a failing run as the compressed failure (names of failing tests, first error, summary; run times removed so the prompt is the same on every run of a task), a passing run as one line, \"tests currently pass\". A failing run is also the session's first red, so `stopongreen` can stop after the model's first correct fix. Left out, with the reason in the session (`pretest` event: `declined`, `timeout`, `command_not_found`, `no_tests_collected`, `no_tests_found`, `blocked`), when the tests could not run. `pinch ledger` shows it. | `agent.py` |
 | `stopongreen` | After an approved edit, pinch proposes running the repo's tests (`test_command`, or coding-tools' auto-detect). That is a normal shell approval, and "always" for that exact command works. It stops without another model call **only on a red-to-green change**: the tests must have failed earlier in the session (in a run by the model or by pinch) and pass now. Tests that pass and never failed (a bug fix whose existing tests were already green) do not end the run; the model decides when it is done. The session records which rule fired (`stop_on_green` with `rule: red_to_green`, or `green_not_stopped` with `rule: never_red`). If the short failure comes back, it goes to the model. | `savings/greenlight.py` |
 | `cascade` | Starts on `small_model`, escalates once to `big_model` when the tests still fail after N edit-and-test rounds or M tool errors in a row (config). Each escalation is recorded in the ledger. The gateway must route both model names (the demo routing rules keep the caller's model). | `savings/cascade.py` |
-| `prefix` | System prompt, style and tool schemas are byte-identical and first on every call (tools come first in the request body), so provider prompt caching can work. Cached input tokens are reported separately in the ledger. With the technique off, pinch adds a changing line at the top of the system prompt, as many agents do, to give Phase 4 a baseline. | `agent.py`, `client.py` |
 | `cache` | Bifrost's exact-match response cache, in a per-run namespace (`x-bf-cache-key` = the session id, so benchmark runs never share answers). Hits are recorded in the ledger with the tokens they saved. | `cli.py`, gateway config |
 | `docs` | The Tavily `docs_lookup` tool (below). | `tavily.py` |
 
 The system prompt carries one fixed line for bug fixes ("if no failing test, first add a small test that reproduces the bug"), which gives stop-on-green a red test to turn green. It is the same text on every call, so the cached prefix still works.
 
-Trimming and the stable prefix pull in opposite directions: when a message becomes a stub the cached prefix is cut at that point. The stub depends only on the message and its age, so everything before it stays identical.
+Trimming and the provider's prompt cache pull in opposite directions: trimming shortens the history, but when a message becomes a stub the cached prefix is cut at that point. The stub depends only on the message and its age, so everything before it stays identical. `no-trim` against `all` measures the trade-off.
 
 **Never for confidential repos:** `cache` and `docs` are switched off (the session record lists the techniques really on). The budget check is also skipped for them, because the local tier is free.
 
@@ -132,7 +133,7 @@ Run `uv run pinch prove` to watch all four. Bifrost version checked: v2.5.0 (det
 
 **1. Reliability: failover with a notice.**
 Bifrost owns failover: each user's virtual key has a routing rule "cloud-a, then cloud-b, then local" (`gateway/config.json`).
-pinch only retries the gateway itself (3 tries, backoff, honours `Retry-After`) when the gateway is unreachable or answers 429/5xx after its fallbacks are used up. Then it
+pinch only retries the gateway itself when the gateway is unreachable or answers 5xx after its fallbacks are used up: 5 tries, waiting 2, 4, 8 and 16 s (or the `Retry-After` it is given), and it says so each time. That is long enough for a per-minute limit at the provider that took over: when the whole chain fails, Bifrost reports its first provider's error, so a Groq "try again in 6 s" arrives as the down provider's 502. Per-minute 429s are waited out separately (up to 8 times). Then it
 saves the session and prints `pinch --resume <id>`. Every reply tells pinch who answered (`extra_fields.routing_info` and `x-bifrost-routing-info-*` headers).
 When that differs from the previous reply, or the first reply came from a fallback, pinch prints a plain notice ("cloud-a did not answer (rate limited or down), so cloud-b ... took over") and records it in
 the session file (`provider_changed`) and the ledger (`provider`, `is_fallback`, `primary_provider`). The session is a JSONL file flushed after every step, so a crash loses nothing.
@@ -233,7 +234,7 @@ Rate limits: a per-minute HTTP 429 is waited out, never fatal. pinch's client an
 |---|---|
 | `baseline` | mini-swe-agent, its own tool-calling config, only the connection changed (litellm to Bifrost's OpenAI-compatible endpoint, `x-bf-vk` header added at call time) |
 | `none`, `all` | `pinch --savings none` / `--savings all`, both with the default style `brief` |
-| `no-<technique>` | `all` minus one of `context filememory smalledits testcompress trim pretest stopongreen cascade prefix cache` (the ablation; `no-cascade` only with `--small-model/--big-model`) |
+| `no-<technique>` | `all` minus one of `context filememory smalledits testcompress trim pretest stopongreen cascade cache` (the ablation; `no-cascade` only with `--small-model/--big-model`) |
 | `style-normal`, `style-tiny`, `style-caveman` | `all` with another response style (`brief` is `all`) |
 | `docs-on`, `docs-off` | set C only: with and without the Tavily `docs_lookup` tool |
 | `cache-twice` | the same task twice in one cache namespace, to show cache hits. Reported separately; never in the averages |
@@ -285,7 +286,7 @@ Sample, from `bench/results/mock-smoke.md` (**MOCK**: scripted model, 3 tasks, o
 What the stand-in model shows about the mechanism, not about any real model: with `pretest`, pinch runs the tests before the first call and the model skips running them itself. On the A exercise they start red, so the first correct fix is followed by a green run and stop-on-green fires (2 calls instead of 3). On the B task they start green, so the first prompt gets the one-line "tests currently pass" note and the green run after the fix does not end the run (rule `never_red`). The token counts come from the mock's size-based usage and mean nothing.
 
 Limits, also stated in each report: the sandbox has internet access (it needs the gateway), so an agent could fetch outside information; one sample per cell unless `--repeat` is raised; models are not deterministic.
-The default for trimming versus the stable prefix is unchanged; the ablation (`no-trim`, `no-prefix`) decides it with real cached-token counts.
+The default for trimming is unchanged; the ablation (`no-trim` against `all`) decides it with real cached-token counts.
 
 ## Tests
 

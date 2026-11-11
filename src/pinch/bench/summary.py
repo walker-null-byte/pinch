@@ -123,6 +123,18 @@ def mode_order(modes: set[str]) -> list[str]:
     return fixed + abl + rest
 
 
+def set_rows(counted: list[dict], set_: str) -> list[dict]:
+    """The rows of one set that feed the main table: phase 1 only, the cache-twice demonstration left out."""
+    return [r for r in counted if r["set"] == set_ and r.get("phase", 1) == 1 and r["mode"] != "cache-twice"]
+
+
+def group_by_mode(rows: list[dict]) -> dict[str, list[dict]]:
+    by_mode: dict[str, list[dict]] = defaultdict(list)
+    for r in rows:
+        by_mode[r["mode"]].append(r)
+    return by_mode
+
+
 # -- the report ---------------------------------------------------------------------------------
 
 def build(path: Path) -> tuple[str, list[dict]]:
@@ -150,12 +162,10 @@ def build(path: Path) -> tuple[str, list[dict]]:
     md.append("Tokens are provider-reported `usage` (input + output) through Bifrost. *Tokens per solved task* = all tokens the group spent, "
               "failed runs included, divided by the runs that passed. *vs baseline* compares that figure with mini-swe-agent's.\n")
     for s in sets:
-        rows_s = [r for r in counted if r["set"] == s and r.get("phase", 1) == 1 and r["mode"] != "cache-twice"]
+        rows_s = set_rows(counted, s)
         if not rows_s:
             continue
-        by_mode = defaultdict(list)
-        for r in rows_s:
-            by_mode[r["mode"]].append(r)
+        by_mode = group_by_mode(rows_s)
         base_tps = stats(by_mode["baseline"])["tokens_per_solved"] if "baseline" in by_mode else None
         lines = []
         for m in mode_order(set(by_mode)):
@@ -204,8 +214,8 @@ def build(path: Path) -> tuple[str, list[dict]]:
             md.append(f"### Set {s} ({st['all']['n']} paired runs per mode){tag}\n")
             md.append(table(["mode", "runs", "pass rate", "tokens / solved", "extra tokens without it", "share of savings",
                              "cached input share"], lines) + "\n")
-            if "no-trim" in st and "no-prefix" in st:
-                md.append(trim_vs_prefix(s, st))
+            if "no-trim" in st:
+                md.append(trim_vs_cache(s, st))
 
     # 3. styles
     style_present = [m for m in STYLE_MODES if any(r["mode"] == m for r in counted)]
@@ -279,16 +289,15 @@ def build(path: Path) -> tuple[str, list[dict]]:
     return "\n".join(md), csv_rows
 
 
-def trim_vs_prefix(set_: str, st: dict) -> str:
-    """Trimming old tool output shortens the history but changes the request prefix; a stable prefix lets the provider's prompt cache work.
-    The two pull in opposite directions, so the data decides: this prints what each did on the same tasks, with real cached-token counts."""
-    a, t, p = st["all"], st["no-trim"], st["no-prefix"]
+def trim_vs_cache(set_: str, st: dict) -> str:
+    """Trimming old tool output shortens the history but cuts the provider's cached prefix at the first stubbed message.
+    The two pull in opposite directions, so this prints what each did on the same tasks (`all` against `no-trim`), with real cached-token counts."""
+    a, t = st["all"], st["no-trim"]
     def move(x, ref):
         return rel(x, ref) if x is not None and ref else "n/a"
-    out = [f"**Trim versus stable prefix (set {set_}).** Provider-reported cached input tokens decide this; the default is left as is.\n",
-           f"- trim on, stable prefix on (`all`): {fmt(a['tokens_per_solved'])} tokens per solved task, {fmt(a['cached_share'], 'pct')} of input tokens served from the provider's prompt cache",
+    out = [f"**Trim versus the provider's prompt cache (set {set_}).** Provider-reported cached input tokens decide this; the default is left as is.\n",
+           f"- trim on (`all`): {fmt(a['tokens_per_solved'])} tokens per solved task, {fmt(a['cached_share'], 'pct')} of input tokens served from the provider's prompt cache",
            f"- trim off (`no-trim`): {fmt(t['tokens_per_solved'])} ({move(t['tokens_per_solved'], a['tokens_per_solved'])}), cached share {fmt(t['cached_share'], 'pct')}",
-           f"- prefix off (`no-prefix`): {fmt(p['tokens_per_solved'])} ({move(p['tokens_per_solved'], a['tokens_per_solved'])}), cached share {fmt(p['cached_share'], 'pct')}",
            "- Cached tokens are cheaper than fresh ones, so compare cost per solved task as well as tokens: see the main table. "
            "If the provider reports no cached tokens at all (cached share 0%), the data cannot favour either side.\n"]
     return "\n".join(out) + "\n"
@@ -317,7 +326,11 @@ def methodology(metas: list[dict], counted: list[dict], excluded: list[dict], mo
       "The benchmark key has no fallback chain, so a different model should never answer silently.")
     waits = sum(r.get("wait_seconds") or 0 for r in counted + excluded)
     rl = sum(r.get("rate_limit_waits") or 0 for r in counted + excluded)
-    L(f"- **Pacing and rate limits.** Both agents are paced the same way: at least {meta.get('min_call_interval', 'n/a')} s between model requests inside each agent process "
+    paces = sorted({m["min_call_interval"] for m in metas if m.get("min_call_interval") is not None})
+    pace = " / ".join(f"{p:g}" for p in paces) if paces else "n/a"
+    unpaced = sum(1 for m in metas if m.get("min_call_interval") is None)
+    pace_note = f" ({unpaced} earlier session(s) in this file ran before pacing was recorded)" if paces and unpaced else ""
+    L(f"- **Pacing and rate limits.** Both agents are paced the same way: at least {pace} s between model requests inside each agent process{pace_note} "
       "(`--min-call-interval`; pinch through `PINCH_MIN_CALL_INTERVAL`, mini-swe-agent through a wrapper around its model call that changes nothing else), and both wait out a per-minute "
       "HTTP 429 (the provider's \"retry in N s\", at most 120 s, up to 8 times) instead of failing. Only a per-day limit stops a run. "
       f"This report: {rl} rate-limit waits, {waits:,.0f} s spent waiting in total. **Times in the tables exclude those waits.** "

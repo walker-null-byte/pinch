@@ -221,14 +221,12 @@ class Agent:
         return TurnResult("budget", text)
 
     def build_request(self) -> list[dict]:
-        """System prompt first and byte-identical from call to call (technique `prefix`), then the history."""
+        """System prompt first and byte-identical from call to call, then the history. Nothing here changes per step, so provider prompt caching can work."""
         system = SYSTEM_PROMPT + "\n" + style_instruction(self.style)
         if "smalledits" in self.on:
             system += "\n" + SMALL_EDITS_PROMPT
         if self.tier == "local" and self.local_tools:
             system += "\n" + LOCAL_PROMPT
-        if "prefix" not in self.on:  # the baseline: a changing line at the very top defeats provider prompt caching
-            system = f"[pinch step {self.step}]\n" + system
         history = self.messages
         if "trim" in self.on:
             protected = set(self.latest_read.values()) | (self.memory.protected() if self.memory else set())
@@ -486,6 +484,10 @@ class Agent:
         if name == "rate_limit_wait":
             who = data.get("provider") or "the model provider"
             self.say(f"Rate limited by {who}: waiting {data['seconds']:.0f} s, then retrying (try {data['attempt']} of {data['of']}). Your session is saved.")
+        elif name == "server_retry":
+            what = "The gateway could not be reached" if data.get("kind") == "unreachable" else \
+                f"The gateway answered HTTP {data.get('status') or '5xx'} (every provider it tried failed for now)"
+            self.say(f"{what}: waiting {data['seconds']:.0f} s, then retrying (retry {data['attempt']} of {data['of']}). Your session is saved.")
 
     def emit(self, event: str, **data) -> None:
         self.session.append("event", event=event, **data)
