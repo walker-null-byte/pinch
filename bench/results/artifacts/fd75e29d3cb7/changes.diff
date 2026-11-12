@@ -1,0 +1,304 @@
+diff --git a/work/.pinch/outputs/20261112-145605-7c6180-proposed-step11.txt b/.pinch/outputs/20261112-145605-7c6180-proposed-step11.txt
+new file mode 100644
+index 0000000..6e7528d
+--- /dev/null
++++ b/.pinch/outputs/20261112-145605-7c6180-proposed-step11.txt
+@@ -0,0 +1,35 @@
++......FF...................                                              [100%]
++=================================== FAILURES ===================================
++______________________ TLRUCacheTest.test_getsizeof_param ______________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_param>
++
++    def test_getsizeof_param(self):
++>       self._test_getsizeof(self.Cache(maxsize=3, getsizeof=lambda x: x))
++
++tests/__init__.py:285: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++____________________ TLRUCacheTest.test_getsizeof_subclass _____________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_subclass>
++
++    def test_getsizeof_subclass(self):
++        class Cache(self.Cache):
++            @staticmethod
++            def getsizeof(value):
++                return value
++    
++>       self._test_getsizeof(Cache(maxsize=3))
++
++tests/__init__.py:302: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++=========================== short test summary info ============================
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_param - AssertionErr...
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_subclass - Assertion...
++2 failed, 25 passed in 0.07s
+diff --git a/work/.pinch/outputs/20261112-145605-7c6180-proposed-step17.txt b/.pinch/outputs/20261112-145605-7c6180-proposed-step17.txt
+new file mode 100644
+index 0000000..6e7528d
+--- /dev/null
++++ b/.pinch/outputs/20261112-145605-7c6180-proposed-step17.txt
+@@ -0,0 +1,35 @@
++......FF...................                                              [100%]
++=================================== FAILURES ===================================
++______________________ TLRUCacheTest.test_getsizeof_param ______________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_param>
++
++    def test_getsizeof_param(self):
++>       self._test_getsizeof(self.Cache(maxsize=3, getsizeof=lambda x: x))
++
++tests/__init__.py:285: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++____________________ TLRUCacheTest.test_getsizeof_subclass _____________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_subclass>
++
++    def test_getsizeof_subclass(self):
++        class Cache(self.Cache):
++            @staticmethod
++            def getsizeof(value):
++                return value
++    
++>       self._test_getsizeof(Cache(maxsize=3))
++
++tests/__init__.py:302: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++=========================== short test summary info ============================
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_param - AssertionErr...
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_subclass - Assertion...
++2 failed, 25 passed in 0.07s
+diff --git a/work/.pinch/outputs/20261112-145605-7c6180-step13-KLzxnP.txt b/.pinch/outputs/20261112-145605-7c6180-step13-KLzxnP.txt
+new file mode 100644
+index 0000000..985fa80
+--- /dev/null
++++ b/.pinch/outputs/20261112-145605-7c6180-step13-KLzxnP.txt
+@@ -0,0 +1,35 @@
++......FF...................                                              [100%]
++=================================== FAILURES ===================================
++______________________ TLRUCacheTest.test_getsizeof_param ______________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_param>
++
++    def test_getsizeof_param(self):
++>       self._test_getsizeof(self.Cache(maxsize=3, getsizeof=lambda x: x))
++
++tests/__init__.py:285: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++____________________ TLRUCacheTest.test_getsizeof_subclass _____________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_subclass>
++
++    def test_getsizeof_subclass(self):
++        class Cache(self.Cache):
++            @staticmethod
++            def getsizeof(value):
++                return value
++    
++>       self._test_getsizeof(Cache(maxsize=3))
++
++tests/__init__.py:302: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++=========================== short test summary info ============================
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_param - AssertionErr...
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_subclass - Assertion...
++2 failed, 25 passed in 0.08s
+diff --git a/work/.pinch/outputs/20261112-145605-7c6180-step24-f0lLLU.txt b/.pinch/outputs/20261112-145605-7c6180-step24-f0lLLU.txt
+new file mode 100644
+index 0000000..6e7528d
+--- /dev/null
++++ b/.pinch/outputs/20261112-145605-7c6180-step24-f0lLLU.txt
+@@ -0,0 +1,35 @@
++......FF...................                                              [100%]
++=================================== FAILURES ===================================
++______________________ TLRUCacheTest.test_getsizeof_param ______________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_param>
++
++    def test_getsizeof_param(self):
++>       self._test_getsizeof(self.Cache(maxsize=3, getsizeof=lambda x: x))
++
++tests/__init__.py:285: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++____________________ TLRUCacheTest.test_getsizeof_subclass _____________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_subclass>
++
++    def test_getsizeof_subclass(self):
++        class Cache(self.Cache):
++            @staticmethod
++            def getsizeof(value):
++                return value
++    
++>       self._test_getsizeof(Cache(maxsize=3))
++
++tests/__init__.py:302: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++=========================== short test summary info ============================
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_param - AssertionErr...
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_subclass - Assertion...
++2 failed, 25 passed in 0.07s
+diff --git a/work/.pinch/outputs/20261112-145605-7c6180-step30-xNMuGh.txt b/.pinch/outputs/20261112-145605-7c6180-step30-xNMuGh.txt
+new file mode 100644
+index 0000000..985fa80
+--- /dev/null
++++ b/.pinch/outputs/20261112-145605-7c6180-step30-xNMuGh.txt
+@@ -0,0 +1,35 @@
++......FF...................                                              [100%]
++=================================== FAILURES ===================================
++______________________ TLRUCacheTest.test_getsizeof_param ______________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_param>
++
++    def test_getsizeof_param(self):
++>       self._test_getsizeof(self.Cache(maxsize=3, getsizeof=lambda x: x))
++
++tests/__init__.py:285: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++____________________ TLRUCacheTest.test_getsizeof_subclass _____________________
++
++self = <tests.test_tlru.TLRUCacheTest testMethod=test_getsizeof_subclass>
++
++    def test_getsizeof_subclass(self):
++        class Cache(self.Cache):
++            @staticmethod
++            def getsizeof(value):
++                return value
++    
++>       self._test_getsizeof(Cache(maxsize=3))
++
++tests/__init__.py:302: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++tests/__init__.py:274: in _test_getsizeof
++    self.assertEqual(1, len(cache))
++E   AssertionError: 1 != 0
++=========================== short test summary info ============================
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_param - AssertionErr...
++FAILED tests/test_tlru.py::TLRUCacheTest::test_getsizeof_subclass - Assertion...
++2 failed, 25 passed in 0.08s
+diff --git a/src/cachetools/__init__.py b/src/cachetools/__init__.py
+index 350122c..e5c4521 100644
+--- a/src/cachetools/__init__.py
++++ b/src/cachetools/__init__.py
+@@ -627,19 +627,21 @@ class TLRUCache(_TimedCache):
+         else:
+             return cache_getitem(self, key)
+ 
+-    def __setitem__(self, key, value, cache_setitem=Cache.__setitem__):
++    def __setitem__(self, key, value, cache_setitem=Cache.__setitem__, cache_delitem=Cache.__delitem__):
+         with self.timer as time:
+             expires = self.__ttu(key, value, time)
++            self.expire(time)
++            if key in self:
++                cache_delitem(self, key)
++                try:
++                    self.__items.pop(key).removed = True
++                except KeyError:
++                    pass
+             if not (time < expires):
+                 return  # skip expired items
+-            self.expire(time)
+             cache_setitem(self, key, value)
+         # removing an existing item would break the heap structure, so
+         # only mark it as removed for now
+-        try:
+-            self.__getitem(key).removed = True
+-        except KeyError:
+-            pass
+         self.__items[key] = item = TLRUCache._Item(key, expires)
+         heapq.heappush(self.__order, item)
+ 
+diff --git a/work/tests/repro_tlru.py b/tests/repro_tlru.py
+new file mode 100644
+index 0000000..2c226d4
+--- /dev/null
++++ b/tests/repro_tlru.py
+@@ -0,0 +1,30 @@
++from cachetools import TLRUCache
++
++def test_tlru_overwrite_expired():
++    def ttu(_key, value, now):
++        return now + value
++
++    timer = [0]
++    def some_timer():
++        return timer[0]
++
++    cache = TLRUCache(maxsize=2, ttu=ttu, timer=some_timer)
++    cache[1] = 5
++    assert cache[1] == 5
++    assert len(cache) == 1
++    
++    # Overwrite with expired value
++    cache[1] = 0
++    assert 1 not in cache
++    assert cache.get(1) is None
++    assert len(cache) == 0
++    assert cache.currsize == 0
++    assert set(cache) == set()
++
++if __name__ == "__main__":
++    try:
++        test_tlru_overwrite_expired()
++        print("Test passed!")
++    except AssertionError as e:
++        print("Test failed!")
++        raise e
+diff --git a/tests/test_tlru.py b/tests/test_tlru.py
+index b1263d7..b0dac65 100644
+--- a/tests/test_tlru.py
++++ b/tests/test_tlru.py
+@@ -144,6 +144,26 @@ class TLRUCacheTest(unittest.TestCase, CacheTestMixin):
+         self.assertEqual(cache[4], 4)
+         self.assertEqual(cache[5], 5)
+ 
++    def test_overwrite_existing_with_expired(self):
++        # Overwriting an existing key with an already-expired value must not
++        # silently retain the previous value: the assignment cannot store the
++        # new (dead-on-arrival) value, so the key has to be evicted instead.
++        def ttu(_k, value, t):
++            return t + value
++
++        cache = TLRUCache[int, int, int](maxsize=2, ttu=ttu, timer=Timer())
++        cache[1] = 5
++        self.assertEqual(cache[1], 5)
++        self.assertEqual(len(cache), 1)
++        self.assertEqual(cache.currsize, 1)
++
++        cache[1] = 0  # ttu -> t, i.e. not (t < t): immediately expired
++        self.assertNotIn(1, cache)
++        self.assertIsNone(cache.get(1))
++        self.assertEqual(len(cache), 0)
++        self.assertEqual(cache.currsize, 0)
++        self.assertEqual(set(cache), set())
++
+     def test_ttu_expire(self):
+         def ttu(_k, _v, t):
+             return t + 3

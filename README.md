@@ -223,6 +223,36 @@ through the same Bifrost gateway, on the same model. Pass or fail is decided out
 **Every number the harness produces from mock providers is labelled MOCK** (console banner, `"mock": true` in each row, MOCK in the report titles). The mock model is a script; those numbers only show that the pipeline works.
 The only real-model result so far is a 3-run smoke on one easy exercise ([`bench/results/real-smoke.md`](bench/results/real-smoke.md): baseline versus pinch `none` and `all`). **One task is not evidence of savings**: it only shows the pipeline works against real models. The full run is not done.
 
+### What the first set B runs changed
+
+On the first real runs of set B (real bugs in real libraries, `gemini-3.5-flash-lite`), pinch solved 1 of 5 tasks and mini-swe-agent solved 5 of 6. pinch spent its 30 steps reading and rarely edited. The saved sessions showed agent bugs, not just a weak model:
+
+- **Tool discovery.** Lazy mode showed the model only `search_tools`, `get_tool` and `call_tool`, and the model used `search_tools` to search code. In one run it made 19 calls to `search_tools` with the same query. In another, 13 of its first 24 calls went to finding a tool or repairing a wrong tool or argument name (`path` for `file_path`, `run_shell`).
+- **Rereading.** `trim` cut every file read older than 4 steps and told the model to run it again. On a 776-line file the model read the lines starting near line 625 nine times.
+- **grep.** Given a file as `root`, or a path such as `parse/__init__.py` as `include`, `grep_search` found nothing, because grep matches `include` against file names only.
+
+Commit `4505f15` fixes these:
+- Lazy mode also sends short schemas for the 6 core tools: read, grep, edit, write, run a command, list a folder. That costs about 430 more tokens per request (2,793 schema bytes instead of 1,056).
+- `search_tools` says it does not search code, and common wrong argument names are mapped to the right ones.
+- `trim` keeps a file read until a later read shows the same lines.
+- `grep_search` accepts a file or a path.
+- A repeated read-only call is answered from memory.
+- After 8 steps of only reading, pinch tells the model how many steps are left.
+- The first prompt names the test command that works.
+
+As a check, the four failed tasks were rerun with `all` on `gemini-3.1-flash-lite` ([`bench/results/fixcheck.jsonl`](bench/results/fixcheck.jsonl); this ran one commit earlier, before the last two fixes in the list):
+
+| Task | Result | Calls | Tokens | mini-swe-agent, same model |
+|---|---|---|---|---|
+| boltons | solved | 8 | 75,741 | 22 calls, 101,532 tokens |
+| more-itertools | solved | 17 | 89,928 | 30 calls, 145,563 tokens |
+| cachetools | failed | 30 | | solved |
+| parse | failed | 30 | | solved |
+
+The two failures now come from a wrong fix after real debugging (reproducing the bug, editing, testing ideas with `python -c`), not from a reading loop.
+
+Every pinch row from before the fix, in both result files, was moved to `bench/results/run1-superseded.jsonl` and `run2-superseded.jsonl`, with the reason in each row, and is being run again. mini-swe-agent's rows are unaffected and stay. Every pinch number in the reports comes from the same commit.
+
 ### Commands
 
 ```sh

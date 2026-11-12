@@ -1,0 +1,44 @@
+The `more_itertools.bucket` class used a truthy check (`validator or ...`) to initialize its validator, which caused it to incorrectly use the default validator when a provided validator was falsey. This has been fixed to check for `None` explicitly.
+
+```python
+# more_itertools/more.py
+
+# In class bucket.__init__:
+self._validator = validator if validator is not None else (lambda x: True)
+```
+
+--- stderr ---
+pinch session 20261112-145843-4cd02e  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+pinch proposes running the tests once before starting.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_more.py -k Bucket"}
+[read] grep_search
+[read] list_directory
+[read] grep_search
+Auto-approved (shell): run_command {"command": "grep -n \"def bucket\" more_itertools/more.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "grep -i \"bucket\" more_itertools/more.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "grep -n \"class bucket\" more_itertools/more.py"}
+[shell] run_command
+[read] read_file
+Auto-approved (write): write_file {"file_path": "reproduce_issue.py", "content": "import more_itertools as mi\n\nclass AllowedKeys(set):\n    def __call__(self, key):\n        return key in self\n\ndef test_bucket_validator_falsey():\n    allowed = AllowedKeys()  # empty, so bool(allowed) is False\n    # This should only contain ele...
+[write] write_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_more.py -k Bucket"}
+Auto-approved (shell): run_command {"command": "python3 reproduce_issue.py"}
+[shell] run_command
+[read] read_file
+[read] read_file
+Auto-approved (write): edit_file {"new_string": "        self._validator = validator if validator is not None else (lambda x: True)", "old_string": "        self._validator = validator or (lambda x: True)", "file_path": "more_itertools/more.py"}
+[write] edit_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_more.py -k Bucket"}
+Auto-approved (shell): run_command {"command": "python3 reproduce_issue.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest -q tests/test_more.py -k Bucket"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "rm reproduce_issue.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "# No further actions needed."}
+[shell] run_command

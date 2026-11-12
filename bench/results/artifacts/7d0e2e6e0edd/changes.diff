@@ -1,0 +1,181 @@
+diff --git a/work/.pinch/outputs/20261112-145459-b21c36-step5-pUtKTl.txt b/.pinch/outputs/20261112-145459-b21c36-step5-pUtKTl.txt
+new file mode 100644
+index 0000000..8653894
+--- /dev/null
++++ b/.pinch/outputs/20261112-145459-b21c36-step5-pUtKTl.txt
+@@ -0,0 +1,104 @@
++============================= test session starts ==============================
++platform linux -- Python 3.12.15, pytest-8.4.2, pluggy-1.7.0
++rootdir: /work
++configfile: pyproject.toml
++collected 1 item
++
++tests/test_backoff_fix.py F                                              [100%]
++
++=================================== FAILURES ===================================
++____________________________ test_backoff_factor_1 _____________________________
++
++    def test_backoff_factor_1():
++        # With an explicit count it already works and must keep working
++        assert backoff(1, 10, count=5, factor=1.0) == [1.0, 1.0, 1.0, 1.0, 1.0]
++        assert backoff(2, 10, count=3, factor=1.0) == [2.0, 2.0, 2.0]
++    
++        # When start == stop and there is no count, a constant factor needs no growth
++>       assert backoff(5, 5, factor=1.0) == [5.0]
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++tests/test_backoff_fix.py:10: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++boltons/iterutils.py:579: in backoff
++    return list(backoff_iter(start, stop, count=count,
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++start = 5.0, stop = 5.0, count = None, factor = 1.0, jitter = False
++
++    def backoff_iter(start, stop, count=None, factor=2.0, jitter=False):
++        """Generates a sequence of geometrically-increasing floats, suitable
++        for usage with `exponential backoff`_. Starts with *start*,
++        increasing by *factor* until *stop* is reached, optionally
++        stopping iteration once *count* numbers are yielded. *factor*
++        defaults to 2. In general retrying with properly-configured
++        backoff creates a better-behaved component for a larger service
++        ecosystem.
++    
++        .. _exponential backoff: https://en.wikipedia.org/wiki/Exponential_backoff
++    
++        >>> list(backoff_iter(1.0, 10.0, count=5))
++        [1.0, 2.0, 4.0, 8.0, 10.0]
++        >>> list(backoff_iter(1.0, 10.0, count=8))
++        [1.0, 2.0, 4.0, 8.0, 10.0, 10.0, 10.0, 10.0]
++        >>> list(backoff_iter(0.25, 100.0, factor=10))
++        [0.25, 2.5, 25.0, 100.0]
++    
++        A simplified usage example:
++    
++        .. code-block:: python
++    
++          for timeout in backoff_iter(0.25, 5.0):
++              try:
++                  res = network_call()
++                  break
++              except Exception as e:
++                  log(e)
++                  time.sleep(timeout)
++    
++        An enhancement for large-scale systems would be to add variation,
++        or *jitter*, to timeout values. This is done to avoid a thundering
++        herd on the receiving end of the network call.
++    
++        Finally, for *count*, the special value ``'repeat'`` can be passed to
++        continue yielding indefinitely.
++    
++        Args:
++    
++            start (float): Positive number for baseline.
++            stop (float): Positive number for maximum.
++            count (int): Number of steps before stopping
++                iteration. Defaults to the number of steps between *start* and
++                *stop*. Pass the string, `'repeat'`, to continue iteration
++                indefinitely.
++            factor (float): Rate of exponential increase. Defaults to `2.0`,
++                e.g., `[1, 2, 4, 8, 16]`.
++            jitter (float): A factor between `-1.0` and `1.0`, used to
++                uniformly randomize and thus spread out timeouts in a distributed
++                system, avoiding rhythm effects. Positive values use the base
++                backoff curve as a maximum, negative values use the curve as a
++                minimum. Set to 1.0 or `True` for a jitter approximating
++                Ethernet's time-tested backoff solution. Defaults to `False`.
++    
++        """
++        start = float(start)
++        stop = float(stop)
++        factor = float(factor)
++        if start < 0.0:
++            raise ValueError('expected start >= 0, not %r' % start)
++        if factor < 1.0:
++            raise ValueError('expected factor >= 1.0, not %r' % factor)
++        if stop == 0.0:
++            raise ValueError('expected stop >= 0')
++        if stop < start:
++            raise ValueError('expected stop >= start, not %r' % stop)
++        if count is None:
++            denom = start if start else 1
++>           count = 1 + math.ceil(math.log(stop/denom, factor))
++                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E           ZeroDivisionError: float division by zero
++
++boltons/iterutils.py:651: ZeroDivisionError
++=========================== short test summary info ============================
++FAILED tests/test_backoff_fix.py::test_backoff_factor_1 - ZeroDivisionError: ...
++============================== 1 failed in 0.04s ===============================
+diff --git a/boltons/iterutils.py b/boltons/iterutils.py
+index 4e7a37f..d483430 100644
+--- a/boltons/iterutils.py
++++ b/boltons/iterutils.py
+@@ -647,9 +647,15 @@ def backoff_iter(start, stop, count=None, factor=2.0, jitter=False):
+     if stop < start:
+         raise ValueError('expected stop >= start, not %r' % stop)
+     if count is None:
+-        denom = start if start else 1
+-        count = 1 + math.ceil(math.log(stop/denom, factor))
+-        count = count if start else count + 1
++        if factor == 1.0:
++            if start == stop:
++                count = 1
++            else:
++                raise ValueError('cannot infer count with factor=1.0 and start != stop')
++        else:
++            denom = start if start else 1
++            count = 1 + math.ceil(math.log(stop/denom, factor))
++            count = count if start else count + 1
+     if count != 'repeat' and count < 0:
+         raise ValueError('count must be positive or "repeat", not %r' % count)
+     if jitter:
+diff --git a/work/tests/test_backoff_fix.py b/tests/test_backoff_fix.py
+new file mode 100644
+index 0000000..e3fbd3f
+--- /dev/null
++++ b/tests/test_backoff_fix.py
+@@ -0,0 +1,16 @@
++import pytest
++from boltons.iterutils import backoff
++
++def test_backoff_factor_1():
++    # With an explicit count it already works and must keep working
++    assert backoff(1, 10, count=5, factor=1.0) == [1.0, 1.0, 1.0, 1.0, 1.0]
++    assert backoff(2, 10, count=3, factor=1.0) == [2.0, 2.0, 2.0]
++
++    # When start == stop and there is no count, a constant factor needs no growth
++    assert backoff(5, 5, factor=1.0) == [5.0]
++
++    # When start != stop and there is no count, raise ValueError
++    with pytest.raises(ValueError):
++        backoff(1, 10, factor=1.0)
++    with pytest.raises(ValueError):
++        backoff(0, 10, factor=1.0)
+diff --git a/tests/test_iterutils.py b/tests/test_iterutils.py
+index e62e36c..8e3ae8a 100644
+--- a/tests/test_iterutils.py
++++ b/tests/test_iterutils.py
+@@ -489,6 +489,21 @@ def test_backoff_validation():
+         backoff(2, 8, jitter=20)
+ 
+ 
++def test_backoff_constant_factor():
++    from boltons.iterutils import backoff
++
++    # factor=1.0 (constant backoff) is allowed with an explicit count
++    assert backoff(1, 10, count=5, factor=1.0) == [1.0, 1.0, 1.0, 1.0, 1.0]
++    assert backoff(2, 10, count=3, factor=1.0) == [2.0, 2.0, 2.0]
++    # start == stop needs no growth, so an inferred count yields a single value
++    assert backoff(5, 5, factor=1.0) == [5.0]
++    # inferring the count from a non-growing factor is impossible, not a crash
++    with pytest.raises(ValueError):
++        backoff(1, 10, factor=1.0)
++    with pytest.raises(ValueError):
++        backoff(0, 10, factor=1.0)
++
++
+ def test_backoff_jitter():
+     from boltons.iterutils import backoff
+ 
