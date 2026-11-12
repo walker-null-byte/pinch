@@ -22,7 +22,7 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 from .modes import ABLATABLE
-from .summary import group_by_mode, load, mode_order, paired, rel, set_rows, stats
+from .summary import group_by_mode, load, main_rows, mode_order, paired, rel, stats
 
 FONT = "system-ui, -apple-system, 'Segoe UI', sans-serif"
 
@@ -328,7 +328,7 @@ def build_charts(path: Path) -> list[Chart]:
     _, counted, _ = load(path)
     charts: list[Chart] = []
     for s in sorted({r["set"] for r in counted}):
-        rows_s = set_rows(counted, s)
+        rows_s = main_rows(counted, s)[0]
         for measure in ("tokens", "cost"):
             ch = emphasis_chart(s, rows_s, measure) if rows_s else None
             if ch:

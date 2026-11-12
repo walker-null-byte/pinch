@@ -8,7 +8,8 @@ Rules the report follows (and prints in its methodology section):
 - Token statistics use only runs where every model reply carried a `usage` block (usage_complete). Pass rates use every counted run.
 - "Tokens per solved task" = all tokens spent by the runs in the group (solved or not) / number of runs that passed.
   Failed runs cost tokens too, and this is the number a user pays per working result.
-- Ablation, style and docs tables compare modes on the SAME tasks and repeats only (paired), so a partial run stays fair.
+- Every table compares modes on the SAME tasks and repeats only (paired), so a partial run stays fair. The main table pairs
+  baseline, none and all; runs of a set that are missing in one of them are left out of it and counted under the table.
 - Cost is provider-reported tokens times the price table (src/pinch/prices.toml), the same table for both agents.
 """
 
@@ -128,6 +129,16 @@ def set_rows(counted: list[dict], set_: str) -> list[dict]:
     return [r for r in counted if r["set"] == set_ and r.get("phase", 1) == 1 and r["mode"] != "cache-twice"]
 
 
+def main_rows(counted: list[dict], set_: str) -> tuple[list[dict], int]:
+    """The main table's rows for one set: baseline, none and all, only on the (task, repeat) pairs that finished in every one of
+    them that is present. Returns the rows and how many other main-mode runs of the set were left out."""
+    rows_s = [r for r in set_rows(counted, set_) if r["mode"] in MAIN_ORDER]
+    modes = [m for m in MAIN_ORDER if any(r["mode"] == m for r in rows_s)]
+    groups = paired(rows_s, modes)
+    kept = [r for m in modes for r in groups.get(m, [])]
+    return kept, len(rows_s) - len(kept)
+
+
 def group_by_mode(rows: list[dict]) -> dict[str, list[dict]]:
     by_mode: dict[str, list[dict]] = defaultdict(list)
     for r in rows:
@@ -162,7 +173,7 @@ def build(path: Path) -> tuple[str, list[dict]]:
     md.append("Tokens are provider-reported `usage` (input + output) through Bifrost. *Tokens per solved task* = all tokens the group spent, "
               "failed runs included, divided by the runs that passed. *vs baseline* compares that figure with mini-swe-agent's.\n")
     for s in sets:
-        rows_s = set_rows(counted, s)
+        rows_s, left_out = main_rows(counted, s)
         if not rows_s:
             continue
         by_mode = group_by_mode(rows_s)
@@ -180,6 +191,9 @@ def build(path: Path) -> tuple[str, list[dict]]:
         md.append(f"### Set {s}: {task_count} task{'s' if task_count != 1 else ''}{tag}\n")
         md.append(table(["mode", "runs", "solved", "avg tokens", "median tokens", "tokens / solved", "vs baseline", "cost / solved",
                          "avg calls", "median time (no waits)"], lines) + "\n")
+        if left_out:
+            md.append(f"Paired: only tasks that finished in every mode above. {left_out} other run{'s' if left_out != 1 else ''} of set {s} "
+                      f"{'are' if left_out != 1 else 'is'} left out of this table until the other modes finish {'them' if left_out != 1 else 'it'}.\n")
 
     # 2. ablation
     abl_modes = [m for m in ["none", "all"] + [f"no-{t}" for t in ABLATABLE] if any(r["mode"] == m for r in counted)]

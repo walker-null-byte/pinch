@@ -47,6 +47,18 @@ def test_infra_rows_are_kept_but_left_out_and_a_later_retry_wins(tmp_path):
     assert "| rate_limit | 1 |" in text and "| quota | 1 |" in text and "left out of every number: 2" in text
 
 
+def test_the_main_table_compares_modes_on_the_same_tasks_only(tmp_path):
+    """A partial run: the baseline finished tasks a, b and c, pinch only a and b. Task c must not count for the baseline."""
+    rows = [row("baseline", "a", True, 1000), row("baseline", "b", True, 1000), row("baseline", "c", False, 90000),
+            row("all", "a", True, 500), row("all", "b", True, 500)]
+    f = tmp_path / "r.jsonl"
+    write(f, rows)
+    text, csv_rows = build(f)
+    base = next(r for r in csv_rows if r["table"] == "main" and r["mode"] == "baseline")
+    assert base["n"] == 2 and base["tokens_per_solved"] == 1000
+    assert "-50%" in text and "1 other run of set A is left out of this table" in text
+
+
 def test_ablation_share_of_savings_uses_paired_tasks(tmp_path):
     rows = []
     for t in "ab":

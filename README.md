@@ -319,6 +319,7 @@ pinch runs with `PYTHONDONTWRITEBYTECODE=1` set for every tool it executes (and 
 ### Reading the report
 
 `summarize` writes per set and mode: pass rate, average and median tokens, **tokens per solved task** (all tokens spent, failed runs included, divided by runs that passed), cost per solved task, calls and time; then an ablation table (each technique's extra tokens and share of the total saving, on paired tasks), a style table, a docs on/off table and the same-task-twice table.
+Every table compares modes on the same tasks only (paired): while a run is unfinished, a task that one mode has not reached yet is left out for all of them, and the report says how many runs that leaves out.
 The methodology (models, task counts, how pass is checked, auto-approval, what was excluded and why) is written into the report itself.
 
 Sample, from `bench/results/mock-smoke.md` (**MOCK**: scripted model, 3 tasks, one run each; one of the A tasks is deliberately unsolved by the stand-in model to exercise the failing path):
