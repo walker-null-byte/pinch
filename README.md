@@ -42,11 +42,32 @@ uv run pinch ledger <session id printed at startup>
 
 ## What it does
 
+```mermaid
+flowchart TB
+  U([you]) -->|task| CLI[pinch CLI]
+  subgraph pinch["pinch (your machine)"]
+    CLI --> LOOP[agent loop]
+    LOOP -->|"before each call:<br/>estimate cost vs remaining budget"| BUD{budget<br/>check}
+    LOOP -->|tool call| POL{policy:<br/>confidential?}
+    POL --> GATE{approval gate<br/>read: free<br/>write / shell / git: ask}
+    GATE -->|approved| TOOLS[coding tools<br/>lazy schemas]
+    TOOLS -->|"result, compressed;<br/>unchanged files not resent"| LOOP
+    LOOP -.->|"docs_lookup (opt.)"| TAV[(Tavily)]
+    LOOP --> LED[(session + ledger<br/>saved every step)]
+  end
+  BUD -->|"OpenAI-compatible chat<br/>+ virtual key"| BF
+  subgraph BF["Bifrost gateway"]
+    VK[virtual keys:<br/>budgets, allowed providers]
+    RT[routing rules:<br/>fallback chain]
+    CA[(semantic cache<br/>opt-in per request)]
+  end
+  RT --> G[Gemini<br/>flash-lite / flash]
+  RT -.->|"down or rate-limited"| Q[Groq<br/>qwen3.8-27b]
+  RT -.-> L[local Gemma 4<br/>LM Studio]
+  VK ==>|"confidential key:<br/>local only, else 403"| L
 ```
-user -> pinch CLI -> agent loop -> model (OpenAI-compatible chat + tools)
-                        |
-                        +-> tool call -> policy block? -> approval gate -> run -> result back to the model
-```
+
+Text version: you → pinch CLI → agent loop → (budget check) → Bifrost → model. Each tool call goes through the policy check, then the approval gate, then runs, and its result goes back to the model. Bifrost holds the budgets, the fallback chain and the local-only key for confidential repos. pinch reads them from Bifrost's admin API and enforces them before it calls.
 
 | Piece | File | Notes |
 |---|---|---|
@@ -129,7 +150,7 @@ Byte counts, not provider-reported tokens. Code Mode then needs extra calls to r
 
 ## How each mandatory requirement is enforced
 
-Run `uv run pinch prove` to watch all four. Bifrost version checked: v2.5.0 (details and doc links in `gateway/README.md`).
+Run `uv run pinch prove` to watch all four. To see each one live against real providers, `bash scripts/demo.sh <scene>` runs it scene by scene ([docs/DEMO.md](docs/DEMO.md)). Bifrost version checked: v2.5.0 (details and doc links in `gateway/README.md`).
 
 **1. Reliability: failover with a notice.**
 Bifrost owns failover: each user's virtual key has a routing rule "cloud-a, then cloud-b, then local" (`gateway/config.json`).
