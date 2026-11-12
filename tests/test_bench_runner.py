@@ -270,3 +270,14 @@ def test_an_agent_killed_at_the_wall_time_limit_is_a_timeout_and_still_checked(t
     b = Outcome(agent="mini", infra="bad_request", stop="error")
     runner.settle_timeout(b, timed_out=False)
     assert b.infra == "bad_request"
+
+
+def test_the_diff_leaves_out_pinchs_scratch_folder(tmp_path):
+    for side in ("pristine", "work"):
+        (tmp_path / side).mkdir()
+        (tmp_path / side / "mod.py").write_text("x = 1\n")
+    (tmp_path / "work" / "mod.py").write_text("x = 2\n")
+    (tmp_path / "work" / ".pinch" / "outputs").mkdir(parents=True)
+    (tmp_path / "work" / ".pinch" / "outputs" / "log.txt").write_text("a saved test log\n")
+    diff, files = runner.git_diff(tmp_path)
+    assert files == ["mod.py"] and ".pinch" not in diff and "+x = 2" in diff

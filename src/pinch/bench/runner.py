@@ -12,6 +12,7 @@ time); quota or budget exhaustion and bad credentials stop the run cleanly so it
 from __future__ import annotations
 
 import json
+import re
 import os
 import random
 import shutil
@@ -129,6 +130,9 @@ def git_diff(base: Path) -> tuple[str, list[str]]:
     """Diff of base/pristine against base/work, with the folder names stripped from the paths."""
     r = subprocess.run(["git", "diff", "--no-index", "--no-color", "--", "pristine", "work"], capture_output=True, text=True, cwd=base)
     text = r.stdout.replace("a/pristine/", "a/").replace("b/work/", "b/")
+    # pinch's own scratch folder (full test logs that testcompress saved) is not a change to the code
+    sections = re.split(r"(?m)^(?=diff --git )", text)
+    text = "".join(s for s in sections if not re.match(r"diff --git \S+ b/\.pinch/", s))
     files = sorted({ln.split(" b/", 1)[1] for ln in text.splitlines() if ln.startswith("diff --git") and " b/" in ln})
     return text, files
 

@@ -4,7 +4,13 @@ No MCP transport is involved. We import coding-tools' server file, which fills a
 registry, and call the registry directly. Two modes decide what the model is shown:
 
   full  every tool schema is sent on every request
-  lazy  only TurboMCP's 3 meta-tools are sent: search_tools, get_tool, call_tool
+  lazy  TurboMCP's 3 meta-tools (search_tools, get_tool, call_tool) plus short schemas for the 6 core tools
+        every coding task needs (CORE_TOOLS). The other 28 tools are found with search_tools.
+
+Why the core tools are always shown: in our first real-repo benchmark runs (set B), a small model with only the
+meta-tools spent about a third of its steps on tool discovery. It used search_tools to search code, guessed argument
+names (`path` for `file_path`), and called tools that do not exist (`run_shell`). The core schemas cost about
+400 tokens per request, and the provider caches them with the system prompt.
 
 pinch itself runs every tool, so the approval gate can look at the real tool name even when
 the model reaches it through `call_tool` (see `parse_call`).
@@ -54,11 +60,41 @@ SMALL_EDIT_DESCRIPTIONS = {
 }
 
 
+# Shown directly in lazy mode, with short descriptions. Argument names match coding-tools exactly.
+CORE_TOOLS: dict[str, tuple[str, dict[str, str], tuple[str, ...]]] = {
+    "read_file": ("Read a file. For a long file read part of it: offset is the first line (1-based), limit the number of lines.",
+                  {"file_path": "string", "offset": "integer", "limit": "integer"}, ("file_path",)),
+    "grep_search": ("Search file contents for a regex. root is a directory or a single file; include is a file-name glob such as '*.py'.",
+                    {"pattern": "string", "root": "string", "include": "string"}, ("pattern",)),
+    "edit_file": ("Change an existing file: replace one exact piece of text (old_string, copied from what you read) with new_string.",
+                  {"file_path": "string", "old_string": "string", "new_string": "string"}, ("file_path", "old_string", "new_string")),
+    "write_file": ("Write a whole file.", {"file_path": "string", "content": "string"}, ("file_path", "content")),
+    "run_command": ("Run a shell command in the repo: the tests, or python -c to check an idea. Pipes and && work.",
+                    {"command": "string"}, ("command",)),
+    "list_directory": ("List a directory.", {"dir_path": "string", "recursive": "boolean"}, ()),
+}
+SEARCH_TOOLS_DESCRIPTION = ("Find a tool by what it does, e.g. 'rename a symbol' or 'apply a patch'. It searches tool descriptions, "
+                            "not your code: to search code use grep_search. Then run the tool with call_tool.")
+NO_TOOL_FOUND = "No tool matches. search_tools finds tools, not code. To search the code, call grep_search with a pattern."
+# Argument names models often use instead of coding-tools' own. Renamed before the policy, the gate and the tool see them.
+ARG_ALIASES = {
+    "read_file": {"path": "file_path", "file": "file_path", "filename": "file_path"},
+    "edit_file": {"path": "file_path", "file": "file_path", "old": "old_string", "new": "new_string"},
+    "write_file": {"path": "file_path", "file": "file_path", "text": "content"},
+    "apply_patch": {"path": "file_path", "file": "file_path", "patch": "patch_text", "diff": "patch_text"},
+    "grep_search": {"query": "pattern", "regex": "pattern", "path": "root", "dir": "root", "directory": "root", "file_path": "root"},
+    "list_directory": {"path": "dir_path", "dir": "dir_path", "directory": "dir_path"},
+    "run_command": {"cmd": "command"},
+}
+SHELL_SYNTAX = ("|", "&&", "||", ";", ">", "<", "$(", "`", "*")
+
+
 class ToolBox:
     def __init__(self, repo: Path, mode: str = "lazy", tools_file: Path | None = None, small_edits: bool = False,
                  docs=None):
         self.repo = Path(os.path.realpath(repo))
         self.mode = mode
+        self.small_edits = small_edits
         self.registry = _load_registry(self.repo, tools_file or Path(os.environ.get("PINCH_CODING_TOOLS", VENDORED)))
         for name in REMOVED_TOOLS:
             self.registry.unregister(name)
@@ -97,10 +133,21 @@ class ToolBox:
         if self.mode == "full":
             tools = self.registry.to_openai_tools()
             return [t for t in tools if self.offered(t["function"]["name"])]
-        return [
-            {"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["inputSchema"]}}
+        meta = [
+            {"type": "function", "function": {"name": t["name"], "parameters": t["inputSchema"],
+                                              "description": SEARCH_TOOLS_DESCRIPTION if t["name"] == "search_tools" else t["description"]}}
             for t in self._meta.values()
         ]
+        return meta + [self._core_schema(name) for name in CORE_TOOLS if name in self.registry.tools]
+
+    def _core_schema(self, name: str) -> dict:
+        text, props, required = CORE_TOOLS[name]
+        if self.small_edits and name in SMALL_EDIT_DESCRIPTIONS:
+            text = SMALL_EDIT_DESCRIPTIONS[name]
+        params = {"type": "object", "properties": {k: {"type": v} for k, v in props.items()}}
+        if required:
+            params["required"] = list(required)
+        return {"type": "function", "function": {"name": name, "description": text, "parameters": params}}
 
     # -- what the model asked for ------------------------------------------------------------
 
@@ -118,6 +165,8 @@ class ToolBox:
             if err:
                 return ToolCall(inner, {}, True, error=err)
             name, args, via = inner, inner_args, True
+        name = name.split(":", 1)[1] if name.startswith("default_api:") else name  # a Gemini habit
+        args = normalize_args(name, args)
         if name == "docs_lookup" and name not in self.registry.tools:
             return ToolCall(name, args, via, error="docs_lookup is switched off for this repo (confidential repo, or no Tavily key).")
         if name not in self._meta and name not in self.registry.tools:
@@ -135,15 +184,45 @@ class ToolBox:
             with _in_repo(self.repo), _no_bytecode():
                 if call.name == "search_tools":
                     result = self.registry.search_tools(str(call.args.get("query", "")), top_n=int(call.args.get("top_n", 5)))
+                    if isinstance(result, dict) and not result.get("tools"):
+                        result["hint"] = NO_TOOL_FOUND
                 elif call.name == "get_tool":
                     result = self.registry.get_capabilities(name=call.args.get("name"))
                 elif call.name in self._meta:
                     result = {"error": "This meta-tool cannot be called through call_tool."}
+                elif call.name == "grep_search":
+                    result = self.registry.call(call.name, grep_args(call.args))
+                    if isinstance(result, dict) and isinstance(result.get("results"), list):  # not pinch's own saved test logs
+                        result["results"] = [r for r in result["results"] if "/.pinch/" not in str(r).split(":", 1)[0]]
+                        result["count"] = len(result["results"])
                 else:
                     result = self.registry.call(call.name, call.args)
         except Exception as e:  # tool errors go back to the model as text, not crashes
             return f"Error: {type(e).__name__}: {e}"
         return _render(result, cap)
+
+
+def normalize_args(name: str, args: dict) -> dict:
+    """Rename well-known wrong argument names, and let run_command use a shell when the command needs one."""
+    aliases = ARG_ALIASES.get(name, {})
+    out = {aliases.get(k, k) if aliases.get(k, k) not in args else k: v for k, v in args.items()}
+    if name == "run_command" and "shell" not in out and any(s in str(out.get("command", "")) for s in SHELL_SYNTAX):
+        out["shell"] = True
+    return out
+
+
+def grep_args(args: dict) -> dict:
+    """grep's --include matches file NAMES only, so 'parse/__init__.py' as include, or a file as root, found nothing.
+    Turn both into a directory root plus a file-name include."""
+    args = dict(args)
+    root, include = str(args.get("root") or "."), str(args.get("include") or "")
+    if os.path.isfile(root) and include in ("", os.path.basename(root)):
+        args["root"], args["include"] = os.path.dirname(root) or ".", os.path.basename(root)
+    elif "/" in include:
+        folder, name = include.rsplit("/", 1)
+        if folder and not any(ch in folder for ch in "*?["):
+            args["root"], args["include"] = os.path.join(root, folder), name
+    return args
 
 
 def cap_text(text: str) -> str:

@@ -231,6 +231,54 @@ def test_trimming_is_deterministic_so_the_prefix_stays_byte_identical():
     assert a == b[:-1] and a[2]["content"] == trim_history(msgs, 2, set())[2]["content"]
 
 
+
+def _read(i: int, path: str, content: str, **span) -> list[dict]:
+    args = json.dumps({"file_path": path, **span})
+    return [{"role": "assistant", "content": None, "tool_calls": [{"id": f"r{i}", "type": "function", "function": {"name": "read_file", "arguments": args}}]},
+            {"role": "tool", "tool_call_id": f"r{i}", "content": content}]
+
+
+def test_old_file_reads_are_kept_unless_a_later_read_shows_the_same_lines():
+    """Stubbing every old read made a small model reread the same lines in a loop. A read is cut only once a later read covers it."""
+    msgs = [{"role": "user", "content": "t"}]
+    msgs += _read(0, "big.py", "A" * 500, offset=600, limit=50)            # lines 600-649, never read again: kept
+    msgs += _read(1, "big.py", "B" * 500, offset=620, limit=10)            # lines 620-629, covered by read 3: cut
+    msgs += _read(2, "other.py", "C" * 500)                                # another file: kept
+    msgs += _read(3, "big.py", "D" * 500, offset=610, limit=30)            # lines 610-639
+    for i in range(4, 8):
+        msgs += _read(i, f"f{i}.py", "x" * 300)
+    out = {m["tool_call_id"]: m["content"] for m in trim_history(msgs, 2, set()) if m["role"] == "tool"}
+    assert out["r0"] == "A" * 500 and out["r2"] == "C" * 500 and out["r3"] == "D" * 500
+    assert out["r1"] == "[pinch: earlier read of big.py cut; a later read shows the same lines.]"
+
+
+def test_a_later_read_that_was_cut_short_covers_nothing():
+    msgs = [{"role": "user", "content": "t"}] + _read(0, "big.py", "A" * 500) + _read(1, "big.py", "B" * 500 + "\n[output cut: 99 more characters. Read less at a time.]")
+    for i in range(2, 6):
+        msgs += _read(i, f"f{i}.py", "x" * 300)
+    assert trim_history(msgs, 2, set())[2]["content"] == "A" * 500
+
+
+def test_repeating_a_short_read_only_call_answers_from_memory(make_rig):
+    rig = make_rig([{"tool_calls": [call("search_tools", lazy=False, query="validator")]},
+                    {"tool_calls": [call("search_tools", lazy=False, query="validator")]}, {"content": "ok"}])
+    rig.agent.run("go")
+    first, second = (m["content"] for m in tool_messages(rig))
+    assert "grep_search" in first
+    assert second.startswith("[pinch: you made this same call at step 1 and nothing has changed since") and first in second
+    assert rig.session_events("repeat_call")[0]["tool"] == "search_tools"
+
+
+def test_after_eight_steps_of_only_reading_pinch_says_how_many_steps_are_left(make_rig):
+    script = [{"tool_calls": [call("grep_search", pattern=f"p{i}")]} for i in range(9)] + [{"content": "ok"}]
+    rig = make_rig(script, max_steps=12)
+    rig.agent.run("go")
+    tools = [m["content"] for m in tool_messages(rig)]
+    assert "steps of reading" not in "".join(tools[:7])
+    assert "[pinch: 8 steps of reading without changing or running anything; 4 of 12 steps left." in tools[7]
+    assert rig.session_events("idle_nudge")[0]["steps_left"] == 4
+
+
 # -- stop on green ----------------------------------------------------------------------------------
 
 def edit_add(lazy=True):
@@ -359,7 +407,7 @@ def test_green_pretest_adds_a_one_line_note_and_does_not_stop(make_rig, repo):
     result = rig.agent.run("handle the edge case")
     assert result.text == "I am done." and len(rig.sent()) == 2           # the green run after the edit did not end it
     first = first_user_message(rig)
-    assert first.endswith("[pinch ran the tests before you started: they currently pass.]") and first.count("\n") <= 3
+    assert first.endswith("they currently pass.]") and "[pinch ran the tests before you started with `" in first and first.count("\n") <= 3
     assert [e["status"] for e in rig.session_events("pretest")] == ["green"] and not rig.agent.seen_red
     assert rig.session_events("green_not_stopped")[0]["rule"] == "never_red" and not rig.session_events("stop_on_green")
 

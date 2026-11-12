@@ -14,7 +14,7 @@ _SCOPE = "This applies to your prose only. Code, diffs, tool arguments and commi
 STYLES: dict[str, str] = {
     "normal": "Reply in ordinary, complete sentences.",
     "brief": "Reply in short, plain sentences. No greetings, filler or recap of what you did.\n" + _SCOPE,
-    "tiny": "Reply with one line stating the result, then the diff if there is one. No narration between tool calls.\n" + _SCOPE,
+    "tiny": "Reply with one line stating the result, then the diff if there is one. Keep the note before each tool call to a few words.\n" + _SCOPE,
     # Adapted from caveman: answer first, kill ceremony, short words, articles optional,
     # technical payload verbatim. Never drop not/no/never/only.
     "caveman": (

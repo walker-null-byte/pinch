@@ -73,7 +73,7 @@ Text version: you → pinch CLI → agent loop → (budget check) → Bifrost �
 |---|---|---|
 | Agent loop | `agent.py` | task, model, tool calls, gate, execute, feed back; stops on finish, step limit or model error |
 | Model client | `client.py` | plain `httpx`; base URL, model, key and the **key header name** come from config; keeps `usage` and provider/model fields of every reply |
-| Tools | `tools.py` | coding-tools registry loaded in-process. `--mode full` sends all 34 schemas, `--mode lazy` (default) sends only `search_tools`, `get_tool`, `call_tool` |
+| Tools | `tools.py` | coding-tools registry loaded in-process. `--mode full` sends all 34 schemas. `--mode lazy` (default) sends `search_tools`, `get_tool` and `call_tool`, plus short schemas for the 6 core tools every task needs (read, grep, edit, write, run a command, list a folder); the other 28 are found with `search_tools` |
 | Approval gate | `approval.py` | table of every tool as read / write / shell / git; unknown tools need approval; `call_tool` is unwrapped and the inner tool is checked |
 | Policy | `policy.py` | confidential if a `.pinch-confidential` marker exists (in the repo or a parent) or the repo is in `~/.config/pinch/config.toml`; read once at startup; the marker can't be edited or deleted |
 | Sessions | `session.py` | JSONL, appended and fsynced after every step; `pinch --resume <id>` |
@@ -100,7 +100,7 @@ pinch always keeps the system prompt, response style and tool schemas byte-ident
 | `filememory` | Files are tracked by hash. Re-reading an unchanged file returns "unchanged since step N"; a changed file returns a diff against the version the model saw. | `savings/filememory.py` |
 | `smalledits` | Tool descriptions and one system-prompt line steer the model to `edit_file`/`apply_patch` and keep `write_file` for new files. `pinch ledger` reports how often `write_file` still hits an existing file. | `tools.py`, `agent.py` |
 | `testcompress` | Test and command output over 1,200 characters is cut to failing test names, each first error and the summary line (hard cap about 1,500). The full output is saved in `.pinch/outputs/` (kept out of `git status`) for the agent to read if it must. | `savings/compress.py` |
-| `trim` | Tool output older than `trim_after` (4) steps becomes a one-line stub in the request. The latest read of each file is kept. The session file keeps everything. | `savings/trim.py` |
+| `trim` | Tool output older than `trim_after` (4) steps becomes a one-line stub in the request. File reads are kept until a later read shows the same lines again. The session file keeps everything. | `savings/trim.py` |
 | `pretest` | Before the first model call, pinch proposes running the repo's tests once (`test_command`, `PINCH_TEST_COMMAND`, or coding-tools' auto-detect). It is a normal shell approval in interactive use, and a logged auto-approval under `--auto-approve`. The result goes at the end of the first prompt, after the system prompt and tool schemas, so the cached prefix is untouched: a failing run as the compressed failure (names of failing tests, first error, summary; run times removed so the prompt is the same on every run of a task), a passing run as one line, \"tests currently pass\". A failing run is also the session's first red, so `stopongreen` can stop after the model's first correct fix. Left out, with the reason in the session (`pretest` event: `declined`, `timeout`, `command_not_found`, `no_tests_collected`, `no_tests_found`, `blocked`), when the tests could not run. `pinch ledger` shows it. | `agent.py` |
 | `stopongreen` | After an approved edit, pinch proposes running the repo's tests (`test_command`, or coding-tools' auto-detect). That is a normal shell approval, and "always" for that exact command works. It stops without another model call **only on a red-to-green change**: the tests must have failed earlier in the session (in a run by the model or by pinch) and pass now. Tests that pass and never failed (a bug fix whose existing tests were already green) do not end the run; the model decides when it is done. The session records which rule fired (`stop_on_green` with `rule: red_to_green`, or `green_not_stopped` with `rule: never_red`). If the short failure comes back, it goes to the model. | `savings/greenlight.py` |
 | `cascade` | Starts on `small_model`, escalates once to `big_model` when the tests still fail after N edit-and-test rounds or M tool errors in a row (config). Each escalation is recorded in the ledger. The gateway must route both model names (the demo routing rules keep the caller's model). | `savings/cascade.py` |
@@ -138,7 +138,7 @@ Code Mode makes Bifrost run the tools inside the gateway (sandboxed code that ca
 | pinch `full` | 34 | 12,936 | 3,234 |
 | Bifrost MCP, classic (all tools) | 34 | 13,422 | 3,355 |
 | Bifrost Code Mode | 4 (`listToolFiles`, `readToolFile`, `getToolDocs`, `executeToolCode`) | 7,038 | 1,759 |
-| pinch `lazy` | 3 (`search_tools`, `get_tool`, `call_tool`) | 1,056 | 264 |
+| pinch `lazy` | 9 (`search_tools`, `get_tool`, `call_tool` + 6 core tools) | 2,793 | 698 |
 
 Byte counts, not provider-reported tokens. Code Mode then needs extra calls to read tool stubs (`readToolFile`) and to write code, which this does not include.
 
