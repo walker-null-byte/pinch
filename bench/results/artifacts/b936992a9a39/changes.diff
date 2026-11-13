@@ -1,0 +1,91 @@
+diff --git a/src/humanize/number.py b/src/humanize/number.py
+index ebccfb9..b7f2c1c 100644
+--- a/src/humanize/number.py
++++ b/src/humanize/number.py
+@@ -282,7 +282,11 @@ def intword(value: NumberOrString, format: str = "%.1f") -> str:
+     chopped = value / power
+     rounded_value = float(format % chopped)
+ 
+-    if not largest_ordinal and rounded_value * power == powers[ordinal + 1]:
++    if rounded_value >= 1000 and ordinal < len(powers) - 2:
++        # After rounding, we end up just at the next power
++        ordinal += 1
++        rounded_value /= 1000
++    elif not largest_ordinal and rounded_value * power == powers[ordinal + 1]:
+         # After rounding, we end up just at the next power
+         ordinal += 1
+         rounded_value = 1.0
+diff --git a/work/tests/test_issue_repro.py b/tests/test_issue_repro.py
+new file mode 100644
+index 0000000..1610bbf
+--- /dev/null
++++ b/tests/test_issue_repro.py
+@@ -0,0 +1,16 @@
++import humanize
++import pytest
++
++def test_intword_large_power_rounding():
++    # 10**24 - 1 should be 1 septillion (approx)
++    # The current implementation returns 1000.0 sextillion for 10**24 - 1
++    # which is essentially 1000 * 10**21.
++    # 1 septillion = 10**24
++    
++    val = 10**24 - 1
++    result = humanize.intword(val)
++    assert result == "1.0 septillion"
++
++    val2 = 10**27 - 1
++    result2 = humanize.intword(val2)
++    assert result2 == "1.0 octillion"
+diff --git a/tests/test_number.py b/tests/test_number.py
+index 755e29e..5fb12fa 100644
+--- a/tests/test_number.py
++++ b/tests/test_number.py
+@@ -148,6 +148,47 @@ def test_intword(test_args: list[str], expected: str) -> None:
+     assert humanize.intword(*test_args) == expected
+ 
+ 
++def test_intword_rounding_rollover() -> None:
++    """Values that round up to the next power must carry to the next unit.
++
++    Regression: for magnitudes above ~10**22 the carry was checked in floating
++    point (``rounded_value * power == powers[ordinal + 1]``) and no longer
++    matched the exact integer power, so e.g. ``10**24 - 1`` was rendered as
++    "1000.0 sextillion" instead of "1.0 septillion".
++    """
++    units = [
++        "thousand",
++        "million",
++        "billion",
++        "trillion",
++        "quadrillion",
++        "quintillion",
++        "sextillion",
++        "septillion",
++        "octillion",
++        "nonillion",
++        "decillion",
++    ]
++    # value = 10**e - 1 rounds up to 10**e with "%.1f"/"%.0f", i.e. exactly 1.0
++    # of the unit sitting at 10**e (units[i] where 10**e == powers[i]).
++    for i, exponent in enumerate(range(6, 34, 3), start=1):
++        value = 10**exponent - 1
++        assert humanize.intword(value) == f"1.0 {units[i]}"
++        assert humanize.intword(value, "%.0f") == f"1 {units[i]}"
++
++    # The mantissa must never render at or above 1000 for values below a
++    # decillion; a bare "1000.0" is only expected in the sparse gap between
++    # decillion and googol, which has no dedicated unit.
++    for exponent in range(6, 34, 3):
++        rendered = humanize.intword(10**exponent - 1)
++        mantissa = float(rendered.split(" ", 1)[0])
++        assert mantissa < 1000
++
++    # The documented decillion..googol gap must be left untouched.
++    assert humanize.intword(10**36) == "1000.0 decillion"
++    assert humanize.intword(2 * 10**100) == "2.0 googol"
++
++
+ @pytest.mark.parametrize(
+     "test_input, expected",
+     [

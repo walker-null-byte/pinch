@@ -1,0 +1,280 @@
+diff --git a/work/check_existing_behavior.py b/check_existing_behavior.py
+new file mode 100644
+index 0000000..0ad085a
+--- /dev/null
++++ b/check_existing_behavior.py
+@@ -0,0 +1,13 @@
++import more_itertools as mi
++
++# Test 1: No validator
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x)
++print(f"No validator D[10]: {list(D[10])}")
++assert list(D[10]) == [10]
++
++# Test 2: With validator (that is truthy)
++validator = lambda x: True
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=validator)
++print(f"Truthy validator D[10]: {list(D[10])}")
++assert list(D[10]) == [10]
++
+diff --git a/work/check_existing_behavior_v2.py b/check_existing_behavior_v2.py
+new file mode 100644
+index 0000000..0737a06
+--- /dev/null
++++ b/check_existing_behavior_v2.py
+@@ -0,0 +1,10 @@
++import more_itertools as mi
++
++# Test 1: No validator
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x)
++# The bucket is populated with ALL elements, so [10] should be in D[10]
++# But is it? Let's check D[10]
++items = list(D[10])
++print(f"No validator D[10]: {items}")
++# Wait, list(D[10]) *consumes* the iterator.
++# Let's check what happened in the original code for that.
+diff --git a/work/check_existing_behavior_v3.py b/check_existing_behavior_v3.py
+new file mode 100644
+index 0000000..ad0f189
+--- /dev/null
++++ b/check_existing_behavior_v3.py
+@@ -0,0 +1,7 @@
++import more_itertools as mi
++
++# Test 1: No validator
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x)
++print(f"No validator D[10]: {list(D[10])}")
++# Wait, why did the previous one fail?
++# Ah, I see why it *might* fail. Maybe [10] is not the list?
+diff --git a/work/check_existing_behavior_v4.py b/check_existing_behavior_v4.py
+new file mode 100644
+index 0000000..e40f8ee
+--- /dev/null
++++ b/check_existing_behavior_v4.py
+@@ -0,0 +1,14 @@
++import more_itertools as mi
++
++# Test 1: No validator
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x)
++items = list(D[10])
++print(f"No validator D[10]: {items}")
++assert items == [10]
++
++# Test 2: With validator (that is truthy)
++validator = lambda x: True
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=validator)
++items = list(D[10])
++print(f"Truthy validator D[10]: {items}")
++assert items == [10]
+diff --git a/work/debug_bucket.py b/debug_bucket.py
+new file mode 100644
+index 0000000..db0bcbd
+--- /dev/null
++++ b/debug_bucket.py
+@@ -0,0 +1,5 @@
++import more_itertools as mi
++
++validator = lambda x: x in {10, 20}
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=validator)
++print(f"10 in D: {10 in D}")
+diff --git a/work/debug_contains.py b/debug_contains.py
+new file mode 100644
+index 0000000..873ea5f
+--- /dev/null
++++ b/debug_contains.py
+@@ -0,0 +1,28 @@
++import more_itertools as mi
++from collections import deque, defaultdict
++
++# Let's re-implement part of bucket locally to see what happens
++class MyBucket:
++    def __init__(self, iterable, key, validator=None):
++        self._it = iter(iterable)
++        self._key = key
++        self._cache = defaultdict(deque)
++        self._validator = validator
++
++    def __getitem__(self, value):
++        return self._get_values(value)
++
++    def _get_values(self, value):
++        # (This is just a mock for testing)
++        return []
++
++    def __contains__(self, value):
++        print(f"Checking validator for {value}: {self._validator(value)}")
++        if not self._validator(value):
++            return False
++        # ... rest of code
++        return True
++
++validator = lambda x: x in {10, 20}
++D = MyBucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=validator)
++print(f"10 in D: {10 in D}")
+diff --git a/work/debug_contains_2.py b/debug_contains_2.py
+new file mode 100644
+index 0000000..a8d1771
+--- /dev/null
++++ b/debug_contains_2.py
+@@ -0,0 +1,52 @@
++import more_itertools as mi
++from collections import deque, defaultdict
++
++# Mocking the bucket behavior for debugging
++class MockBucket:
++    def __init__(self, iterable, key, validator):
++        self._it = iter(iterable)
++        self._key = key
++        self._cache = defaultdict(deque)
++        self._validator = validator
++
++    def __getitem__(self, value):
++        # We need a simplified _get_values
++        print(f"Calling _get_values for {value}")
++        return self._get_values(value)
++
++    def _get_values(self, value):
++        # This is the actual implementation of _get_values from more.py,
++        # but simplified for our debug purposes
++        while True:
++            if self._cache.get(value):
++                yield self._cache[value].popleft()
++            else:
++                while True:
++                    try:
++                        item = next(self._it)
++                    except StopIteration:
++                        return
++                    item_value = self._key(item)
++                    if item_value == value:
++                        if value not in self._cache:
++                            self._cache[value] = deque()
++                        yield item
++                        break
++                    elif self._validator(item_value):
++                        self._cache[item_value].append(item)
++
++    def __contains__(self, value):
++        if not self._validator(value):
++            return False
++        try:
++            item = next(self[value])
++        except StopIteration:
++            return False
++        else:
++            self._cache[value].appendleft(item)
++        return True
++
++validator = lambda x: x in {10, 20}
++D = MockBucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=validator)
++# Before running 10 in D, let's see if 10 is actually in the iterable
++print(f"10 in D: {10 in D}")
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 940b800..7b42428 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1182,7 +1182,7 @@ class bucket:
+         self._it = iter(iterable)
+         self._key = key
+         self._cache = defaultdict(deque)
+-        self._validator = validator or (lambda x: True)
++        self._validator = (lambda x: True) if validator is None else validator
+ 
+     def __contains__(self, value):
+         if not self._validator(value):
+diff --git a/work/reproduce_issue.py b/reproduce_issue.py
+new file mode 100644
+index 0000000..3ba5b4b
+--- /dev/null
++++ b/reproduce_issue.py
+@@ -0,0 +1,18 @@
++import more_itertools as mi
++
++class AllowedKeys(set):
++    def __call__(self, key):
++        return key in self
++
++allowed = AllowedKeys()          # empty, so bool(allowed) is False
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=allowed)
++
++print(f"bool(allowed): {bool(allowed)}")
++print(f"D[10] items: {list(D[10])}")
++print(f"10 in D: {10 in D}")
++print(f"set(D): {set(D)}")
++
++# Assertions to confirm the behavior
++assert list(D[10]) == [], f"Expected [], got {list(D[10])}"
++assert 10 not in D, f"Expected 10 not in D, but it is."
++assert set(D) == set(), f"Expected set(), got {set(D)}"
+diff --git a/work/test_original.py b/test_original.py
+new file mode 100644
+index 0000000..85e994c
+--- /dev/null
++++ b/test_original.py
+@@ -0,0 +1,4 @@
++import more_itertools as mi
++validator = lambda x: x in {10, 20}
++D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=validator)
++print(f"10 in D: {10 in D}")
+diff --git a/work/tests/test_bucket_validator_fix.py b/tests/test_bucket_validator_fix.py
+new file mode 100644
+index 0000000..c60b6fc
+--- /dev/null
++++ b/tests/test_bucket_validator_fix.py
+@@ -0,0 +1,31 @@
++import more_itertools as mi
++import pytest
++
++def test_bucket_falsey_validator():
++    class AllowedKeys(set):
++        def __call__(self, key):
++            return key in self
++
++    allowed = AllowedKeys()  # empty, so bool(allowed) is False
++    
++    # In the original code, this failed to use the validator and acted as if no validator was provided.
++    D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=allowed)
++    
++    # validator should reject every key, so this should be []
++    assert list(D[10]) == []
++    assert 10 not in D
++    assert set(D) == set()
++
++def test_bucket_truthy_validator():
++    # A standard validator
++    validator = lambda x: x in {10, 20}
++    D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=validator)
++    
++    # Let's not call list(D[10]) first.
++    assert 10 in D
++    
++    # Now check the elements
++    assert list(D[10]) == [10]
++    assert list(D[11]) == []
++    assert 11 not in D
++    assert set(D) == {10, 20}
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 1fdf22a..b3a9351 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1109,6 +1109,20 @@ class BucketTests(TestCase):
+         self.assertEqual(list(D[20]), [])
+         self.assertEqual(list(D[30]), [30, 31, 33])
+ 
++    def test_falsey_validator_is_honoured(self):
++        # A falsey callable is still a valid validator and must not be
++        # replaced by the default (see #1308).
++        class AllowedKeys(set):
++            def __call__(self, key):
++                return key in self
++
++        allowed = AllowedKeys()
++        self.assertFalse(allowed)  # Sanity: the validator itself is falsey
++        D = mi.bucket(iter([10, 20, 11, 21]), key=lambda x: x, validator=allowed)
++        self.assertEqual(list(D[10]), [])
++        self.assertNotIn(10, D)
++        self.assertEqual(set(D), set())
++
+     def test_in_does_not_add_key(self):
+         # A failed membership test must not invent a key (see #1284)
+         iterable = [10, 20, 11, 21]

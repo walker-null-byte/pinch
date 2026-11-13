@@ -1,0 +1,351 @@
+diff --git a/work/reproduce_issue.py b/reproduce_issue.py
+new file mode 100644
+index 0000000..10830f3
+--- /dev/null
++++ b/reproduce_issue.py
+@@ -0,0 +1,27 @@
++import io, dotenv
++from dotenv.parser import parse_stream
++
++# Reproduce the reported issue
++content = "KEY= # comment"
++result = dotenv.dotenv_values(stream=io.StringIO(content))
++print(f"Result for '{content}': {result}")
++
++expected = {'KEY': ''}
++if result == expected:
++    print("Success: got expected result.")
++else:
++    print(f"Failure: expected {expected}, got {result}")
++
++# Test low-level parser as requested
++print("\nTesting low-level parser:")
++for content in ["a= #b", "a=  # b", "a=\t# comment"]:
++    bindings = list(parse_stream(io.StringIO(content)))
++    print(f"Content: '{content}' -> Bindings: {bindings}")
++    # The binding should be (key, value, error)
++    # The requirement says value should be ""
++    value = bindings[0][1]
++    if value == "":
++        print(f"  Success: value is empty string.")
++    else:
++        print(f"  Failure: value is '{value}', expected ''")
++
+diff --git a/src/dotenv/parser.py b/src/dotenv/parser.py
+index 02648ab..2b5c6c3 100644
+--- a/src/dotenv/parser.py
++++ b/src/dotenv/parser.py
+@@ -124,7 +124,7 @@ def parse_key(reader: Reader) -> Optional[str]:
+ 
+ def parse_unquoted_value(reader: Reader) -> str:
+     (part,) = reader.read_regex(_unquoted_value)
+-    return re.sub(r"\s+#.*", "", part).rstrip()
++    return re.sub(r"(?:\s+)?#.*", "", part).rstrip()
+ 
+ 
+ def parse_value(reader: Reader) -> str:
+diff --git a/work/test_edge_cases.py b/test_edge_cases.py
+new file mode 100644
+index 0000000..7e7285a
+--- /dev/null
++++ b/test_edge_cases.py
+@@ -0,0 +1,20 @@
++import io, dotenv
++from dotenv.parser import parse_stream, Binding
++
++def check(content, expected_value):
++    print(f"Testing: '{content}'")
++    bindings = list(parse_stream(io.StringIO(content)))
++    value = bindings[0].value
++    if value == expected_value:
++        print(f"  Success: value is '{value}'")
++    else:
++        print(f"  Failure: expected '{expected_value}', got '{value}'")
++
++# - `KEY=val # comment` -> "val"  (unchanged)
++# - No whitespace before the `#` means it is part of the value, as before: 
++#   `KEY=a#b` -> "a#b", `KEY=#novalue` -> "#novalue", `KEY=# # comment` -> "#"
++
++check("KEY=val # comment", "val")
++check("KEY=a#b", "a#b")
++check("KEY=#novalue", "#novalue")
++check("KEY=# # comment", "#")
+diff --git a/work/test_parse_value.py b/test_parse_value.py
+new file mode 100644
+index 0000000..c08470d
+--- /dev/null
++++ b/test_parse_value.py
+@@ -0,0 +1,8 @@
++from dotenv.parser import parse_value, Reader
++import io
++
++# Test cases
++for content in [" #b", "  # b", "\t# comment"]:
++    reader = Reader(io.StringIO(content))
++    value = parse_value(reader)
++    print(f"Content: '{content}' -> Value: '{value}'")
+diff --git a/work/test_parse_value_2.py b/test_parse_value_2.py
+new file mode 100644
+index 0000000..df4048b
+--- /dev/null
++++ b/test_parse_value_2.py
+@@ -0,0 +1,8 @@
++from dotenv.parser import parse_value, Reader
++import io
++
++# Test cases
++for content in ["val # comment", "a#b", "#novalue", "# # comment"]:
++    reader = Reader(io.StringIO(content))
++    value = parse_value(reader)
++    print(f"Content: '{content}' -> Value: '{value}'")
+diff --git a/work/test_parse_value_3.py b/test_parse_value_3.py
+new file mode 100644
+index 0000000..00d4f80
+--- /dev/null
++++ b/test_parse_value_3.py
+@@ -0,0 +1,12 @@
++import re
++from dotenv.parser import _unquoted_value
++
++# Test the regex
++# _unquoted_value is ([^\r\n]*)
++match = re.match(r"([^\r\n]*)", " #b")
++print(f"Match: {match.groups()}")
++
++# Oh, the regex _unquoted_value matches the WHOLE line if it's not empty, new line or carriage return.
++# So if the content is " #b", (part,) will be " #b".
++# Then `re.sub(r"\s+#.*", "", " #b")` should return ""
++# Let me test this specifically.
+diff --git a/work/test_parse_value_4.py b/test_parse_value_4.py
+new file mode 100644
+index 0000000..b629280
+--- /dev/null
++++ b/test_parse_value_4.py
+@@ -0,0 +1,9 @@
++from dotenv.parser import parse_value, Reader
++import io
++
++# Let's test the full binding parsing to see what it's doing
++from dotenv.parser import parse_binding
++content = "KEY= # comment"
++reader = Reader(io.StringIO(content))
++binding = parse_binding(reader)
++print(f"Binding: {binding}")
+diff --git a/work/test_parse_value_5.py b/test_parse_value_5.py
+new file mode 100644
+index 0000000..71d34f3
+--- /dev/null
++++ b/test_parse_value_5.py
+@@ -0,0 +1,20 @@
++from dotenv.parser import Reader, _equal_sign, parse_value
++import io
++
++content = "KEY= # comment"
++# The parse_binding first does:
++# reader.read_regex(_export)
++# key = parse_key(reader) -> "KEY"
++# reader.read_regex(_whitespace)
++# reader.read_regex(_equal_sign)
++# value = parse_value(reader)
++
++reader = Reader(io.StringIO(content))
++# Simulate parse_binding:
++# Skip "KEY"
++reader.read(3)
++# Read "="
++reader.read_regex(_equal_sign)
++# Now read_value
++value = parse_value(reader)
++print(f"Value: '{value}'")
+diff --git a/work/test_parse_value_6.py b/test_parse_value_6.py
+new file mode 100644
+index 0000000..1d1dd24
+--- /dev/null
++++ b/test_parse_value_6.py
+@@ -0,0 +1,24 @@
++from dotenv.parser import Reader, _equal_sign, parse_value
++import io
++
++content = "KEY= # comment"
++# The problem is that _equal_sign = make_regex(r"(=[^\S\r\n]*)")
++# _equal_sign eats the space after =
++# In "KEY= # comment", the space after '=' is eaten by _equal_sign.
++# So reader is now at "# comment".
++
++# Then parse_value(reader) is called.
++# parse_value(reader) sees '#' at peek(1).
++# char = reader.peek(1) which is '#'.
++# So it calls parse_unquoted_value(reader).
++
++# parse_unquoted_value calls read_regex(_unquoted_value)
++# _unquoted_value = make_regex(r"([^\r\n]*)")
++# It eats everything until the newline.
++# So "part" becomes "# comment"
++
++# Then re.sub(r"\s+#.*", "", part) is called on "# comment".
++# \s+ matches one or more whitespace.
++# In "# comment", there is NO leading whitespace.
++# So \s+ doesn't match!
++# So it doesn't replace anything.
+diff --git a/work/test_regex.py b/test_regex.py
+new file mode 100644
+index 0000000..203a93d
+--- /dev/null
++++ b/test_regex.py
+@@ -0,0 +1,13 @@
++import re
++part = " # comment"
++# The original code:
++print(f"Original: '{re.sub(r'\s+#.*', '', part).rstrip()}'")
++# If it was just " # comment", the original re.sub should match it
++# \s+ matches the leading space.
++# #.* matches # comment.
++
++part2 = "val # comment"
++print(f"Original 2: '{re.sub(r'\s+#.*', '', part2).rstrip()}'")
++
++# It seems the regex \s+#.* might not be matching if there's no preceding non-whitespace
++# Let's check regex behavior
+diff --git a/work/test_regex2.py b/test_regex2.py
+new file mode 100644
+index 0000000..eda7bc7
+--- /dev/null
++++ b/test_regex2.py
+@@ -0,0 +1,17 @@
++import re
++part = " # comment"
++# re.sub(r"\s+#.*", "", part)
++# \s+ matches one or more whitespace.
++# In " # comment", the first space matches \s+
++# Then "# comment" matches #.*
++# So it should be replaced.
++
++# Let's test again carefully
++res = re.sub(r"\s+#.*", "", " # comment")
++print(f"Result 1: '{res}'")
++# wait, why did it result in '' in the previous output?
++# Ah, I see why.
++
++# Let's try: "a= #b"
++# The parse_unquoted_value gets "#b" (because a= was already consumed)
++# Let's see what parse_unquoted_value receives
+diff --git a/work/test_regex_debug.py b/test_regex_debug.py
+new file mode 100644
+index 0000000..a5756a9
+--- /dev/null
++++ b/test_regex_debug.py
+@@ -0,0 +1,4 @@
++import re
++print(f"'{re.sub(r'\s+#.*', '', ' #b')}'")
++print(f"'{re.sub(r'\s+#.*', '', '  # b')}'")
++print(f"'{re.sub(r'\s+#.*', '', '\t# comment')}'")
+diff --git a/tests/test_main.py b/tests/test_main.py
+index 48dd7bf..6f9d4c5 100644
+--- a/tests/test_main.py
++++ b/tests/test_main.py
+@@ -737,3 +737,22 @@ def test_dotenv_values_file_stream(dotenv_path):
+         result = dotenv.dotenv_values(stream=f)
+ 
+     assert result == {"a": "b"}
++
++
++@pytest.mark.parametrize(
++    "string,expected",
++    [
++        ("KEY= # comment", {"KEY": ""}),
++        ("KEY=  # comment", {"KEY": ""}),
++        ("KEY=val # comment", {"KEY": "val"}),
++        ("KEY=a#b", {"KEY": "a#b"}),
++        ("KEY=#novalue", {"KEY": "#novalue"}),
++        ("KEY=# # comment", {"KEY": "#"}),
++        ("KEY=\t# comment", {"KEY": ""}),
++        ("KEY= # comment\nOTHER=val", {"KEY": "", "OTHER": "val"}),
++    ],
++)
++def test_dotenv_values_empty_value_with_inline_comment(string, expected):
++    result = dotenv.dotenv_values(stream=io.StringIO(string))
++
++    assert result == expected
+diff --git a/tests/test_parser.py b/tests/test_parser.py
+index dd638d9..667eae1 100644
+--- a/tests/test_parser.py
++++ b/tests/test_parser.py
+@@ -119,6 +119,78 @@ from dotenv.parser import Binding, Original, parse_stream
+                 )
+             ],
+         ),
++        (
++            "a= #b",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a= #b", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=  # b",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a=  # b", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=#b",
++            [
++                Binding(
++                    key="a",
++                    value="#b",
++                    original=Original(string="a=#b", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=# # comment",
++            [
++                Binding(
++                    key="a",
++                    value="#",
++                    original=Original(string="a=# # comment", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=\t#c",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a=\t#c", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a= #c\nd=e",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a= #c\n", line=1),
++                    error=False,
++                ),
++                Binding(
++                    key="d",
++                    value="e",
++                    original=Original(string="d=e", line=2),
++                    error=False,
++                ),
++            ],
++        ),
+         (
+             "a=b c",
+             [

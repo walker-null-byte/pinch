@@ -3,9 +3,18 @@
 A command-line coding agent that finishes real coding tasks on the fewest tokens.
 Built for Bifrost Problem Statement 01 (HackCulture global AI hackathon).
 
-**Status: Phase 4a.** Everything runs offline: mock providers behind a real Bifrost gateway (Docker). `uv run pinch prove`
-shows the four mandatory requirements working end to end, and ten token-saving techniques (each switchable on its own, one of them the Tavily docs tool) are built and tested offline.
-The benchmark harness (pinch against mini-swe-agent, same model, same gateway) is built and validated with mock providers; running it with real models (Phase 4b) needs API keys. See [Benchmark](#benchmark).
+**Status:** works end to end with real providers through Bifrost v2.5.0: Gemini on the free tier, Groq as failover, and Gemma 4 on LM Studio for confidential repos. `uv run pinch prove` checks the four mandatory requirements (4 of 4), and [docs/DEMO.md](docs/DEMO.md) shows each one live. Ten token-saving techniques are built, each switchable on its own; one of them is the Tavily docs tool. The benchmark against mini-swe-agent is running on Gemini's free tier (500 requests per model per day). The first finished result is below; the rest goes in as it finishes.
+
+**First result, set B (8 real bugs in real libraries), `gemini-3.1-flash-lite`, one run per task** ([report](bench/results/setB-3.1-flash-lite.md)):
+
+| | mini-swe-agent | pinch |
+|---|---|---|
+| Solved | 5 of 8 | 5 of 8 |
+| Tokens per solved task | 217,279 | 143,837 (−34%) |
+| Cost per solved task | $0.0404 | $0.0237 (−41%) |
+| Model calls, all 8 tasks | 193 | 95 |
+
+The two agents did not solve the same five: each fixed two bugs the other did not. Our first set B run lost; [what we fixed](#what-the-first-set-b-runs-changed) explains why.
 
 ## Libraries that existed before the hackathon
 
@@ -221,7 +230,7 @@ allow_tools = ["git_status", "git_log", "git_diff"]
 through the same Bifrost gateway, on the same model. Pass or fail is decided outside the agent; tokens come only from the provider-reported `usage` that Bifrost relays; every run is one row of JSONL.
 
 **Every number the harness produces from mock providers is labelled MOCK** (console banner, `"mock": true` in each row, MOCK in the report titles). The mock model is a script; those numbers only show that the pipeline works.
-The only real-model result so far is a 3-run smoke on one easy exercise ([`bench/results/real-smoke.md`](bench/results/real-smoke.md): baseline versus pinch `none` and `all`). **One task is not evidence of savings**: it only shows the pipeline works against real models. The full run is not done.
+Finished real-model results so far: set B on `gemini-3.1-flash-lite` ([`bench/results/setB-3.1-flash-lite.md`](bench/results/setB-3.1-flash-lite.md), table at the top of this README). The main comparison on all three sets with `gemini-3.5-flash-lite` (`run1`) and the one-technique-off table (`run2`) are still running against the free daily quota, and go in when they finish. [`real-smoke.md`](bench/results/real-smoke.md) is an early 3-run pipeline check on one exercise, not evidence of savings.
 
 ### What the first set B runs changed
 

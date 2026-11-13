@@ -1,0 +1,75 @@
+diff --git a/tests/test_dicttoxml.py b/tests/test_dicttoxml.py
+index bd2300a..e67600e 100644
+--- a/tests/test_dicttoxml.py
++++ b/tests/test_dicttoxml.py
+@@ -573,7 +573,7 @@ def test_non_string_text_with_attributes():
+ 
+     assert unparse({"a": {"@param": "flag", "#text": True}}, full_document=False) == '<a param="flag">true</a>'
+ 
+-    assert unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test">None</a>'
++    assert unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test"></a>'
+ 
+     assert unparse({"a": {"@param": "test", "#text": "string"}}, full_document=False) == '<a param="test">string</a>'
+ 
+@@ -594,3 +594,13 @@ def test_non_string_text_with_attributes():
+     assert unparse({"a": True}, full_document=False) == unparse({"a": {"#text": True}}, full_document=False)
+ 
+     assert unparse({"a": "hello"}, full_document=False) == unparse({"a": {"#text": "hello"}}, full_document=False)
++    assert unparse({"a": None}, full_document=False) == unparse({"a": {"#text": None}}, full_document=False)
++
++
++def test_none_text_with_short_empty_elements_and_attributes():
++    obj = {"x": {"#text": None, "@pro": None}, "y": None}
++    assert unparse(obj, short_empty_elements=True, full_document=False) == '<x pro=""/><y/>'
++
++
++def test_none_attribute_serializes_as_empty_string():
++    assert unparse({"x": {"@pro": None}}, full_document=False) == '<x pro=""></x>'
+diff --git a/work/tests/test_none_issue.py b/tests/test_none_issue.py
+new file mode 100644
+index 0000000..bf3c98a
+--- /dev/null
++++ b/tests/test_none_issue.py
+@@ -0,0 +1,18 @@
++from xmltodict import unparse
++import pytest
++
++def test_none_handling():
++    # 1. unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test"></a>'
++    assert unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test"></a>'
++    
++    # 2. unparse({"x": {"@pro": None}}, full_document=False) == '<x pro=""></x>'
++    assert unparse({"x": {"@pro": None}}, full_document=False) == '<x pro=""></x>'
++    
++    # 3. unparse({"x": {"#text": None, "@pro": None}, "y": None}, short_empty_elements=True, full_document=False) == '<x pro=""/><y/>'
++    # Wait, the example in the description suggests {"y": None} becomes <y/>
++    # Let's check what unparse does for top-level None
++    assert unparse({"x": {"#text": None, "@pro": None}, "y": None}, short_empty_elements=True, full_document=False) == '<x pro=""/><y/>'
++    
++    # 4. unparse({"a": None}, full_document=False) equals unparse({"a": {"#text": None}}, full_document=False).
++    assert unparse({"a": None}, full_document=False) == unparse({"a": {"#text": None}}, full_document=False)
++    assert unparse({"a": None}, full_document=False) == '<a></a>'
+diff --git a/xmltodict.py b/xmltodict.py
+index 694e9ce..f1a950e 100644
+--- a/xmltodict.py
++++ b/xmltodict.py
+@@ -374,6 +374,8 @@ def _convert_value_to_string(value):
+ 
+     Handles boolean values consistently by converting them to lowercase.
+     """
++    if value is None:
++        return ""
+     if isinstance(value, (str, bytes)):
+         return value
+     if isinstance(value, bool):
+@@ -504,7 +506,9 @@ def _emit(key, value, content_handler,
+                         attr = 'xmlns{}'.format(f':{k}' if k else '')
+                         attrs[attr] = str(v)
+                     continue
+-                if not isinstance(iv, str):
++                if iv is None:
++                    iv = ""
++                elif not isinstance(iv, str):
+                     iv = str(iv)
+                 attr_name = ik[len(attr_prefix) :]
+                 _validate_name(attr_name, "attribute")

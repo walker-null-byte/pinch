@@ -1,0 +1,1139 @@
+diff --git a/work/build/lib/xmltodict.py b/build/lib/xmltodict.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/work/reproduce_issue.py b/reproduce_issue.py
+new file mode 100644
+index 0000000..ec9cb13
+--- /dev/null
++++ b/reproduce_issue.py
+@@ -0,0 +1,28 @@
++from xmltodict import unparse
++
++# Case 1
++res1 = unparse({"a": {"@param": "test", "#text": None}}, full_document=False)
++print(f"Case 1: {res1!r}")
++expected1 = '<a param="test"></a>'
++assert res1 == expected1, f"Expected {expected1}, got {res1}"
++
++# Case 2
++res2 = unparse({"x": {"@pro": None}}, full_document=False)
++print(f"Case 2: {res2!r}")
++expected2 = '<x pro=""></x>'
++assert res2 == expected2, f"Expected {expected2}, got {res2}"
++
++# Case 3
++res3 = unparse({"x": {"#text": None, "@pro": None}, "y": None}, short_empty_elements=True, full_document=False)
++print(f"Case 3: {res3!r}")
++expected3 = '<x pro=""/><y/>'
++assert res3 == expected3, f"Expected {expected3}, got {res3}"
++
++# Case 4
++res4 = unparse({"a": None}, full_document=False)
++print(f"Case 4: {res4!r}")
++# Based on the requirement: unparse({"a": None}, full_document=False) equals unparse({"a": {"#text": None}}, full_document=False)
++expected4 = unparse({"a": {"#text": None}}, full_document=False)
++assert res4 == expected4, f"Expected {expected4}, got {res4}"
++
++print("All tests passed!")
+diff --git a/tests/test_dicttoxml.py b/tests/test_dicttoxml.py
+index bd2300a..e67600e 100644
+--- a/tests/test_dicttoxml.py
++++ b/tests/test_dicttoxml.py
+@@ -573,7 +573,7 @@ def test_non_string_text_with_attributes():
+ 
+     assert unparse({"a": {"@param": "flag", "#text": True}}, full_document=False) == '<a param="flag">true</a>'
+ 
+-    assert unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test">None</a>'
++    assert unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test"></a>'
+ 
+     assert unparse({"a": {"@param": "test", "#text": "string"}}, full_document=False) == '<a param="test">string</a>'
+ 
+@@ -594,3 +594,13 @@ def test_non_string_text_with_attributes():
+     assert unparse({"a": True}, full_document=False) == unparse({"a": {"#text": True}}, full_document=False)
+ 
+     assert unparse({"a": "hello"}, full_document=False) == unparse({"a": {"#text": "hello"}}, full_document=False)
++    assert unparse({"a": None}, full_document=False) == unparse({"a": {"#text": None}}, full_document=False)
++
++
++def test_none_text_with_short_empty_elements_and_attributes():
++    obj = {"x": {"#text": None, "@pro": None}, "y": None}
++    assert unparse(obj, short_empty_elements=True, full_document=False) == '<x pro=""/><y/>'
++
++
++def test_none_attribute_serializes_as_empty_string():
++    assert unparse({"x": {"@pro": None}}, full_document=False) == '<x pro=""></x>'
+diff --git a/work/xmltodict.egg-info/PKG-INFO b/xmltodict.egg-info/PKG-INFO
+new file mode 100644
+index 0000000..3c5b536
+--- /dev/null
++++ b/xmltodict.egg-info/PKG-INFO
+@@ -0,0 +1,403 @@
++Metadata-Version: 2.4
++Name: xmltodict
++Version: 1.0.2
++Summary: Makes working with XML feel like you are working with JSON
++Author: Martin Blech
++License-Expression: MIT
++Project-URL: Homepage, https://github.com/martinblech/xmltodict
++Classifier: Intended Audience :: Developers
++Classifier: Operating System :: OS Independent
++Classifier: Programming Language :: Python
++Classifier: Programming Language :: Python :: 3
++Classifier: Programming Language :: Python :: 3.9
++Classifier: Programming Language :: Python :: 3.10
++Classifier: Programming Language :: Python :: 3.11
++Classifier: Programming Language :: Python :: 3.12
++Classifier: Programming Language :: Python :: 3.13
++Classifier: Programming Language :: Python :: 3.14
++Classifier: Programming Language :: Python :: Implementation :: PyPy
++Classifier: Topic :: Text Processing :: Markup :: XML
++Requires-Python: >=3.9
++Description-Content-Type: text/markdown
++License-File: LICENSE
++Provides-Extra: test
++Requires-Dist: pytest; extra == "test"
++Requires-Dist: pytest-cov; extra == "test"
++Dynamic: license-file
++
++# xmltodict
++
++`xmltodict` is a Python module that makes working with XML feel like you are working with [JSON](http://docs.python.org/library/json.html), as in this ["spec"](http://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html):
++
++[![Tests](https://github.com/martinblech/xmltodict/actions/workflows/test.yml/badge.svg)](https://github.com/martinblech/xmltodict/actions/workflows/test.yml)
++
++```python
++>>> print(json.dumps(xmltodict.parse("""
++...  <mydocument has="an attribute">
++...    <and>
++...      <many>elements</many>
++...      <many>more elements</many>
++...    </and>
++...    <plus a="complex">
++...      element as well
++...    </plus>
++...  </mydocument>
++...  """), indent=4))
++{
++    "mydocument": {
++        "@has": "an attribute",
++        "and": {
++            "many": [
++                "elements",
++                "more elements"
++            ]
++        },
++        "plus": {
++            "@a": "complex",
++            "#text": "element as well"
++        }
++    }
++}
++```
++
++## Namespace support
++
++By default, `xmltodict` does no XML namespace processing (it just treats namespace declarations as regular node attributes), but passing `process_namespaces=True` will make it expand namespaces for you:
++
++```python
++>>> xml = """
++... <root xmlns="http://defaultns.com/"
++...       xmlns:a="http://a.com/"
++...       xmlns:b="http://b.com/">
++...   <x>1</x>
++...   <a:y>2</a:y>
++...   <b:z>3</b:z>
++... </root>
++... """
++>>> xmltodict.parse(xml, process_namespaces=True) == {
++...     'http://defaultns.com/:root': {
++...         'http://defaultns.com/:x': '1',
++...         'http://a.com/:y': '2',
++...         'http://b.com/:z': '3',
++...     }
++... }
++True
++```
++
++It also lets you collapse certain namespaces to shorthand prefixes, or skip them altogether:
++
++```python
++>>> namespaces = {
++...     'http://defaultns.com/': None, # skip this namespace
++...     'http://a.com/': 'ns_a', # collapse "http://a.com/" -> "ns_a"
++... }
++>>> xmltodict.parse(xml, process_namespaces=True, namespaces=namespaces) == {
++...     'root': {
++...         'x': '1',
++...         'ns_a:y': '2',
++...         'http://b.com/:z': '3',
++...     },
++... }
++True
++```
++
++## Streaming mode
++
++`xmltodict` is very fast ([Expat](http://docs.python.org/library/pyexpat.html)-based) and has a streaming mode with a small memory footprint, suitable for big XML dumps like [Discogs](http://discogs.com/data/) or [Wikipedia](http://dumps.wikimedia.org/):
++
++```python
++>>> def handle_artist(_, artist):
++...     print(artist['name'])
++...     return True
++>>>
++>>> xmltodict.parse(GzipFile('discogs_artists.xml.gz'),
++...     item_depth=2, item_callback=handle_artist)
++A Perfect Circle
++Fantômas
++King Crimson
++Chris Potter
++...
++```
++
++It can also be used from the command line to pipe objects to a script like this:
++
++```python
++import sys, marshal
++while True:
++    _, article = marshal.load(sys.stdin)
++    print(article['title'])
++```
++
++```sh
++$ bunzip2 enwiki-pages-articles.xml.bz2 | xmltodict.py 2 | myscript.py
++AccessibleComputing
++Anarchism
++AfghanistanHistory
++AfghanistanGeography
++AfghanistanPeople
++AfghanistanCommunications
++Autism
++...
++```
++
++Or just cache the dicts so you don't have to parse that big XML file again. You do this only once:
++
++```sh
++$ bunzip2 enwiki-pages-articles.xml.bz2 | xmltodict.py 2 | gzip > enwiki.dicts.gz
++```
++
++And you reuse the dicts with every script that needs them:
++
++```sh
++$ gunzip enwiki.dicts.gz | script1.py
++$ gunzip enwiki.dicts.gz | script2.py
++...
++```
++
++## Roundtripping
++
++You can also convert in the other direction, using the `unparse()` method:
++
++```python
++>>> mydict = {
++...     'response': {
++...             'status': 'good',
++...             'last_updated': '2014-02-16T23:10:12Z',
++...     }
++... }
++>>> print(unparse(mydict, pretty=True))
++<?xml version="1.0" encoding="utf-8"?>
++<response>
++	<status>good</status>
++	<last_updated>2014-02-16T23:10:12Z</last_updated>
++</response>
++```
++
++Text values for nodes can be specified with the `cdata_key` key in the python dict, while node properties can be specified with the `attr_prefix` prefixed to the key name in the python dict. The default value for `attr_prefix` is `@` and the default value for `cdata_key` is `#text`.
++
++```python
++>>> import xmltodict
++>>>
++>>> mydict = {
++...     'text': {
++...         '@color':'red',
++...         '@stroke':'2',
++...         '#text':'This is a test'
++...     }
++... }
++>>> print(xmltodict.unparse(mydict, pretty=True))
++<?xml version="1.0" encoding="utf-8"?>
++<text stroke="2" color="red">This is a test</text>
++```
++
++Lists that are specified under a key in a dictionary use the key as a tag for each item. But if a list does have a parent key, for example if a list exists inside another list, it does not have a tag to use and the items are converted to a string as shown in the example below.  To give tags to nested lists, use the `expand_iter` keyword argument to provide a tag as demonstrated below. Note that using `expand_iter` will break roundtripping.
++
++```python
++>>> mydict = {
++...     "line": {
++...         "points": [
++...             [1, 5],
++...             [2, 6],
++...         ]
++...     }
++... }
++>>> print(xmltodict.unparse(mydict, pretty=True))
++<?xml version="1.0" encoding="utf-8"?>
++<line>
++        <points>[1, 5]</points>
++        <points>[2, 6]</points>
++</line>
++>>> print(xmltodict.unparse(mydict, pretty=True, expand_iter="coord"))
++<?xml version="1.0" encoding="utf-8"?>
++<line>
++        <points>
++                <coord>1</coord>
++                <coord>5</coord>
++        </points>
++        <points>
++                <coord>2</coord>
++                <coord>6</coord>
++        </points>
++</line>
++```
++
++## API Reference
++
++### xmltodict.parse()
++
++Parse XML input into a Python dictionary.
++
++- `xml_input`: XML input as a string, file-like object, or generator of strings.
++- `encoding=None`: Character encoding for the input XML.
++- `expat=expat`: XML parser module to use.
++- `process_namespaces=False`: Expand XML namespaces if True.
++- `namespace_separator=':'`: Separator between namespace URI and local name.
++- `disable_entities=True`: Disable entity parsing for security.
++- `process_comments=False`: Include XML comments if True. Comments can be preserved when enabled, but by default they are ignored. Multiple top-level comments may not be preserved in exact order.
++- `xml_attribs=True`: Include attributes in output dict (with `attr_prefix`).
++- `attr_prefix='@'`: Prefix for XML attributes in the dict.
++- `cdata_key='#text'`: Key for text content in the dict.
++- `force_cdata=False`: Force text content to be wrapped as CDATA for specific elements. Can be a boolean (True/False), a tuple of element names to force CDATA for, or a callable function that receives (path, key, value) and returns True/False.
++- `cdata_separator=''`: Separator string to join multiple text nodes. This joins adjacent text nodes. For example, set to a space to avoid concatenation.
++- `postprocessor=None`: Function to modify parsed items.
++- `dict_constructor=dict`: Constructor for dictionaries (e.g., dict).
++- `strip_whitespace=True`: Remove leading/trailing whitespace in text nodes. Default is True; this trims whitespace in text nodes. Set to False to preserve whitespace exactly. When `process_comments=True`, this same flag also trims comment text; disable `strip_whitespace` if you need to preserve comment indentation or padding.
++- `namespaces=None`: Mapping of namespaces to prefixes, or None to keep full URIs.
++- `force_list=None`: Force list values for specific elements. Can be a boolean (True/False), a tuple of element names to force lists for, or a callable function that receives (path, key, value) and returns True/False. Useful for elements that may appear once or multiple times to ensure consistent list output.
++- `item_depth=0`: Depth at which to call `item_callback`.
++- `item_callback=lambda *args: True`: Function called on items at `item_depth`.
++- `comment_key='#comment'`: Key used for XML comments when `process_comments=True`. Only used when `process_comments=True`. Comments can be preserved but multiple top-level comments may not retain order.
++
++### xmltodict.unparse()
++
++Convert a Python dictionary back into XML.
++
++- `input_dict`: Dictionary to convert to XML.
++- `output=None`: File-like object to write XML to; returns string if None.
++- `encoding='utf-8'`: Encoding of the output XML.
++- `full_document=True`: Include XML declaration if True.
++- `short_empty_elements=False`: Use short tags for empty elements (`<tag/>`).
++- `attr_prefix='@'`: Prefix for dictionary keys representing attributes.
++- `cdata_key='#text'`: Key for text content in the dictionary.
++- `pretty=False`: Pretty-print the XML output.
++- `indent='\t'`: Indentation string for pretty printing.
++- `newl='\n'`: Newline character for pretty printing.
++- `expand_iter=None`: Tag name to use for items in nested lists (breaks roundtripping).
++
++> **Note:** When building XML from dictionaries, keys whose values are empty
++> lists are skipped. For example, `{'a': []}` produces no `<a>` element. Add a
++> placeholder child (for example, `{'a': ['']}`) if an explicit empty container
++> element is required in the output.
++
++Note: xmltodict aims to cover the common 90% of cases. It does not preserve every XML nuance (attribute order, mixed content ordering, multiple top-level comments). For exact fidelity, use a full XML library such as lxml.
++
++## Examples
++
++### Selective force_cdata
++
++The `force_cdata` parameter can be used to selectively force CDATA wrapping for specific elements:
++
++```python
++>>> xml = '<a><b>data1</b><c>data2</c><d>data3</d></a>'
++>>> # Force CDATA only for 'b' and 'd' elements
++>>> xmltodict.parse(xml, force_cdata=('b', 'd'))
++{'a': {'b': {'#text': 'data1'}, 'c': 'data2', 'd': {'#text': 'data3'}}}
++
++>>> # Force CDATA for all elements (original behavior)
++>>> xmltodict.parse(xml, force_cdata=True)
++{'a': {'b': {'#text': 'data1'}, 'c': {'#text': 'data2'}, 'd': {'#text': 'data3'}}}
++
++>>> # Use a callable for complex logic
++>>> def should_force_cdata(path, key, value):
++...     return key in ['b', 'd'] and len(value) > 4
++>>> xmltodict.parse(xml, force_cdata=should_force_cdata)
++{'a': {'b': {'#text': 'data1'}, 'c': 'data2', 'd': {'#text': 'data3'}}}
++```
++
++### Selective force_list
++
++The `force_list` parameter can be used to selectively force list values for specific elements:
++
++```python
++>>> xml = '<a><b>data1</b><b>data2</b><c>data3</c></a>'
++>>> # Force lists only for 'b' elements
++>>> xmltodict.parse(xml, force_list=('b',))
++{'a': {'b': ['data1', 'data2'], 'c': 'data3'}}
++
++>>> # Force lists for all elements (original behavior)
++>>> xmltodict.parse(xml, force_list=True)
++{'a': [{'b': ['data1', 'data2'], 'c': ['data3']}]}
++
++>>> # Use a callable for complex logic
++>>> def should_force_list(path, key, value):
++...     return key in ['b'] and isinstance(value, str)
++>>> xmltodict.parse(xml, force_list=should_force_list)
++{'a': {'b': ['data1', 'data2'], 'c': 'data3'}}
++```
++
++## Ok, how do I get it?
++
++### Using pypi
++
++You just need to
++
++```sh
++$ pip install xmltodict
++```
++
++### Using conda
++
++For installing `xmltodict` using Anaconda/Miniconda (*conda*) from the
++[conda-forge channel][#xmltodict-conda] all you need to do is:
++
++[#xmltodict-conda]: https://anaconda.org/conda-forge/xmltodict
++
++```sh
++$ conda install -c conda-forge xmltodict
++```
++
++### RPM-based distro (Fedora, RHEL, …)
++
++There is an [official Fedora package for xmltodict](https://apps.fedoraproject.org/packages/python-xmltodict).
++
++```sh
++$ sudo yum install python-xmltodict
++```
++
++### Arch Linux
++
++There is an [official Arch Linux package for xmltodict](https://www.archlinux.org/packages/community/any/python-xmltodict/).
++
++```sh
++$ sudo pacman -S python-xmltodict
++```
++
++### Debian-based distro (Debian, Ubuntu, …)
++
++There is an [official Debian package for xmltodict](https://tracker.debian.org/pkg/python-xmltodict).
++
++```sh
++$ sudo apt install python-xmltodict
++```
++
++### FreeBSD
++
++There is an [official FreeBSD port for xmltodict](https://svnweb.freebsd.org/ports/head/devel/py-xmltodict/).
++
++```sh
++$ pkg install py36-xmltodict
++```
++
++### openSUSE/SLE (SLE 15, Leap 15, Tumbleweed)
++
++There is an [official openSUSE package for xmltodict](https://software.opensuse.org/package/python-xmltodict).
++
++```sh
++# Python2
++$ zypper in python2-xmltodict
++
++# Python3
++$ zypper in python3-xmltodict
++```
++
++## Type Annotations
++
++For type checking support, install the external types package:
++
++```sh
++# Using pypi
++$ pip install types-xmltodict
++
++# Using conda
++$ conda install -c conda-forge types-xmltodict
++```
++
++## Security Notes
++
++A CVE (CVE-2025-9375) was filed against `xmltodict` but is [disputed](https://github.com/martinblech/xmltodict/issues/377#issuecomment-3255691923). The root issue lies in Python’s `xml.sax.saxutils.XMLGenerator` API, which does not validate XML element names and provides no built-in way to do so. Since `xmltodict` is a thin wrapper that passes keys directly to `XMLGenerator`, the same issue exists in the standard library itself.
++
++It has been suggested that `xml.sax.saxutils.escape()` represents a secure usage path. This is incorrect: `escape()` is intended only for character data and attribute values, and can produce invalid XML when misapplied to element names. There is currently no secure, documented way in Python’s standard library to validate XML element names.
++
++Despite this, Fluid Attacks chose to assign a CVE to `xmltodict` while leaving the identical behavior in Python’s own standard library unaddressed. Their disclosure process also gave only 10 days from first contact to publication—well short of the 90-day industry norm—leaving no real opportunity for maintainer response. These actions reflect an inconsistency of standards and priorities that raise concerns about motivations, as they do not primarily serve the security of the broader community.
++
++The maintainer considers this CVE invalid and will formally dispute it with MITRE.
+diff --git a/work/xmltodict.egg-info/SOURCES.txt b/xmltodict.egg-info/SOURCES.txt
+new file mode 100644
+index 0000000..e8b67e0
+--- /dev/null
++++ b/xmltodict.egg-info/SOURCES.txt
+@@ -0,0 +1,13 @@
++LICENSE
++MANIFEST.in
++README.md
++pyproject.toml
++xmltodict.py
++tests/__init__.py
++tests/test_dicttoxml.py
++tests/test_xmltodict.py
++xmltodict.egg-info/PKG-INFO
++xmltodict.egg-info/SOURCES.txt
++xmltodict.egg-info/dependency_links.txt
++xmltodict.egg-info/requires.txt
++xmltodict.egg-info/top_level.txt
+\ No newline at end of file
+diff --git a/work/xmltodict.egg-info/dependency_links.txt b/xmltodict.egg-info/dependency_links.txt
+new file mode 100644
+index 0000000..8b13789
+--- /dev/null
++++ b/xmltodict.egg-info/dependency_links.txt
+@@ -0,0 +1 @@
++
+diff --git a/work/xmltodict.egg-info/requires.txt b/xmltodict.egg-info/requires.txt
+new file mode 100644
+index 0000000..38c321d
+--- /dev/null
++++ b/xmltodict.egg-info/requires.txt
+@@ -0,0 +1,4 @@
++
++[test]
++pytest
++pytest-cov
+diff --git a/work/xmltodict.egg-info/top_level.txt b/xmltodict.egg-info/top_level.txt
+new file mode 100644
+index 0000000..a0d4bb7
+--- /dev/null
++++ b/xmltodict.egg-info/top_level.txt
+@@ -0,0 +1 @@
++xmltodict
+diff --git a/xmltodict.py b/xmltodict.py
+index 694e9ce..e69de29 100644
+--- a/xmltodict.py
++++ b/xmltodict.py
+@@ -1,617 +0,0 @@
+-#!/usr/bin/env python
+-"Makes working with XML feel like you are working with JSON"
+-
+-from xml.parsers import expat
+-from xml.sax.saxutils import XMLGenerator, escape
+-from xml.sax.xmlreader import AttributesImpl
+-from io import StringIO
+-from inspect import isgenerator
+-
+-class ParsingInterrupted(Exception):
+-    pass
+-
+-
+-class _DictSAXHandler:
+-    def __init__(
+-        self,
+-        item_depth=0,
+-        item_callback=lambda *args: True,
+-        xml_attribs=True,
+-        attr_prefix="@",
+-        cdata_key="#text",
+-        force_cdata=False,
+-        cdata_separator="",
+-        postprocessor=None,
+-        dict_constructor=dict,
+-        strip_whitespace=True,
+-        namespace_separator=":",
+-        namespaces=None,
+-        force_list=None,
+-        comment_key="#comment",
+-    ):
+-        self.path = []
+-        self.stack = []
+-        self.data = []
+-        self.item = None
+-        self.item_depth = item_depth
+-        self.xml_attribs = xml_attribs
+-        self.item_callback = item_callback
+-        self.attr_prefix = attr_prefix
+-        self.cdata_key = cdata_key
+-        self.force_cdata = force_cdata
+-        self.cdata_separator = cdata_separator
+-        self.postprocessor = postprocessor
+-        self.dict_constructor = dict_constructor
+-        self.strip_whitespace = strip_whitespace
+-        self.namespace_separator = namespace_separator
+-        self.namespaces = namespaces
+-        self.namespace_declarations = dict_constructor()
+-        self.force_list = force_list
+-        self.comment_key = comment_key
+-
+-    def _build_name(self, full_name):
+-        if self.namespaces is None:
+-            return full_name
+-        i = full_name.rfind(self.namespace_separator)
+-        if i == -1:
+-            return full_name
+-        namespace, name = full_name[:i], full_name[i+1:]
+-        try:
+-            short_namespace = self.namespaces[namespace]
+-        except KeyError:
+-            short_namespace = namespace
+-        if not short_namespace:
+-            return name
+-        else:
+-            return self.namespace_separator.join((short_namespace, name))
+-
+-    def _attrs_to_dict(self, attrs):
+-        if isinstance(attrs, dict):
+-            return attrs
+-        return self.dict_constructor(zip(attrs[0::2], attrs[1::2]))
+-
+-    def startNamespaceDecl(self, prefix, uri):
+-        self.namespace_declarations[prefix or ''] = uri
+-
+-    def startElement(self, full_name, attrs):
+-        name = self._build_name(full_name)
+-        attrs = self._attrs_to_dict(attrs)
+-        if self.namespace_declarations:
+-            if not attrs:
+-                attrs = self.dict_constructor()
+-            attrs['xmlns'] = self.namespace_declarations
+-            self.namespace_declarations = self.dict_constructor()
+-        self.path.append((name, attrs or None))
+-        if len(self.path) >= self.item_depth:
+-            self.stack.append((self.item, self.data))
+-            if self.xml_attribs:
+-                attr_entries = []
+-                for key, value in attrs.items():
+-                    key = self.attr_prefix+self._build_name(key)
+-                    if self.postprocessor:
+-                        entry = self.postprocessor(self.path, key, value)
+-                    else:
+-                        entry = (key, value)
+-                    if entry:
+-                        attr_entries.append(entry)
+-                attrs = self.dict_constructor(attr_entries)
+-            else:
+-                attrs = None
+-            self.item = attrs or None
+-            self.data = []
+-
+-    def endElement(self, full_name):
+-        name = self._build_name(full_name)
+-        # If we just closed an item at the streaming depth, emit it and drop it
+-        # without attaching it back to its parent. This avoids accumulating all
+-        # streamed items in memory when using item_depth > 0.
+-        if len(self.path) == self.item_depth:
+-            item = self.item
+-            if item is None:
+-                item = (None if not self.data
+-                        else self.cdata_separator.join(self.data))
+-
+-            should_continue = self.item_callback(self.path, item)
+-            if not should_continue:
+-                raise ParsingInterrupted
+-            # Reset state for the parent context without keeping a reference to
+-            # the emitted item.
+-            if self.stack:
+-                self.item, self.data = self.stack.pop()
+-            else:
+-                self.item = None
+-                self.data = []
+-            self.path.pop()
+-            return
+-        if self.stack:
+-            data = (None if not self.data
+-                    else self.cdata_separator.join(self.data))
+-            item = self.item
+-            self.item, self.data = self.stack.pop()
+-            if self.strip_whitespace and data:
+-                data = data.strip() or None
+-            if data and self._should_force_cdata(name, data) and item is None:
+-                item = self.dict_constructor()
+-            if item is not None:
+-                if data:
+-                    self.push_data(item, self.cdata_key, data)
+-                self.item = self.push_data(self.item, name, item)
+-            else:
+-                self.item = self.push_data(self.item, name, data)
+-        else:
+-            self.item = None
+-            self.data = []
+-        self.path.pop()
+-
+-    def characters(self, data):
+-        if not self.data:
+-            self.data = [data]
+-        else:
+-            self.data.append(data)
+-
+-    def comments(self, data):
+-        if self.strip_whitespace:
+-            data = data.strip()
+-        self.item = self.push_data(self.item, self.comment_key, data)
+-
+-    def push_data(self, item, key, data):
+-        if self.postprocessor is not None:
+-            result = self.postprocessor(self.path, key, data)
+-            if result is None:
+-                return item
+-            key, data = result
+-        if item is None:
+-            item = self.dict_constructor()
+-        try:
+-            value = item[key]
+-            if isinstance(value, list):
+-                value.append(data)
+-            else:
+-                item[key] = [value, data]
+-        except KeyError:
+-            if self._should_force_list(key, data):
+-                item[key] = [data]
+-            else:
+-                item[key] = data
+-        return item
+-
+-    def _should_force_list(self, key, value):
+-        if not self.force_list:
+-            return False
+-        if isinstance(self.force_list, bool):
+-            return self.force_list
+-        try:
+-            return key in self.force_list
+-        except TypeError:
+-            return self.force_list(self.path[:-1], key, value)
+-
+-    def _should_force_cdata(self, key, value):
+-        if not self.force_cdata:
+-            return False
+-        if isinstance(self.force_cdata, bool):
+-            return self.force_cdata
+-        try:
+-            return key in self.force_cdata
+-        except TypeError:
+-            return self.force_cdata(self.path[:-1], key, value)
+-
+-
+-def parse(xml_input, encoding=None, expat=expat, process_namespaces=False,
+-          namespace_separator=':', disable_entities=True, process_comments=False, **kwargs):
+-    """Parse the given XML input and convert it into a dictionary.
+-
+-    `xml_input` can either be a `string`, a file-like object, or a generator of strings.
+-
+-    If `xml_attribs` is `True`, element attributes are put in the dictionary
+-    among regular child elements, using `@` as a prefix to avoid collisions. If
+-    set to `False`, they are just ignored.
+-
+-    Simple example::
+-
+-        >>> import xmltodict
+-        >>> doc = xmltodict.parse(\"\"\"
+-        ... <a prop="x">
+-        ...   <b>1</b>
+-        ...   <b>2</b>
+-        ... </a>
+-        ... \"\"\")
+-        >>> doc['a']['@prop']
+-        'x'
+-        >>> doc['a']['b']
+-        ['1', '2']
+-
+-    If `item_depth` is `0`, the function returns a dictionary for the root
+-    element (default behavior). Otherwise, it calls `item_callback` every time
+-    an item at the specified depth is found and returns `None` in the end
+-    (streaming mode).
+-
+-    The callback function receives two parameters: the `path` from the document
+-    root to the item (name-attribs pairs), and the `item` (dict). If the
+-    callback's return value is false-ish, parsing will be stopped with the
+-    :class:`ParsingInterrupted` exception.
+-
+-    Streaming example::
+-
+-        >>> def handle(path, item):
+-        ...     print('path:%s item:%s' % (path, item))
+-        ...     return True
+-        ...
+-        >>> xmltodict.parse(\"\"\"
+-        ... <a prop="x">
+-        ...   <b>1</b>
+-        ...   <b>2</b>
+-        ... </a>\"\"\", item_depth=2, item_callback=handle)
+-        path:[('a', {'prop': 'x'}), ('b', None)] item:1
+-        path:[('a', {'prop': 'x'}), ('b', None)] item:2
+-
+-    The optional argument `postprocessor` is a function that takes `path`,
+-    `key` and `value` as positional arguments and returns a new `(key, value)`
+-    pair where both `key` and `value` may have changed. Usage example::
+-
+-        >>> def postprocessor(path, key, value):
+-        ...     try:
+-        ...         return key + ':int', int(value)
+-        ...     except (ValueError, TypeError):
+-        ...         return key, value
+-        >>> xmltodict.parse('<a><b>1</b><b>2</b><b>x</b></a>',
+-        ...                 postprocessor=postprocessor)
+-        {'a': {'b:int': [1, 2], 'b': 'x'}}
+-
+-    You can pass an alternate version of `expat` (such as `defusedexpat`) by
+-    using the `expat` parameter. E.g:
+-
+-        >>> import defusedexpat
+-        >>> xmltodict.parse('<a>hello</a>', expat=defusedexpat.pyexpat)
+-        {'a': 'hello'}
+-
+-    You can use the force_list argument to force lists to be created even
+-    when there is only a single child of a given level of hierarchy. The
+-    force_list argument is a tuple of keys. If the key for a given level
+-    of hierarchy is in the force_list argument, that level of hierarchy
+-    will have a list as a child (even if there is only one sub-element).
+-    The index_keys operation takes precedence over this. This is applied
+-    after any user-supplied postprocessor has already run.
+-
+-        For example, given this input:
+-        <servers>
+-          <server>
+-            <name>host1</name>
+-            <os>Linux</os>
+-            <interfaces>
+-              <interface>
+-                <name>em0</name>
+-                <ip_address>10.0.0.1</ip_address>
+-              </interface>
+-            </interfaces>
+-          </server>
+-        </servers>
+-
+-        If called with force_list=('interface',), it will produce
+-        this dictionary:
+-        {'servers':
+-          {'server':
+-            {'name': 'host1',
+-             'os': 'Linux'},
+-             'interfaces':
+-              {'interface':
+-                [ {'name': 'em0', 'ip_address': '10.0.0.1' } ] } } }
+-
+-        `force_list` can also be a callable that receives `path`, `key` and
+-        `value`. This is helpful in cases where the logic that decides whether
+-        a list should be forced is more complex.
+-
+-
+-        If `process_comments` is `True`, comments will be added using `comment_key`
+-        (default=`'#comment'`) to the tag that contains the comment.
+-
+-            For example, given this input:
+-            <a>
+-              <b>
+-                <!-- b comment -->
+-                <c>
+-                    <!-- c comment -->
+-                    1
+-                </c>
+-                <d>2</d>
+-              </b>
+-            </a>
+-
+-            If called with `process_comments=True`, it will produce
+-            this dictionary:
+-            'a': {
+-                'b': {
+-                    '#comment': 'b comment',
+-                    'c': {
+-
+-                        '#comment': 'c comment',
+-                        '#text': '1',
+-                    },
+-                    'd': '2',
+-                },
+-            }
+-        Comment text is subject to the `strip_whitespace` flag: when it is left
+-        at the default `True`, comments will have leading and trailing
+-        whitespace removed. Disable `strip_whitespace` to keep comment
+-        indentation or padding intact.
+-    """
+-    handler = _DictSAXHandler(namespace_separator=namespace_separator,
+-                              **kwargs)
+-    if isinstance(xml_input, str):
+-        encoding = encoding or 'utf-8'
+-        xml_input = xml_input.encode(encoding)
+-    if not process_namespaces:
+-        namespace_separator = None
+-    parser = expat.ParserCreate(
+-        encoding,
+-        namespace_separator
+-    )
+-    parser.ordered_attributes = True
+-    parser.StartNamespaceDeclHandler = handler.startNamespaceDecl
+-    parser.StartElementHandler = handler.startElement
+-    parser.EndElementHandler = handler.endElement
+-    parser.CharacterDataHandler = handler.characters
+-    if process_comments:
+-        parser.CommentHandler = handler.comments
+-    parser.buffer_text = True
+-    if disable_entities:
+-        def _forbid_entities(*_args, **_kwargs):
+-            raise ValueError("entities are disabled")
+-
+-        parser.EntityDeclHandler = _forbid_entities
+-    if hasattr(xml_input, 'read'):
+-        parser.ParseFile(xml_input)
+-    elif isgenerator(xml_input):
+-        for chunk in xml_input:
+-            parser.Parse(chunk, False)
+-        parser.Parse(b'', True)
+-    else:
+-        parser.Parse(xml_input, True)
+-    return handler.item
+-
+-
+-def _convert_value_to_string(value):
+-    """Convert a value to its string representation for XML output.
+-
+-    Handles boolean values consistently by converting them to lowercase.
+-    """
+-    if isinstance(value, (str, bytes)):
+-        return value
+-    if isinstance(value, bool):
+-        return "true" if value else "false"
+-    return str(value)
+-
+-
+-def _validate_name(value, kind):
+-    """Validate an element/attribute name for XML safety.
+-
+-    Raises ValueError with a specific reason when invalid.
+-
+-    kind: 'element' or 'attribute' (used in error messages)
+-    """
+-    if not isinstance(value, str):
+-        raise ValueError(f"{kind} name must be a string")
+-    if value.startswith("?") or value.startswith("!"):
+-        raise ValueError(f'Invalid {kind} name: cannot start with "?" or "!"')
+-    if "<" in value or ">" in value:
+-        raise ValueError(f'Invalid {kind} name: "<" or ">" not allowed')
+-    if "/" in value:
+-        raise ValueError(f'Invalid {kind} name: "/" not allowed')
+-    if '"' in value or "'" in value:
+-        raise ValueError(f"Invalid {kind} name: quotes not allowed")
+-    if "=" in value:
+-        raise ValueError(f'Invalid {kind} name: "=" not allowed')
+-    if any(ch.isspace() for ch in value):
+-        raise ValueError(f"Invalid {kind} name: whitespace not allowed")
+-
+-
+-def _validate_comment(value):
+-    if isinstance(value, bytes):
+-        try:
+-            value = value.decode("utf-8")
+-        except UnicodeDecodeError as exc:
+-            raise ValueError("Comment text must be valid UTF-8") from exc
+-    if not isinstance(value, str):
+-        raise ValueError("Comment text must be a string")
+-    if "--" in value:
+-        raise ValueError("Comment text cannot contain '--'")
+-    if value.endswith("-"):
+-        raise ValueError("Comment text cannot end with '-'")
+-    return value
+-
+-
+-def _process_namespace(name, namespaces, ns_sep=':', attr_prefix='@'):
+-    if not isinstance(name, str):
+-        return name
+-    if not namespaces:
+-        return name
+-    try:
+-        ns, name = name.rsplit(ns_sep, 1)
+-    except ValueError:
+-        pass
+-    else:
+-        ns_res = namespaces.get(ns.strip(attr_prefix))
+-        name = '{}{}{}{}'.format(
+-            attr_prefix if ns.startswith(attr_prefix) else '',
+-            ns_res, ns_sep, name) if ns_res else name
+-    return name
+-
+-
+-def _emit(key, value, content_handler,
+-          attr_prefix='@',
+-          cdata_key='#text',
+-          depth=0,
+-          preprocessor=None,
+-          pretty=False,
+-          newl='\n',
+-          indent='\t',
+-          namespace_separator=':',
+-          namespaces=None,
+-          full_document=True,
+-          expand_iter=None,
+-          comment_key='#comment'):
+-    if isinstance(key, str) and key == comment_key:
+-        comments_list = value if isinstance(value, list) else [value]
+-        if isinstance(indent, int):
+-            indent = " " * indent
+-        for comment_text in comments_list:
+-            if comment_text is None:
+-                continue
+-            comment_text = _convert_value_to_string(comment_text)
+-            if not comment_text:
+-                continue
+-            if pretty:
+-                content_handler.ignorableWhitespace(depth * indent)
+-            content_handler.comment(comment_text)
+-            if pretty:
+-                content_handler.ignorableWhitespace(newl)
+-        return
+-
+-    key = _process_namespace(key, namespaces, namespace_separator, attr_prefix)
+-    if preprocessor is not None:
+-        result = preprocessor(key, value)
+-        if result is None:
+-            return
+-        key, value = result
+-    # Minimal validation to avoid breaking out of tag context
+-    _validate_name(key, "element")
+-    if not hasattr(value, '__iter__') or isinstance(value, (str, dict)):
+-        value = [value]
+-    for index, v in enumerate(value):
+-        if full_document and depth == 0 and index > 0:
+-            raise ValueError('document with multiple roots')
+-        if v is None:
+-            v = {}
+-        elif not isinstance(v, (dict, str)):
+-            if expand_iter and hasattr(v, '__iter__'):
+-                v = {expand_iter: v}
+-            else:
+-                v = _convert_value_to_string(v)
+-        if isinstance(v, str):
+-            v = {cdata_key: v}
+-        cdata = None
+-        attrs = {}
+-        children = []
+-        for ik, iv in v.items():
+-            if ik == cdata_key:
+-                cdata = _convert_value_to_string(iv)
+-                continue
+-            if isinstance(ik, str) and ik.startswith(attr_prefix):
+-                ik = _process_namespace(ik, namespaces, namespace_separator,
+-                                        attr_prefix)
+-                if ik == '@xmlns' and isinstance(iv, dict):
+-                    for k, v in iv.items():
+-                        _validate_name(k, "attribute")
+-                        attr = 'xmlns{}'.format(f':{k}' if k else '')
+-                        attrs[attr] = str(v)
+-                    continue
+-                if not isinstance(iv, str):
+-                    iv = str(iv)
+-                attr_name = ik[len(attr_prefix) :]
+-                _validate_name(attr_name, "attribute")
+-                attrs[attr_name] = iv
+-                continue
+-            if isinstance(iv, list) and not iv:
+-                continue # Skip empty lists to avoid creating empty child elements
+-            children.append((ik, iv))
+-        if isinstance(indent, int):
+-            indent = ' ' * indent
+-        if pretty:
+-            content_handler.ignorableWhitespace(depth * indent)
+-        content_handler.startElement(key, AttributesImpl(attrs))
+-        if pretty and children:
+-            content_handler.ignorableWhitespace(newl)
+-        for child_key, child_value in children:
+-            _emit(child_key, child_value, content_handler,
+-                  attr_prefix, cdata_key, depth+1, preprocessor,
+-                  pretty, newl, indent, namespaces=namespaces,
+-                  namespace_separator=namespace_separator,
+-                  expand_iter=expand_iter, comment_key=comment_key)
+-        if cdata is not None:
+-            content_handler.characters(cdata)
+-        if pretty and children:
+-            content_handler.ignorableWhitespace(depth * indent)
+-        content_handler.endElement(key)
+-        if pretty and depth:
+-            content_handler.ignorableWhitespace(newl)
+-
+-
+-class _XMLGenerator(XMLGenerator):
+-    def comment(self, text):
+-        text = _validate_comment(text)
+-        self._write(f"<!--{escape(text)}-->")
+-
+-
+-def unparse(input_dict, output=None, encoding='utf-8', full_document=True,
+-            short_empty_elements=False, comment_key='#comment',
+-            **kwargs):
+-    """Emit an XML document for the given `input_dict` (reverse of `parse`).
+-
+-    The resulting XML document is returned as a string, but if `output` (a
+-    file-like object) is specified, it is written there instead.
+-
+-    Dictionary keys prefixed with `attr_prefix` (default=`'@'`) are interpreted
+-    as XML node attributes, whereas keys equal to `cdata_key`
+-    (default=`'#text'`) are treated as character data.
+-
+-    Empty lists are omitted entirely: ``{"a": []}`` produces no ``<a>`` element.
+-    Provide a placeholder entry (for example ``{"a": [""]}``) when an explicit
+-    empty container element must be emitted.
+-
+-    The `pretty` parameter (default=`False`) enables pretty-printing. In this
+-    mode, lines are terminated with `'\n'` and indented with `'\t'`, but this
+-    can be customized with the `newl` and `indent` parameters.
+-
+-    """
+-    must_return = False
+-    if output is None:
+-        output = StringIO()
+-        must_return = True
+-    if short_empty_elements:
+-        content_handler = _XMLGenerator(output, encoding, True)
+-    else:
+-        content_handler = _XMLGenerator(output, encoding)
+-    if full_document:
+-        content_handler.startDocument()
+-    seen_root = False
+-    for key, value in input_dict.items():
+-        if key != comment_key and full_document and seen_root:
+-            raise ValueError("Document must have exactly one root.")
+-        _emit(key, value, content_handler, full_document=full_document, comment_key=comment_key, **kwargs)
+-        if key != comment_key:
+-            seen_root = True
+-    if full_document and not seen_root:
+-        raise ValueError("Document must have exactly one root.")
+-    if full_document:
+-        content_handler.endDocument()
+-    if must_return:
+-        value = output.getvalue()
+-        try:  # pragma no cover
+-            value = value.decode(encoding)
+-        except AttributeError:  # pragma no cover
+-            pass
+-        return value
+-
+-
+-if __name__ == '__main__':  # pragma: no cover
+-    import marshal
+-    import sys
+-
+-    stdin = sys.stdin.buffer
+-    stdout = sys.stdout.buffer
+-
+-    (item_depth,) = sys.argv[1:]
+-    item_depth = int(item_depth)
+-
+-    def handle_item(path, item):
+-        marshal.dump((path, item), stdout)
+-        return True
+-
+-    try:
+-        root = parse(stdin,
+-                     item_depth=item_depth,
+-                     item_callback=handle_item,
+-                     dict_constructor=dict)
+-        if item_depth == 0:
+-            handle_item([], root)
+-    except KeyboardInterrupt:
+-        pass

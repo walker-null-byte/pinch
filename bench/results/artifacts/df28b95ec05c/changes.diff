@@ -1,0 +1,41 @@
+diff --git a/toolz/itertoolz.py b/toolz/itertoolz.py
+index 354ecf2..9cbb613 100644
+--- a/toolz/itertoolz.py
++++ b/toolz/itertoolz.py
+@@ -524,7 +524,10 @@ def interpose(el, seq):
+     [1, 'a', 2, 'a', 3]
+     """
+     inposed = concat(zip(itertools.repeat(el), seq))
+-    next(inposed)
++    try:
++        next(inposed)
++    except StopIteration:
++        return []
+     return inposed
+ 
+ 
+diff --git a/work/toolz/tests/test_interpose_bug.py b/toolz/tests/test_interpose_bug.py
+new file mode 100644
+index 0000000..60a183a
+--- /dev/null
++++ b/toolz/tests/test_interpose_bug.py
+@@ -0,0 +1,4 @@
++from toolz import interpose
++
++def test_interpose_empty():
++    assert list(interpose("a", [])) == []
+diff --git a/toolz/tests/test_itertoolz.py b/toolz/tests/test_itertoolz.py
+index c864091..3edda82 100644
+--- a/toolz/tests/test_itertoolz.py
++++ b/toolz/tests/test_itertoolz.py
+@@ -255,6 +255,10 @@ def test_interpose():
+     assert list(interpose('.', ['a', 'b', 'c'])) == ['a', '.', 'b', '.', 'c']
+ 
+ 
++
++def test_interpose_empty():
++    assert list(interpose("a", [])) == []
++
+ def test_frequencies():
+     assert (frequencies(["cat", "pig", "cat", "eel",
+                         "pig", "dog", "dog", "dog"]) ==

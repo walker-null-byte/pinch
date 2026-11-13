@@ -1,0 +1,77 @@
+diff --git a/src/cachetools/__init__.py b/src/cachetools/__init__.py
+index 350122c..331b9ca 100644
+--- a/src/cachetools/__init__.py
++++ b/src/cachetools/__init__.py
+@@ -631,6 +631,9 @@ class TLRUCache(_TimedCache):
+         with self.timer as time:
+             expires = self.__ttu(key, value, time)
+             if not (time < expires):
++                # If the key existed, it must be removed.
++                if key in self:
++                    cache_delitem(self, key)
+                 return  # skip expired items
+             self.expire(time)
+             cache_setitem(self, key, value)
+diff --git a/work/tests/reproduce_issue.py b/tests/reproduce_issue.py
+new file mode 100644
+index 0000000..111b62c
+--- /dev/null
++++ b/tests/reproduce_issue.py
+@@ -0,0 +1,26 @@
++import unittest
++from cachetools import TLRUCache
++
++class TestTLRUCacheOverwrite(unittest.TestCase):
++    def test_overwrite_expired_value(self):
++        def ttu(_key, value, now):
++            return now + value
++
++        cache = TLRUCache(maxsize=2, ttu=ttu)
++        
++        # Test setup: expired value 0. timer starts at 0.
++        # ttu(1, 5, 0) = 5. timer is 0. 5 > 0.
++        # So key 1, value 5 is valid.
++        cache[1] = 5
++        
++        # Now store value 0.
++        # ttu(1, 0, 0) = 0.
++        # 0 is not > timer 0 (if timer 0).
++        # But wait, how does ttu work? 
++        # TLRU says: "a value of 0 is expired the moment it is stored".
++        # If ttu returns time <= now, it shouldn't be added?
++        
++        cache[1] = 0
++        
++        self.assertNotIn(1, cache, "Key should be gone after storing expired value")
++        self.assertEqual(len(cache), 0, "Cache should be empty")
+diff --git a/tests/test_tlru.py b/tests/test_tlru.py
+index b1263d7..b0dac65 100644
+--- a/tests/test_tlru.py
++++ b/tests/test_tlru.py
+@@ -144,6 +144,26 @@ class TLRUCacheTest(unittest.TestCase, CacheTestMixin):
+         self.assertEqual(cache[4], 4)
+         self.assertEqual(cache[5], 5)
+ 
++    def test_overwrite_existing_with_expired(self):
++        # Overwriting an existing key with an already-expired value must not
++        # silently retain the previous value: the assignment cannot store the
++        # new (dead-on-arrival) value, so the key has to be evicted instead.
++        def ttu(_k, value, t):
++            return t + value
++
++        cache = TLRUCache[int, int, int](maxsize=2, ttu=ttu, timer=Timer())
++        cache[1] = 5
++        self.assertEqual(cache[1], 5)
++        self.assertEqual(len(cache), 1)
++        self.assertEqual(cache.currsize, 1)
++
++        cache[1] = 0  # ttu -> t, i.e. not (t < t): immediately expired
++        self.assertNotIn(1, cache)
++        self.assertIsNone(cache.get(1))
++        self.assertEqual(len(cache), 0)
++        self.assertEqual(cache.currsize, 0)
++        self.assertEqual(set(cache), set())
++
+     def test_ttu_expire(self):
+         def ttu(_k, _v, t):
+             return t + 3

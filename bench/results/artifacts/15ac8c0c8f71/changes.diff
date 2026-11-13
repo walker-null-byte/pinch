@@ -1,0 +1,386 @@
+diff --git a/work/check_float.py b/check_float.py
+new file mode 100644
+index 0000000..5a54347
+--- /dev/null
++++ b/check_float.py
+@@ -0,0 +1,12 @@
++val = 10**24 - 1
++power = 10**21
++chopped = val / power
++formatted = "%.1f" % chopped
++rounded_value = float(formatted)
++print(f"val: {val}")
++print(f"chopped: {chopped}")
++print(f"formatted: {formatted}")
++print(f"rounded_value: {rounded_value}")
++print(f"rounded_value * power: {rounded_value * power}")
++print(f"10**24: {10**24}")
++print(f"Comparison: {rounded_value * power == float(10**24)}")
+diff --git a/work/check_logic.py b/check_logic.py
+new file mode 100644
+index 0000000..b9e8b92
+--- /dev/null
++++ b/check_logic.py
+@@ -0,0 +1,25 @@
++import math
++powers = [10**x for x in (3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 100)]
++def check(value, format="%.1f"):
++    ordinal = 0
++    while ordinal < len(powers) - 1 and value >= powers[ordinal + 1]:
++        ordinal += 1
++    
++    power = powers[ordinal]
++    chopped = value / power
++    # Use the format string to round
++    rounded_value = float(format % chopped)
++    
++    # The condition is if rounded_value is >= 1000
++    # But for a million it is 1000.0 * 1000 = 1000000.
++    # The requirement is that it shouldn't be "1000.0 sextillion"
++    
++    # What if we just do:
++    if rounded_value >= 1000.0 and ordinal < 10: # 10 is the index for decillion
++         # Carry over!
++         pass
++         
++    print(f"Value: {value}, Ordinal: {ordinal}, Power: {power}, Chopped: {chopped}, Rounded: {rounded_value}")
++
++check(10**6 - 1)
++check(10**24 - 1)
+diff --git a/work/check_logic_2.py b/check_logic_2.py
+new file mode 100644
+index 0000000..f62f9c1
+--- /dev/null
++++ b/check_logic_2.py
+@@ -0,0 +1,55 @@
++# The current code uses bisect:
++import bisect
++powers = [10**x for x in (3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 100)]
++def check(value, format="%.1f"):
++    ordinal = bisect.bisect_right(powers, value)
++    ordinal -= 1
++    power = powers[ordinal]
++    chopped = value / power
++    rounded_value = float(format % chopped)
++    
++    # Can we check if chopped is already close to 1000?
++    # What if we just use value >= powers[ordinal+1]?
++    # For 10**6-1: 999999 >= 1000000 -> False.
++    # But it SHOULD carry.
++    
++    # Wait, the current code has:
++    # if not largest_ordinal and rounded_value * power == powers[ordinal + 1]:
++    #     ordinal += 1
++    #     rounded_value = 1.0
++    
++    # So for 10**6-1, rounded_value is 1000.0, power is 1000.
++    # 1000.0 * 1000 == 1000000.0 -> True.
++    # 1000000.0 == 1000000 (power[ordinal+1]) -> True.
++    
++    # The problem is that 1000.0 * 10**21 == 10**24 is False because 
++    # of precision.
++    
++    # What if we use a different comparison?
++    # What if we compare the rounded_value with 1000?
++    
++    print(f"Value: {value}, power: {power}, rounded: {rounded_value}, next: {powers[ordinal+1]}")
++    # Can we use this: if rounded_value >= 1000.0?
++    # But what if format="%.0f"?
++    # If format="%.0f", chopped is 999.999..., rounded is 1000.
++    # 1000.0 * 1000 = 1000000.
++    # 1000.0 * 10**21 = 10**24.
++    
++    # The issue really is the float precision when multiplying large numbers.
++    # 1000.0 * 10**21 vs 10**24
++    
++    # 1000.0 * 10**21 is exactly 10**24 in mathematical terms.
++    # But in float it is 1e24.
++    
++    # Let's check:
++    print(f"1000.0 * 10**21 == 10**24: {1000.0 * 10**21 == 10**24}")
++    print(f"1000.0 * 10**21 == 10**24: {1000.0 * 10**21 == float(10**24)}")
++    
++    # So `rounded_value * power == powers[ordinal + 1]` is the check,
++    # but `powers[ordinal+1]` is an integer! 
++    # If we convert it to float, it might work!
++    
++    print(f"1000.0 * 10**21 == float(10**24): {1000.0 * 10**21 == float(10**24)}")
++
++check(10**6 - 1)
++check(10**24 - 1)
+diff --git a/work/fix_test.py b/fix_test.py
+new file mode 100644
+index 0000000..ac5e801
+--- /dev/null
++++ b/fix_test.py
+@@ -0,0 +1,68 @@
++def intword_fixed(value, format="%.1f"):
++    import bisect
++    import math
++    
++    powers = [10**x for x in (3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 100)]
++    human_powers = (
++        ("thousand", "thousand"),
++        ("million", "million"),
++        ("billion", "billion"),
++        ("trillion", "trillion"),
++        ("quadrillion", "quadrillion"),
++        ("quintillion", "quintillion"),
++        ("sextillion", "sextillion"),
++        ("septillion", "septillion"),
++        ("octillion", "octillion"),
++        ("nonillion", "nonillion"),
++        ("decillion", "decillion"),
++        ("googol", "googol"),
++    )
++
++    value = int(value)
++    if value < powers[0]:
++        return str(value)
++
++    ordinal = bisect.bisect_right(powers, value)
++    
++    # NEW LOGIC: check if we are very close to the next power
++    # But wait, what if we just use a different approach for the rounding?
++    
++    # Original logic:
++    # ordinal -= 1
++    # power = powers[ordinal]
++    # chopped = value / power
++    # rounded_value = float(format % chopped)
++    
++    # If rounded_value becomes 1000.0, it means it should have carried over
++    
++    # Let's try to check against rounded_value == 1000.0 or more
++    
++    # Actually, the problem is with the logic:
++    # rounded_value * power == powers[ordinal + 1]
++    
++    # Since we have floating point issues with large numbers, 
++    # maybe we should check if rounded_value >= 1000.0?
++    # But for a million, "1000.0 thousand" is "1.0 million". 
++    # The original code's `if rounded_value * power == powers[ordinal + 1]` works for million.
++    
++    # Let's see what happens if we change the condition.
++    # What if we round, then if it's 1000.0, we just do the carry?
++    
++    # For million: value=999999, power=1000, chopped=999.999, rounded=1000.0
++    # 1000.0 * 1000 == 1000000.0 (True) -> Correct
++    
++    # For 10**24-1: value=10**24-1, power=10**21, chopped=1000.0 (float error!), rounded=1000.0
++    # 1000.0 * 10**21 == 10**24 (True for float comparison in this specific case? No, it's False)
++    
++    # Ah! The issue is with the float representation of large numbers!
++    # Instead of `rounded_value * power == powers[ordinal + 1]`
++    # Let's use `rounded_value >= 1000.0`? But wait, what if the user requested a different format?
++    # Like `%.0f`?
++    
++    # The condition is: the mantissa must never render as 1000 or more below a decillion.
++    
++    # Maybe we should check if `chopped >= 1000.0` (or similar)?
++    
++    return "need to fix"
++
++print("Done")
+diff --git a/work/reproduce_issue.py b/reproduce_issue.py
+new file mode 100644
+index 0000000..ebe98bc
+--- /dev/null
++++ b/reproduce_issue.py
+@@ -0,0 +1,6 @@
++import humanize
++print(f"10**6 - 1: {humanize.intword(10**6 - 1)}")
++print(f"10**24 - 1: {humanize.intword(10**24 - 1)}")
++print(f"Expected 10**24 - 1: '1.0 septillion'")
++print(f"10**36: {humanize.intword(10**36)}")
++print(f"2 * 10**100: {humanize.intword(2 * 10**100)}")
+diff --git a/work/test_logic_3.py b/test_logic_3.py
+new file mode 100644
+index 0000000..d01d5cc
+--- /dev/null
++++ b/test_logic_3.py
+@@ -0,0 +1,23 @@
++powers = [10**x for x in (3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 100)]
++def check(value, format="%.1f"):
++    import bisect
++    ordinal = bisect.bisect_right(powers, value)
++    largest_ordinal = ordinal == len(powers)
++    ordinal -= 1
++    power = powers[ordinal]
++    chopped = value / power
++    rounded_value = float(format % chopped)
++    
++    print(f"Value: {value}, rounded: {rounded_value}, largest: {largest_ordinal}, ordinal: {ordinal}")
++    
++    # Proposed change
++    if not largest_ordinal and rounded_value >= 1000.0:
++        ordinal += 1
++        rounded_value = 1.0
++        
++    print(f"After fix: ordinal: {ordinal}, rounded: {rounded_value}")
++
++check(10**6 - 1)
++check(10**24 - 1)
++check(10**36)
++check(2 * 10**100)
+diff --git a/work/test_logic_4.py b/test_logic_4.py
+new file mode 100644
+index 0000000..6bd115a
+--- /dev/null
++++ b/test_logic_4.py
+@@ -0,0 +1,23 @@
++powers = [10**x for x in (3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 100)]
++def check(value, format="%.1f"):
++    import bisect
++    ordinal = bisect.bisect_right(powers, value)
++    largest_ordinal = ordinal == len(powers)
++    ordinal -= 1
++    power = powers[ordinal]
++    chopped = value / power
++    rounded_value = float(format % chopped)
++    
++    print(f"Value: {value}, rounded: {rounded_value}, largest: {largest_ordinal}, ordinal: {ordinal}")
++    
++    # New condition
++    if not largest_ordinal and rounded_value >= 1000.0 and ordinal < 10:
++        ordinal += 1
++        rounded_value = 1.0
++        
++    print(f"After fix: ordinal: {ordinal}, rounded: {rounded_value}")
++
++check(10**6 - 1)
++check(10**24 - 1)
++check(10**36)
++check(2 * 10**100)
+diff --git a/work/test_original.py b/test_original.py
+new file mode 100644
+index 0000000..c8a4bb1
+--- /dev/null
++++ b/test_original.py
+@@ -0,0 +1,45 @@
++import bisect
++powers = [10**x for x in (3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 100)]
++human_powers = (
++    ("thousand", "thousand"),
++    ("million", "million"),
++    ("billion", "billion"),
++    ("trillion", "trillion"),
++    ("quadrillion", "quadrillion"),
++    ("quintillion", "quintillion"),
++    ("sextillion", "sextillion"),
++    ("septillion", "septillion"),
++    ("octillion", "octillion"),
++    ("nonillion", "nonillion"),
++    ("decillion", "decillion"),
++    ("googol", "googol"),
++)
++value = 10**6 - 1
++ordinal = bisect.bisect_right(powers, value)
++# ordinal is 1
++ordinal -= 1 # ordinal is 0
++power = powers[ordinal] # powers[0] = 1000
++chopped = value / power # 999.999
++format = "%.1f"
++rounded_value = float(format % chopped) # 1000.0
++
++if not (ordinal == len(powers)) and rounded_value * power == powers[ordinal + 1]:
++    # In original: `if not largest_ordinal` where `largest_ordinal = (ordinal == len(powers))`
++    # wait, the original code is:
++    # ordinal = bisect.bisect_right(powers, value)
++    # largest_ordinal = (ordinal == len(powers))
++    # ordinal -= 1
++    # power = powers[ordinal]
++    # chopped = value / power
++    # rounded_value = float(format % chopped)
++    # if not largest_ordinal and rounded_value * power == powers[ordinal + 1]:
++    #     ordinal += 1
++    #     rounded_value = 1.0
++
++    print("Condition True!")                
++    ordinal += 1
++    rounded_value = 1.0
++else:
++    print("Condition False!")
++
++print(f"ordinal: {ordinal}, human_powers: {human_powers[ordinal]}")
+diff --git a/work/test_round.py b/test_round.py
+new file mode 100644
+index 0000000..dd986e6
+--- /dev/null
++++ b/test_round.py
+@@ -0,0 +1,23 @@
++powers = [10**x for x in (3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 100)]
++format = "%.1f"
++
++def check(value):
++    import bisect
++    import math
++    ordinal = bisect.bisect_right(powers, value)
++    largest_ordinal = ordinal == len(powers)
++    ordinal -= 1
++    power = powers[ordinal]
++    chopped = value / power
++    rounded_value = float(format % chopped)
++    print(f"Value: {value}, power: {power}, chopped: {chopped}, rounded: {rounded_value}, next_power: {powers[ordinal+1] if ordinal+1 < len(powers) else 'N/A'}")
++    
++    # The condition in the original code:
++    # if not largest_ordinal and rounded_value * power == powers[ordinal + 1]:
++    
++    if not largest_ordinal:
++        next_power = powers[ordinal + 1]
++        print(f"Check: {rounded_value} * {power} == {next_power} ? {rounded_value * power == next_power}")
++
++check(10**24 - 1)
++check(10**6 - 1)
+diff --git a/tests/test_number.py b/tests/test_number.py
+index 755e29e..5fb12fa 100644
+--- a/tests/test_number.py
++++ b/tests/test_number.py
+@@ -148,6 +148,47 @@ def test_intword(test_args: list[str], expected: str) -> None:
+     assert humanize.intword(*test_args) == expected
+ 
+ 
++def test_intword_rounding_rollover() -> None:
++    """Values that round up to the next power must carry to the next unit.
++
++    Regression: for magnitudes above ~10**22 the carry was checked in floating
++    point (``rounded_value * power == powers[ordinal + 1]``) and no longer
++    matched the exact integer power, so e.g. ``10**24 - 1`` was rendered as
++    "1000.0 sextillion" instead of "1.0 septillion".
++    """
++    units = [
++        "thousand",
++        "million",
++        "billion",
++        "trillion",
++        "quadrillion",
++        "quintillion",
++        "sextillion",
++        "septillion",
++        "octillion",
++        "nonillion",
++        "decillion",
++    ]
++    # value = 10**e - 1 rounds up to 10**e with "%.1f"/"%.0f", i.e. exactly 1.0
++    # of the unit sitting at 10**e (units[i] where 10**e == powers[i]).
++    for i, exponent in enumerate(range(6, 34, 3), start=1):
++        value = 10**exponent - 1
++        assert humanize.intword(value) == f"1.0 {units[i]}"
++        assert humanize.intword(value, "%.0f") == f"1 {units[i]}"
++
++    # The mantissa must never render at or above 1000 for values below a
++    # decillion; a bare "1000.0" is only expected in the sparse gap between
++    # decillion and googol, which has no dedicated unit.
++    for exponent in range(6, 34, 3):
++        rendered = humanize.intword(10**exponent - 1)
++        mantissa = float(rendered.split(" ", 1)[0])
++        assert mantissa < 1000
++
++    # The documented decillion..googol gap must be left untouched.
++    assert humanize.intword(10**36) == "1000.0 decillion"
++    assert humanize.intword(2 * 10**100) == "2.0 googol"
++
++
+ @pytest.mark.parametrize(
+     "test_input, expected",
+     [

@@ -1,0 +1,21 @@
+The tests pass after the edit (they had failed earlier), so pinch stopped here.
+
+--- stderr ---
+pinch session 20261112-151729-3340be  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+pinch proposes running the tests once before starting.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_tlru.py"}
+The gateway answered HTTP 503 (every provider it tried failed for now): waiting 2 s, then retrying (retry 1 of 4). Your session is saved.
+The gateway answered HTTP 503 (every provider it tried failed for now): waiting 4 s, then retrying (retry 2 of 4). Your session is saved.
+Auto-approved (write): write_file {"file_path": "tests/reproduce_issue.py", "content": "import unittest\nfrom cachetools import TLRUCache\n\nclass TestTLRUCacheOverwrite(unittest.TestCase):\n    def test_overwrite_expired_value(self):\n        def ttu(_key, value, now):\n            return now + value\n\n        cache = TLRUCache(ma...
+[write] write_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_tlru.py"}
+Auto-approved (shell): run_command {"command": "python -m pytest tests/reproduce_issue.py"}
+[shell] run_command
+[read] read_file
+[read] read_file
+Auto-approved (write): edit_file {"file_path": "src/cachetools/__init__.py", "new_string": "            if not (time < expires):\n                # If the key existed, it must be removed.\n                if key in self:\n                    cache_delitem(self, key)\n                return  # skip expired items\n            self.ex...
+[write] edit_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_tlru.py"}
