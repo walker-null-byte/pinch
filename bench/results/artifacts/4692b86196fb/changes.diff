@@ -1,0 +1,82 @@
+diff --git a/go_counting.py b/go_counting.py
+index d1c689e..63bd982 100644
+--- a/go_counting.py
++++ b/go_counting.py
+@@ -1,4 +1,9 @@
+ 
++BLACK = "B"
++WHITE = "W"
++NONE = ""
++
++
+ class Board:
+     """Count territories of each player in a Go game
+ 
+@@ -7,7 +12,13 @@ class Board:
+     """
+ 
+     def __init__(self, board):
+-        pass
++        self.board = board
++        self.height = len(board)
++        self.width = len(board[0]) if self.height > 0 else 0
++
++    def _validate_coord(self, x, y):
++        if not (0 <= x < self.width and 0 <= y < self.height):
++            raise ValueError("Invalid coordinate")
+ 
+     def territory(self, x, y):
+         """Find the owner and the territories given a coordinate on
+@@ -23,7 +34,35 @@ class Board:
+                         second being a set of coordinates, representing
+                         the owner's territories.
+         """
+-        pass
++        self._validate_coord(x, y)
++        if self.board[y][x] != " ":
++            return NONE, set()
++
++        visited = set()
++        queue = [(x, y)]
++        region = set()
++        border_stones = set()
++
++        while queue:
++            cx, cy = queue.pop(0)
++            if (cx, cy) in visited:
++                continue
++            visited.add((cx, cy))
++
++            if self.board[cy][cx] == " ":
++                region.add((cx, cy))
++                for nx, ny in [(cx - 1, cy), (cx + 1, cy), (cx, cy - 1), (cx, cy + 1)]:
++                    if 0 <= nx < self.width and 0 <= ny < self.height:
++                        if (nx, ny) not in visited:
++                            queue.append((nx, ny))
++            else:
++                border_stones.add(self.board[cy][cx])
++
++        owner = NONE
++        if len(border_stones) == 1:
++            owner = list(border_stones)[0]
++
++        return owner, region
+ 
+     def territories(self):
+         """Find the owners and the territories of the whole board
+@@ -36,4 +75,14 @@ class Board:
+                         , i.e. "W", "B", "".  The value being a set
+                         of coordinates owned by the owner.
+         """
+-        pass
++        territories_dict = {BLACK: set(), WHITE: set(), NONE: set()}
++        visited = set()
++
++        for y in range(self.height):
++            for x in range(self.width):
++                if self.board[y][x] == " " and (x, y) not in visited:
++                    owner, region = self.territory(x, y)
++                    visited.update(region)
++                    territories_dict[owner].update(region)
++
++        return territories_dict

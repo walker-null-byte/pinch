@@ -1,0 +1,44 @@
+diff --git a/parse/__init__.py b/parse/__init__.py
+index 3d61749..fdf3478 100644
+--- a/parse/__init__.py
++++ b/parse/__init__.py
+@@ -813,7 +813,7 @@ class Parser(object):
+             conv[group] = partial(date_convert, d_m_y=(n + 4, n + 3, n + 8), hms=n + 5)
+             self._group_index += 8
+         elif type == "tt":
+-            s = r"%s?%s?%s?" % (TIME_PAT, AM_PAT, TZ_PAT)
++            s = r"%s%s?%s?" % (TIME_PAT, AM_PAT, TZ_PAT)
+             n = self._group_index
+             conv[group] = partial(date_convert, hms=n + 1, am=n + 4, tz=n + 5)
+             self._group_index += 5
+diff --git a/tests/test_bugs.py b/tests/test_bugs.py
+index 482f9de..c4ddbe5 100644
+--- a/tests/test_bugs.py
++++ b/tests/test_bugs.py
+@@ -1,5 +1,6 @@
+ import pickle
+ from datetime import datetime
++from datetime import time
+ 
+ import parse
+ 
+@@ -141,3 +142,19 @@ def test_microsecond_precision_issue162():
+     # more than 6 fractional digits should be truncated
+     r = parse.parse("{:ti}", "2023-10-14T15:09:08.1234567Z")
+     assert r[0].microsecond == 123456
++
++
++def test_time_type_requires_an_actual_time():
++    # the "tt" pattern marked the time itself as optional, so a field could
++    # match nothing at all and convert that into a bogus time(0, 0)
++    assert parse.parse("{:tt}", "") is None
++    assert parse.parse("Meet at {:tt}", "Meet at ") is None
++    assert parse.search("{:tt}", "there is no time here") is None
++
++    # the phantom empty match also showed up as an endless stream of results
++    phantom = [result for _, result in zip(range(5), parse.findall("{:tt}", "no time"))]
++    assert phantom == []
++
++    # the documented time forms still parse
++    assert parse.parse("{:tt}", "10:21:36 PM")[0] == time(22, 21, 36)
++    assert parse.parse("Meet at {:tt}", "Meet at 10:21")[0] == time(10, 21)

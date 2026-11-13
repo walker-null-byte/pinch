@@ -1,0 +1,7 @@
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm.turn_on_debug()'.
+
+
+--- stderr ---
+rate limited: waiting 24 s, then retrying (1 of 8)

@@ -1,0 +1,54 @@
+diff --git a/tests/test_dicttoxml.py b/tests/test_dicttoxml.py
+index bd2300a..e67600e 100644
+--- a/tests/test_dicttoxml.py
++++ b/tests/test_dicttoxml.py
+@@ -573,7 +573,7 @@ def test_non_string_text_with_attributes():
+ 
+     assert unparse({"a": {"@param": "flag", "#text": True}}, full_document=False) == '<a param="flag">true</a>'
+ 
+-    assert unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test">None</a>'
++    assert unparse({"a": {"@param": "test", "#text": None}}, full_document=False) == '<a param="test"></a>'
+ 
+     assert unparse({"a": {"@param": "test", "#text": "string"}}, full_document=False) == '<a param="test">string</a>'
+ 
+@@ -594,3 +594,13 @@ def test_non_string_text_with_attributes():
+     assert unparse({"a": True}, full_document=False) == unparse({"a": {"#text": True}}, full_document=False)
+ 
+     assert unparse({"a": "hello"}, full_document=False) == unparse({"a": {"#text": "hello"}}, full_document=False)
++    assert unparse({"a": None}, full_document=False) == unparse({"a": {"#text": None}}, full_document=False)
++
++
++def test_none_text_with_short_empty_elements_and_attributes():
++    obj = {"x": {"#text": None, "@pro": None}, "y": None}
++    assert unparse(obj, short_empty_elements=True, full_document=False) == '<x pro=""/><y/>'
++
++
++def test_none_attribute_serializes_as_empty_string():
++    assert unparse({"x": {"@pro": None}}, full_document=False) == '<x pro=""></x>'
+diff --git a/xmltodict.py b/xmltodict.py
+index 694e9ce..2556444 100644
+--- a/xmltodict.py
++++ b/xmltodict.py
+@@ -493,7 +493,7 @@ def _emit(key, value, content_handler,
+         children = []
+         for ik, iv in v.items():
+             if ik == cdata_key:
+-                cdata = _convert_value_to_string(iv)
++                cdata = None if iv is None else _convert_value_to_string(iv)
+                 continue
+             if isinstance(ik, str) and ik.startswith(attr_prefix):
+                 ik = _process_namespace(ik, namespaces, namespace_separator,
+@@ -502,9 +502,11 @@ def _emit(key, value, content_handler,
+                     for k, v in iv.items():
+                         _validate_name(k, "attribute")
+                         attr = 'xmlns{}'.format(f':{k}' if k else '')
+-                        attrs[attr] = str(v)
++                        attrs[attr] = str(v) if v is not None else ""
+                     continue
+-                if not isinstance(iv, str):
++                if iv is None:
++                    iv = ""
++                elif not isinstance(iv, str):
+                     iv = str(iv)
+                 attr_name = ik[len(attr_prefix) :]
+                 _validate_name(attr_name, "attribute")

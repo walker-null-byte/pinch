@@ -1,0 +1,92 @@
+diff --git a/poker.py b/poker.py
+index 49824d3..50c36eb 100644
+--- a/poker.py
++++ b/poker.py
+@@ -1,2 +1,86 @@
++def parse_card(card_str):
++    value_map = {'J': 11, 'Q': 12, 'K': 13, 'A': 14}
++    val_char = card_str[:-1]
++    suit = card_str[-1]
++    if val_char.isdigit():
++        val = int(val_char)
++    else:
++        val = value_map[val_char]
++    return val, suit
++
++def evaluate_hand(hand_str):
++    cards = [parse_card(c) for c in hand_str.split()]
++    values = sorted([c[0] for c in cards], reverse=True)
++    suits = [c[1] for c in cards]
++    
++    is_flush = len(set(suits)) == 1
++    
++    # Check straight
++    unique_vals = sorted(list(set(values)), reverse=True)
++    is_straight = False
++    straight_high = 0
++    
++    if len(unique_vals) == 5:
++        if unique_vals[0] - unique_vals[4] == 4:
++            is_straight = True
++            straight_high = unique_vals[0]
++        elif unique_vals == [14, 5, 4, 3, 2]: # A-2-3-4-5 wheel
++            is_straight = True
++            straight_high = 5
++            values = [5, 4, 3, 2, 1]
++
++    from collections import Counter
++    counts = Counter(values)
++    # sort by count descending, then value descending
++    sorted_counts = sorted(counts.items(), key=lambda x: (x[1], x[0]), reverse=True)
++    
++    # Hand categories:
++    # 8: Straight flush
++    # 7: Four of a kind
++    # 6: Full house
++    # 5: Flush
++    # 4: Straight
++    # 3: Three of a kind
++    # 2: Two pair
++    # 1: One pair
++    # 0: High card
++    
++    # Check straight flush
++    if is_straight and is_flush:
++        if values == [5, 4, 3, 2, 1]:
++            score = (8, 5) # wheel straight flush high card is 5
++        else:
++            score = (8, straight_high)
++    elif sorted_counts[0][1] == 4:
++        # Four of a kind
++        score = (7, sorted_counts[0][0], sorted_counts[1][0])
++    elif sorted_counts[0][1] == 3 and sorted_counts[1][1] == 2:
++        # Full house
++        score = (6, sorted_counts[0][0], sorted_counts[1][0])
++    elif is_flush:
++        score = (5, values)
++    elif is_straight:
++        score = (4, straight_high)
++    elif sorted_counts[0][1] == 3:
++        score = (3, sorted_counts[0][0], tuple(v for v in values if v != sorted_counts[0][0]))
++    elif sorted_counts[0][1] == 2 and sorted_counts[1][1] == 2:
++        # Two pair
++        high_pair = max(sorted_counts[0][0], sorted_counts[1][0])
++        low_pair = min(sorted_counts[0][0], sorted_counts[1][0])
++        kicker = sorted_counts[2][0]
++        score = (2, high_pair, low_pair, kicker)
++    elif sorted_counts[0][1] == 2:
++        pair_val = sorted_counts[0][0]
++        kickers = tuple(v for v in values if v != pair_val)
++        score = (1, pair_val, kickers)
++    else:
++        score = (0, tuple(values))
++        
++    return score
++
+ def best_hands(hands):
+-    pass
++    scored = [(hand, evaluate_hand(hand)) for hand in hands]
++    scored.sort(key=lambda x: x[1], reverse=True)
++    best_score = scored[0][1]
++    return [h for h, s in scored if s == best_score]
++

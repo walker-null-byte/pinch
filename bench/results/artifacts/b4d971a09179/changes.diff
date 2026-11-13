@@ -1,0 +1,100 @@
+diff --git a/rest_api.py b/rest_api.py
+index 0e448a4..61c3343 100644
+--- a/rest_api.py
++++ b/rest_api.py
+@@ -1,9 +1,92 @@
++import json
++
++
+ class RestAPI:
+     def __init__(self, database=None):
+-        pass
++        self.database = database if database is not None else {"users": []}
++
++    def _get_user(self, name):
++        for user in self.database["users"]:
++            if user["name"] == name:
++                return user
++        return None
++
++    def _update_user_balance(self, user):
++        owed_by_total = sum(user["owed_by"].values())
++        owes_total = sum(user["owes"].values())
++        user["balance"] = owed_by_total - owes_total
+ 
+     def get(self, url, payload=None):
+-        pass
++        if url == "/users":
++            data = json.loads(payload) if payload else {}
++            names = data.get("users")
++            if names is not None:
++                users = [u for u in self.database["users"] if u["name"] in names]
++            else:
++                users = list(self.database["users"])
++            users.sort(key=lambda u: u["name"])
++            return json.dumps({"users": users})
++        return json.dumps({})
+ 
+     def post(self, url, payload=None):
+-        pass
++        data = json.loads(payload) if payload else {}
++        if url == "/add":
++            name = data.get("user")
++            user = {
++                "name": name,
++                "owes": {},
++                "owed_by": {},
++                "balance": 0.0,
++            }
++            self.database["users"].append(user)
++            return json.dumps(user)
++        elif url == "/iou":
++            lender_name = data.get("lender")
++            borrower_name = data.get("borrower")
++            amount = data.get("amount")
++
++            lender = self._get_user(lender_name)
++            borrower = self._get_user(borrower_name)
++
++            # Check if borrower owes lender
++            if borrower_name in lender.get("owes", {}):
++                existing = lender["owes"][borrower_name]
++                if existing > amount:
++                    lender["owes"][borrower_name] -= amount
++                    borrower["owed_by"][lender_name] -= amount
++                elif existing == amount:
++                    del lender["owes"][borrower_name]
++                    del borrower["owed_by"][lender_name]
++                else:
++                    diff = amount - existing
++                    del lender["owes"][borrower_name]
++                    del borrower["owed_by"][lender_name]
++                    lender["owed_by"][borrower_name] = diff
++                    borrower["owes"][lender_name] = diff
++            # Check if lender owes borrower
++            elif lender_name in borrower.get("owes", {}):
++                existing = borrower["owes"][lender_name]
++                if existing > amount:
++                    borrower["owes"][lender_name] -= amount
++                    lender["owed_by"][borrower_name] -= amount
++                elif existing == amount:
++                    del borrower["owes"][lender_name]
++                    del lender["owed_by"][borrower_name]
++                else:
++                    diff = amount - existing
++                    del borrower["owes"][lender_name]
++                    del lender["owed_by"][borrower_name]
++                    borrower["owed_by"][lender_name] = diff
++                    lender["owes"][borrower_name] = diff
++            else:
++                lender["owed_by"][borrower_name] = lender["owed_by"].get(borrower_name, 0.0) + amount
++                borrower["owes"][lender_name] = borrower["owes"].get(lender_name, 0.0) + amount
++
++            self._update_user_balance(lender)
++            self._update_user_balance(borrower)
++
++            users = sorted([lender, borrower], key=lambda u: u["name"])
++            return json.dumps({"users": users})
++
++        return json.dumps({})
++

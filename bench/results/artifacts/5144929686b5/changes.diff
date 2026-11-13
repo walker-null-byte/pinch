@@ -1,0 +1,85 @@
+diff --git a/work/_bench_check.py b/_bench_check.py
+new file mode 100644
+index 0000000..2804788
+--- /dev/null
++++ b/_bench_check.py
+@@ -0,0 +1,23 @@
++import sys
++from click.testing import CliRunner
++import tool
++
++def fail(msg):
++    print("FAIL:", msg)
++    sys.exit(1)
++
++runner = CliRunner()
++for value, expected in (("/etc/tool.toml", "tool 1.4.2 (config: /etc/tool.toml)\n"), ("/other.toml", "tool 1.4.2 (config: /other.toml)\n")):
++    res = runner.invoke(tool.cli, ["--version"], prog_name="tool", env={"TOOL_CONFIG": value})
++    if res.output != expected:
++        fail(f"with TOOL_CONFIG={value}: got {res.output!r}, expected {expected!r} (exit {res.exit_code})")
++res = runner.invoke(tool.cli, ["--version"], prog_name="tool", env={"TOOL_CONFIG": None})
++if res.output != "tool 1.4.2 (config: default)\n":
++    fail(f"without TOOL_CONFIG: got {res.output!r}")
++res = runner.invoke(tool.cli, ["hello"], prog_name="tool")
++if res.output != "hello\n":
++    fail(f"hello changed: {res.output!r}")
++used = [p for p in tool.cli.params if p.callback is not None and "custom_version_option" in p.callback.__qualname__]
++if not used:
++    fail("the --version option was not made with click.custom_version_option")
++print("PASS")
+diff --git a/work/test_tool.py b/test_tool.py
+new file mode 100644
+index 0000000..57b5e39
+--- /dev/null
++++ b/test_tool.py
+@@ -0,0 +1,31 @@
++import os
++import subprocess
++import sys
++import pytest
++from click.testing import CliRunner
++from tool import cli
++
++
++def test_version_default(monkeypatch):
++    monkeypatch.delenv("TOOL_CONFIG", raising=False)
++    runner = CliRunner()
++    result = runner.invoke(cli, ["--version"])
++    assert result.exit_code == 0
++    # Depending on runner context, command path might be 'cli' or 'tool' or similar. Let's check what click context command path is.
++    # Actually, click.version_option callback prints `ctx.find_root().command_path` or `ctx.command_path`. Let's verify output format.
++    assert "1.4.2 (config: default)" in result.output
++
++
++def test_version_with_env(monkeypatch):
++    monkeypatch.setenv("TOOL_CONFIG", "/etc/tool.toml")
++    runner = CliRunner()
++    result = runner.invoke(cli, ["--version"])
++    assert result.exit_code == 0
++    assert "1.4.2 (config: /etc/tool.toml)" in result.output
++
++
++def test_hello():
++    runner = CliRunner()
++    result = runner.invoke(cli, ["hello"])
++    assert result.exit_code == 0
++    assert result.output.strip() == "hello"
+diff --git a/tool.py b/tool.py
+index 54c4ec0..6e9f40b 100644
+--- a/tool.py
++++ b/tool.py
+@@ -1,7 +1,14 @@
++import os
+ import click
+ 
+ 
++def _version_callback(ctx):
++    config = os.environ.get("TOOL_CONFIG", "default")
++    return f"{ctx.command_path} 1.4.2 (config: {config})"
++
++
+ @click.group()
++@click.custom_version_option(_version_callback)
+ def cli():
+     """Example tool."""
+ 

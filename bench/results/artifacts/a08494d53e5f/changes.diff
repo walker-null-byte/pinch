@@ -1,0 +1,141 @@
+diff --git a/pov.py b/pov.py
+index 21dbe4b..c62b124 100644
+--- a/pov.py
++++ b/pov.py
+@@ -18,8 +18,134 @@ class Tree:
+     def __eq__(self, other):
+         return self.__dict__() == other.__dict__()
+ 
++    def _find_path(self, node, current_path=None):
++        if current_path is None:
++            current_path = []
++        current_path = current_path + [self.label]
++        if self.label == node:
++            return current_path
++        for child in self.children:
++            try:
++                res = child._find_path(node, current_path)
++                if res is not None:
++                    return res
++            except ValueError:
++                pass
++        return None
++
+     def from_pov(self, from_node):
+-        pass
++        path = self._find_path(from_node)
++        if path is None:
++            raise ValueError("Tree could not be reoriented")
++        
++        # Build a parent map or build the reoriented tree by reversing the path.
++        # Let's find all parent-child relationships in the original tree.
++        parent_map = {}
++        children_map = {self.label: list(self.children)}
++        
++        def build_maps(curr, parent=None):
++            if parent is not None:
++                parent_map[curr.label] = parent
++            children_map[curr.label] = list(curr.children)
++            for c in curr.children:
++                build_maps(c, curr)
++
++        build_maps(self)
++
++        if from_node not in children_map and from_node not in parent_map and from_node != self.label:
++            raise ValueError("Tree could not be reoriented")
++
++        # Now re-root at from_node
++        # For any node along path from root to from_node, their parent becomes their child.
++        # For other nodes, their structure relative to each other remains the same, except parents are inverted along the path.
++        
++        # Let's write a function to construct the tree from a node given parent_map and children_map.
++        # Wait, if we reroot at from_node, how do children/parents change?
++        # A node X's children in the new tree will be:
++        # - Its original children (excluding the one that is part of the path towards old root or new root? Wait)
++        # Actually, standard way:
++        # For a node `curr`, its new children are its old children, PLUS its old parent (if old parent exists and is not curr's child).
++        # Wait, let's trace carefully or use a known algorithm.
++        
++        # Let's collect all nodes and their original children.
++        all_children = {}
++        def collect(node):
++            all_children[node.label] = [Tree(c.label, c.children) for c in node.children] # wait, need deep copy or rebuild
++            for c in node.children:
++                collect(c)
++        # Actually, easiest is to build a full adjacency list (undirected graph) of labels, with original tree structure.
++        return self._reroot(from_node)
++
++    def _get_adj(self, adj=None):
++        if adj is None:
++            adj = {}
++        if self.label not in adj:
++            adj[self.label] = set()
++        for c in self.children:
++            adj[self.label].add(c.label)
++            if c.label not in adj:
++                adj[c.label] = set()
++            adj[c.label].add(self.label)
++            c._get_adj(adj)
++        return adj
++
++    def _reroot(self, new_root_label):
++        # We need the original tree nodes or labels. But wait, Tree objects can be reconstructed.
++        # Let's check if new_root_label exists in tree.
++        path = self._find_path(new_root_label)
++        if path is None:
++            raise ValueError("Tree could not be reoriented")
++
++        # Let's map each label to its original subtree or children or build an undirected graph of Tree objects / labels.
++        # Actually, let's map label -> list of child labels, and label -> parent label.
++        parent_map = {}
++        orig_children_map = {}
++
++        def traverse(node, parent=None):
++            orig_children_map[node.label] = node.children
++            if parent is not None:
++                parent_map[node.label] = parent
++            for c in node.children:
++                traverse(c, node)
++
++        traverse(self)
++
++        if new_root_label not in orig_children_map and new_root_label != self.label and new_root_label not in parent_map:
++            raise ValueError("Tree could not be reoriented")
++
++        # Now, for every node, what are its children in the new tree rooted at new_root_label?
++        # For any node `u`, its neighbors in the undirected tree are its original children + its original parent (if any).
++        # In the new tree rooted at R, the children of `u` are all its neighbors EXCEPT its parent in the path towards R.
++        
++        # Let's build new children recursively starting from new_root_label.
++        def build_new_tree(curr_label, prev_label=None):
++            # Neighbors of curr_label
++            neighbors = set()
++            if curr_label in orig_children_map:
++                for c in orig_children_map[curr_label]:
++                    neighbors.add(c.label)
++            if curr_label in parent_map:
++                neighbors.add(parent_map[curr_label].label)
++
++            child_trees = []
++            for n_label in sorted(neighbors):
++                if n_label != prev_label:
++                    child_trees.append(build_new_tree(n_label, curr_label))
++            return Tree(curr_label, child_trees)
++
++        return build_new_tree(new_root_label, None)
+ 
+     def path_to(self, from_node, to_node):
+-        pass
++        # Find path from from_node to to_node.
++        # We can reroot the tree at from_node, then find the path to to_node from the new root!
++        try:
++            rerooted = self.from_pov(from_node)
++        except ValueError as e:
++            if str(e) == "Tree could not be reoriented":
++                raise ValueError("Tree could not be reoriented")
++            raise
++        
++        path = rerooted._find_path(to_node)
++        if path is None:
++            raise ValueError("No path found")
++        return path

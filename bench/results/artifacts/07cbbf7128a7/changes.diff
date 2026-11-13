@@ -1,0 +1,100 @@
+diff --git a/pov.py b/pov.py
+index 21dbe4b..341c742 100644
+--- a/pov.py
++++ b/pov.py
+@@ -18,8 +18,93 @@ class Tree:
+     def __eq__(self, other):
+         return self.__dict__() == other.__dict__()
+ 
++    def _find_path_to_node(self, target):
++        if self.label == target:
++            return [self]
++        for child in self.children:
++            path = child._find_path_to_node(target)
++            if path:
++                return [self] + path
++        return None
++
+     def from_pov(self, from_node):
+-        pass
++        path = self._find_path_to_node(from_node)
++        if not path:
++            raise ValueError("Tree could not be reoriented")
++        
++        # Build the re-oriented tree from the path (which goes from root to from_node)
++        # path[0] is root, path[-1] is from_node
++        new_root = Tree(path[-1].label)
++        
++        # We need to invert edges along the path from from_node up to root
++        current_children = list(path[-1].children)
++        
++        for i in range(len(path) - 1, 0, -1):
++            parent = path[i-1]
++            grandparent_path = path[:i-1] # nodes above parent
++            
++            # siblings of parent (children of grandparent) plus grandparent itself if grandparent exists
++            other_children = [c for c in parent.children if c.label != path[i].label]
++            
++            parent_copy = Tree(parent.label, other_children)
++            if grandparent_path:
++                # Need to also include ancestors above grandparent? Wait, let's build upwards.
++                pass
++            current_children.append(parent_copy)
++            
++        # Let's refine `from_pov` implementation using a clean graph or adjacency list or recursive path inversion.
++        # Actually, since it's a tree, we can collect all nodes and edges or do graph conversion!
++        return self._reroot(from_node)
++
++    def _to_graph(self, parent=None, adj=None):
++        if adj is None:
++            adj = {}
++        if self.label not in adj:
++            adj[self.label] = set()
++        if parent is not None:
++            adj[self.label].add(parent)
++            adj[parent].add(self.label)
++        for child in self.children:
++            child._to_graph(self.label, adj)
++        return adj
++
++    def _reroot(self, from_node):
++        adj = self._to_graph()
++        if from_node not in adj:
++            raise ValueError("Tree could not be reoriented")
++        
++        # Build new tree from adjacency list rooted at from_node using BFS/DFS
++        visited = {from_node}
++        stack = [from_node]
++        # To reconstruct tree properly, let's build nodes recursively
++        def build(node, parent_node):
++            children = []
++            for neighbor in sorted(adj[node]):
++                if neighbor != parent_node:
++                    children.append(build(neighbor, node))
++            return Tree(node, children)
++
++        return build(from_node, None)
+ 
+     def path_to(self, from_node, to_node):
+-        pass
++        adj = self._to_graph()
++        if from_node not in adj:
++            raise ValueError("Tree could not be reoriented")
++        if to_node not in adj:
++            raise ValueError("No path found")
++            
++        # Find shortest path (which is unique in a tree) using BFS
++        from collections import deque
++        queue = deque([[from_node]])
++        visited = {from_node}
++        
++        while queue:
++            path = queue.popleft()
++            curr = path[-1]
++            if curr == to_node:
++                return path
++            for neighbor in adj[curr]:
++                if neighbor not in visited:
++                    visited.add(neighbor)
++                    queue.append(path + [neighbor])
++        raise ValueError("No path found")

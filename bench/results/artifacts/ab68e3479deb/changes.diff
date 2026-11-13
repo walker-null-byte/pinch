@@ -1,0 +1,50 @@
+diff --git a/affine_cipher.py b/affine_cipher.py
+index 2d41e04..d4a2cf5 100644
+--- a/affine_cipher.py
++++ b/affine_cipher.py
+@@ -1,6 +1,43 @@
++import math
++
++m = 26
++
++def _check_coprime(a):
++    if math.gcd(a, m) != 1:
++        raise ValueError("a and m must be coprime.")
++
++def _mod_inverse(a):
++    for x in range(1, m):
++        if (a * x) % m == 1:
++            return x
++    raise ValueError("a and m must be coprime.")
++
+ def encode(plain_text, a, b):
+-    pass
++    _check_coprime(a)
++    chars = []
++    for char in plain_text.lower():
++        if char.isalpha():
++            i = ord(char) - ord('a')
++            encrypted_i = (a * i + b) % m
++            chars.append(chr(encrypted_i + ord('a')))
++        elif char.isdigit():
++            chars.append(char)
++    
++    # group by 5
++    result = "".join(chars)
++    grouped = [result[i:i+5] for i in range(0, len(result), 5)]
++    return " ".join(grouped)
+ 
+ 
+ def decode(ciphered_text, a, b):
+-    pass
++    _check_coprime(a)
++    a_inv = _mod_inverse(a)
++    chars = []
++    for char in ciphered_text.lower():
++        if char.isalpha():
++            y = ord(char) - ord('a')
++            decrypted_i = (a_inv * (y - b)) % m
++            chars.append(chr(decrypted_i + ord('a')))
++        elif char.isdigit():
++            chars.append(char)
++    return "".join(chars)

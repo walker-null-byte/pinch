@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 226" width="720" height="226" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+<title id="t">Cost per solved task, set A (lower is better)</title>
+<desc id="d">Cost per solved task, set A (lower is better). mini-swe-agent (baseline) $0.022 (23/23 solved); pinch, all techniques $0.008 (23/23 solved). gemini/gemini-3.5-flash-lite · 23 tasks, 1 run each.</desc>
+<rect width="720" height="226" fill="#fcfcfb"/>
+<text x="24" y="40" font-size="16" font-weight="600" fill="#0b0b0b">Cost per solved task, set A (lower is better)</text>
+<text x="24" y="62" font-size="13" fill="#52514e">gemini/gemini-3.5-flash-lite · 23 tasks, 1 run each</text>
+<line x1="239.00" y1="84" x2="239.00" y2="188" stroke="#c3c2b7" stroke-width="1"/>
+<text x="239.00" y="204" font-size="11" text-anchor="middle" fill="#898781" style="font-variant-numeric: tabular-nums" font-feature-settings="'tnum'">$0.00</text>
+<line x1="359.33" y1="84" x2="359.33" y2="188" stroke="#e1e0d9" stroke-width="1"/>
+<text x="359.33" y="204" font-size="11" text-anchor="middle" fill="#898781" style="font-variant-numeric: tabular-nums" font-feature-settings="'tnum'">$0.01</text>
+<line x1="479.67" y1="84" x2="479.67" y2="188" stroke="#e1e0d9" stroke-width="1"/>
+<text x="479.67" y="204" font-size="11" text-anchor="middle" fill="#898781" style="font-variant-numeric: tabular-nums" font-feature-settings="'tnum'">$0.02</text>
+<line x1="600.00" y1="84" x2="600.00" y2="188" stroke="#e1e0d9" stroke-width="1"/>
+<text x="600.00" y="204" font-size="11" text-anchor="middle" fill="#898781" style="font-variant-numeric: tabular-nums" font-feature-settings="'tnum'">$0.03</text>
+<text x="24" y="112.00" font-size="13" fill="#0b0b0b">mini-swe-agent (baseline)</text>
+<text x="24" y="128.00" font-size="12" fill="#52514e">23/23 solved</text>
+<path d="M239.00,104.00 L499.18,104.00 A4.00,4.00 0 0 1 503.18,108.00 L503.18,120.00 A4.00,4.00 0 0 1 499.18,124.00 L239.00,124.00 Z" fill="#b4b2a9" data-series="baseline" data-value="0.0219538"/>
+<text x="511.18" y="118.50" font-size="13" text-anchor="start" data-label="baseline" stroke="#fcfcfb" stroke-width="4" stroke-linejoin="round" paint-order="stroke"><tspan fill="#0b0b0b">$0.022</tspan></text>
+<text x="24" y="160.00" font-size="13" fill="#0b0b0b">pinch, all techniques</text>
+<text x="24" y="176.00" font-size="12" fill="#52514e">23/23 solved</text>
+<path d="M239.00,152.00 L325.93,152.00 A4.00,4.00 0 0 1 329.93,156.00 L329.93,168.00 A4.00,4.00 0 0 1 325.93,172.00 L239.00,172.00 Z" fill="#2a78d6" data-series="all" data-value="0.00755626"/>
+<text x="337.93" y="166.50" font-size="13" text-anchor="start" data-label="all" stroke="#fcfcfb" stroke-width="4" stroke-linejoin="round" paint-order="stroke"><tspan fill="#0b0b0b">$0.008</tspan><tspan fill="#52514e" dx="8">−66%</tspan></text>
+</svg>

@@ -1,0 +1,75 @@
+diff --git a/connect.py b/connect.py
+index 688dd68..8746108 100644
+--- a/connect.py
++++ b/connect.py
+@@ -1,7 +1,68 @@
+ 
+ class ConnectGame:
+     def __init__(self, board):
+-        pass
++        self.board = [
++            [c for c in line.strip().split()]
++            for line in board.strip().splitlines()
++        ]
++        self.rows = len(self.board)
++        self.cols = len(self.board[0]) if self.rows > 0 else 0
+ 
+     def get_winner(self):
+-        pass
++        # Check X: left to right (cols 0 to cols - 1)
++        # Check O: top to bottom (rows 0 to rows - 1)
++        if self._check_win("X"):
++            return "X"
++        if self._check_win("O"):
++            return "O"
++        return ""
++
++    def _check_win(self, player):
++        if player == "X":
++            # Start nodes: (r, 0) for r in range(rows) if board[r][0] == 'X'
++            # Target: col == cols - 1
++            queue = [(r, 0) for r in range(self.rows) if self.board[r][0] == "X"]
++            visited = set(queue)
++            while queue:
++                r, c = queue.pop(0)
++                if c == self.cols - 1:
++                    return True
++                for nr, nc in self._neighbors(r, c):
++                    if (nr, nc) not in visited and self.board[nr][nc] == "X":
++                        visited.add((nr, nc))
++                        queue.append((nr, nc))
++            return False
++        elif player == "O":
++            # Start nodes: (0, c) for c in range(cols) if board[0][c] == 'O'
++            # Target: row == rows - 1
++            queue = [(0, c) for c in range(self.cols) if self.board[0][c] == "O"]
++            visited = set(queue)
++            while queue:
++                r, c = queue.pop(0)
++                if r == self.rows - 1:
++                    return True
++                for nr, nc in self._neighbors(r, c):
++                    if (nr, nc) not in visited and self.board[nr][nc] == "O":
++                        visited.add((nr, nc))
++                        queue.append((nr, nc))
++            return False
++        return False
++
++    def _neighbors(self, r, c):
++        # Hex directions on skewed parallelogram grid:
++        # (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0)
++        directions = [
++            (-1, 0),
++            (-1, 1),
++            (0, -1),
++            (0, 1),
++            (1, -1),
++            (1, 0),
++        ]
++        result = []
++        for dr, dc in directions:
++            nr, nc = r + dr, c + dc
++            if 0 <= nr < self.rows and 0 <= nc < self.cols:
++                result.append((nr, nc))
++        return result
++

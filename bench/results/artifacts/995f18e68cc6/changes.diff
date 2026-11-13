@@ -1,0 +1,80 @@
+diff --git a/react.py b/react.py
+index ab6be31..f8fe248 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,69 @@
+ class InputCell:
+     def __init__(self, initial_value):
+-        self.value = None
++        self._value = initial_value
++        self.dependents = []
++
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value == new_value:
++            return
++        self._value = new_value
++        _propagate(self)
+ 
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.callbacks = []
++        self.dependents = []
++        for inp in inputs:
++            if self not in inp.dependents:
++                inp.dependents.append(self)
++        self._value = self._compute()
++
++    @property
++    def value(self):
++        return self._value
++
++    def _compute(self):
++        input_values = [inp.value for inp in self.inputs]
++        return self.compute_function(input_values)
+ 
+     def add_callback(self, callback):
+-        pass
++        if callback not in self.callbacks:
++            self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)
++
++
++def _propagate(start_cell):
++    visited = set()
++    compute_cells = []
++
++    def dfs(cell):
++        for dep in cell.dependents:
++            if dep not in visited:
++                visited.add(dep)
++                dfs(dep)
++                compute_cells.append(dep)
++
++    dfs(start_cell)
++    compute_cells.reverse()
++
++    old_values = {cell: cell._value for cell in compute_cells}
++
++    for cell in compute_cells:
++        cell._value = cell._compute()
++
++    changed_cells = [cell for cell in compute_cells if cell._value != old_values[cell]]
++
++    for cell in changed_cells:
++        for cb in list(cell.callbacks):
++            cb(cell._value)

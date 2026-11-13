@@ -3,9 +3,21 @@
 A command-line coding agent that finishes real coding tasks on the fewest tokens.
 Built for Bifrost Problem Statement 01 (HackCulture global AI hackathon).
 
-**Status:** works end to end with real providers through Bifrost v2.5.0: Gemini on the free tier, Groq as failover, and Gemma 4 on LM Studio for confidential repos. `uv run pinch prove` checks the four mandatory requirements (4 of 4), and [docs/DEMO.md](docs/DEMO.md) shows each one live. Ten token-saving techniques are built, each switchable on its own; one of them is the Tavily docs tool. The benchmark against mini-swe-agent is running on Gemini's free tier (500 requests per model per day). The first finished result is below; the rest goes in as it finishes.
+**Status:** works end to end with real providers through Bifrost v2.5.0: Gemini on the free tier, Groq as failover, and Gemma 4 on LM Studio for confidential repos. `uv run pinch prove` checks the four mandatory requirements (4 of 4), and [docs/DEMO.md](docs/DEMO.md) shows each one live. Ten token-saving techniques are built, each switchable on its own; one of them is the Tavily docs tool. The benchmark against mini-swe-agent is running on Gemini's free tier (500 requests per model per day). Results so far are below; the rest goes in as it finishes.
 
-**First result, set B (8 real bugs in real libraries), `gemini-3.1-flash-lite`, one run per task** ([report](bench/results/setB-3.1-flash-lite.md)):
+## Results so far
+
+One run per task. Pass or fail comes from hidden tests run after the agent stops, and tokens are what the provider reported. Each table compares only tasks both agents have finished. The run is still going on Gemini's free daily quota: 23 of the 34 set A tasks are done.
+
+**Main comparison, `gemini-3.5-flash-lite`** ([report](bench/results/run1.md)):
+
+| Set | Solved: mini-swe-agent / pinch | Tokens per solved task | Cost per solved task | Model calls per task (avg) |
+|---|---|---|---|---|
+| A · 23 exercises | 23 / 23 | 112,537 → 23,217 (**−79%**) | $0.0220 → $0.0076 (−65%) | 10.3 → 4.0 |
+| B · 8 real bugs | 7 / 5 | 231,849 → 201,447 (−13%) | $0.0490 → $0.0328 (−33%) | 20.8 → 15.1 |
+| C · 5 docs tasks | 4 / 3 | 255,434 → 88,011 (−66%) | $0.0470 → $0.0273 (−42%) | 24.2 → 16.8 |
+
+**Set B on a second model, `gemini-3.1-flash-lite`** ([report](bench/results/setB-3.1-flash-lite.md)):
 
 | | mini-swe-agent | pinch |
 |---|---|---|
@@ -14,7 +26,14 @@ Built for Bifrost Problem Statement 01 (HackCulture global AI hackathon).
 | Cost per solved task | $0.0404 | $0.0237 (−41%) |
 | Model calls, all 8 tasks | 193 | 95 |
 
-The two agents did not solve the same five: each fixed two bugs the other did not. Our first set B run lost; [what we fixed](#what-the-first-set-b-runs-changed) explains why.
+What this shows so far:
+- **Exercises:** pinch solves everything mini-swe-agent solves, on about a fifth of the tokens.
+- **Real bugs and docs tasks:** pinch is cheaper per solved task but solves fewer on `gemini-3.5-flash-lite` (5 vs 7 bugs, 3 vs 4 docs tasks). On `gemini-3.1-flash-lite` it ties on bugs. With one run per task, a difference of one or two tasks is within run-to-run noise. The token gaps are much larger than that.
+- **First run:** our first set B run lost badly; [what we fixed](#what-the-first-set-b-runs-changed) explains why.
+
+All charts, light and dark, are in [docs/charts](docs/charts/).
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/charts/core-A-dark.svg"><img alt="Tokens per solved task, set A (lower is better). mini-swe-agent (baseline) 113K (23/23 solved); pinch, all techniques 23.2K (23/23 solved). gemini/gemini-3.5-flash-lite, 23 tasks, 1 run each." src="docs/charts/core-A-light.svg" width="720"></picture>
 
 ## Libraries that existed before the hackathon
 
@@ -230,7 +249,7 @@ allow_tools = ["git_status", "git_log", "git_diff"]
 through the same Bifrost gateway, on the same model. Pass or fail is decided outside the agent; tokens come only from the provider-reported `usage` that Bifrost relays; every run is one row of JSONL.
 
 **Every number the harness produces from mock providers is labelled MOCK** (console banner, `"mock": true` in each row, MOCK in the report titles). The mock model is a script; those numbers only show that the pipeline works.
-Finished real-model results so far: set B on `gemini-3.1-flash-lite` ([`bench/results/setB-3.1-flash-lite.md`](bench/results/setB-3.1-flash-lite.md), table at the top of this README). The main comparison on all three sets with `gemini-3.5-flash-lite` (`run1`) and the one-technique-off table (`run2`) are still running against the free daily quota, and go in when they finish. [`real-smoke.md`](bench/results/real-smoke.md) is an early 3-run pipeline check on one exercise, not evidence of savings.
+Real-model results so far are in [Results so far](#results-so-far): the main comparison on `gemini-3.5-flash-lite` ([`bench/results/run1.md`](bench/results/run1.md), still running) and set B on `gemini-3.1-flash-lite` ([`bench/results/setB-3.1-flash-lite.md`](bench/results/setB-3.1-flash-lite.md)). The one-technique-off table (`run2`) is still running against the free daily quota and goes in when it finishes. [`real-smoke.md`](bench/results/real-smoke.md) is an early 3-run pipeline check on one exercise, not evidence of savings.
 
 ### What the first set B runs changed
 

@@ -1,0 +1,168 @@
+diff --git a/work/_bench_check.py b/_bench_check.py
+new file mode 100644
+index 0000000..035189c
+--- /dev/null
++++ b/_bench_check.py
+@@ -0,0 +1,48 @@
++import sys
++import threading
++import anyio
++from anyio.from_thread import start_blocking_portal
++import bridge
++
++def fail(msg):
++    print("FAIL:", msg)
++    sys.exit(1)
++
++cancelled = threading.Event()
++
++async def slow(name):
++    try:
++        await anyio.sleep(0.4)
++        return name.upper()
++    except anyio.get_cancelled_exc_class():
++        cancelled.set()
++        raise
++
++bridge.lookup = slow
++ticks = 0
++
++async def ticker():
++    global ticks
++    while True:
++        await anyio.sleep(0.01)
++        ticks += 1
++
++async def main(portal):
++    global ticks
++    async with anyio.create_task_group() as tg:
++        tg.start_soon(ticker)
++        result = await bridge.lookup_in_worker(portal, "bob")
++        tg.cancel_scope.cancel()
++    if result != "BOB":
++        fail(f"wrong result {result!r}")
++    if ticks < 10:
++        fail(f"the caller's event loop was blocked (only {ticks} ticks in 0.4 s)")
++    with anyio.move_on_after(0.1):
++        await bridge.lookup_in_worker(portal, "never")
++        fail("the call should have been cancelled by the timeout")
++
++with start_blocking_portal() as portal:
++    anyio.run(main, portal)
++    if not cancelled.wait(2):
++        fail("cancelling the caller did not cancel the work in the worker loop")
++print("PASS")
+diff --git a/bridge.py b/bridge.py
+index 16fc7dc..3691948 100644
+--- a/bridge.py
++++ b/bridge.py
+@@ -12,4 +12,4 @@ async def lookup(name: str) -> str:
+ 
+ async def lookup_in_worker(portal: BlockingPortal, name: str) -> str:
+     """Called from a request handler (a different event loop than the portal's)."""
+-    raise NotImplementedError
++    return await portal.call_async(lookup, name)
+diff --git a/work/test_bridge.py b/test_bridge.py
+new file mode 100644
+index 0000000..e26a9e3
+--- /dev/null
++++ b/test_bridge.py
+@@ -0,0 +1,98 @@
++import anyio
++import pytest
++from anyio.from_thread import BlockingPortal
++from bridge import lookup, lookup_in_worker
++
++async def run_worker(portal_holder):
++    async with BlockingPortal() as portal:
++        portal_holder.append(portal)
++        await portal.sleep_until_stopped()
++
++@pytest.mark.anyio
++async def test_lookup_in_worker():
++    portal_holder = []
++    
++    async def worker_thread_runner():
++        await anyio.to_thread.run_sync(anyio.run, run_worker, portal_holder)
++
++    # Start worker thread in background
++    async with anyio.create_task_group() as tg:
++        tg.start_soon(worker_thread_runner)
++        while not portal_holder:
++            await anyio.sleep(0.001)
++        
++        portal = portal_holder[0]
++        result = await lookup_in_worker(portal, "hello")
++        assert result == "HELLO"
++        
++        # Stop portal
++        await portal.stop()
++        tg.cancel_scope.cancel()
++
++@pytest.mark.anyio
++async def test_lookup_non_blocking():
++    portal_holder = []
++    
++    async def worker_thread_runner():
++        await anyio.to_thread.run_sync(anyio.run, run_worker, portal_holder)
++
++    async with anyio.create_task_group() as tg:
++        tg.start_soon(worker_thread_runner)
++        while not portal_holder:
++            await anyio.sleep(0.001)
++        
++        portal = portal_holder[0]
++        other_task_ran = False
++
++        async def other_task():
++            nonlocal other_task_ran
++            await anyio.sleep(0.01)
++            other_task_ran = True
++
++        async with anyio.create_task_group() as sub_tg:
++            sub_tg.start_soon(other_task)
++            result = await lookup_in_worker(portal, "world")
++            assert result == "WORLD"
++        assert other_task_ran
++
++        await portal.stop()
++        tg.cancel_scope.cancel()
++
++@pytest.mark.anyio
++async def test_lookup_cancellation():
++    portal_holder = []
++    
++    async def worker_thread_runner():
++        await anyio.to_thread.run_sync(anyio.run, run_worker, portal_holder)
++
++    async with anyio.create_task_group() as tg:
++        tg.start_soon(worker_thread_runner)
++        while not portal_holder:
++            await anyio.sleep(0.001)
++        
++        portal = portal_holder[0]
++        cancelled = False
++
++        async def slow_lookup(name: str):
++            nonlocal cancelled
++            try:
++                await anyio.sleep(1.0)
++            except anyio.get_cancelled_exc_class():
++                cancelled = True
++                raise
++            return name
++
++        async def task_func():
++            await portal.call_async(slow_lookup, "test")
++
++        with pytest.raises(anyio.get_cancelled_exc_class()):
++            async with anyio.create_task_group() as sub_tg:
++                sub_tg.start_soon(task_func)
++                sub_tg.cancel_scope.cancel()
++
++        # Give the worker a moment to process cancellation
++        await anyio.sleep(0.05)
++        assert cancelled
++
++        await portal.stop()
++        tg.cancel_scope.cancel()

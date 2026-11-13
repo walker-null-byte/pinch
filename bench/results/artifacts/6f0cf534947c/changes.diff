@@ -1,0 +1,43 @@
+diff --git a/dominoes.py b/dominoes.py
+index d71e6a8..ff7567d 100644
+--- a/dominoes.py
++++ b/dominoes.py
+@@ -1,2 +1,37 @@
+ def can_chain(dominoes):
+-    pass
++    if not dominoes:
++        return []
++
++    def backtrack(idx, current_chain):
++        if idx == len(dominoes):
++            if current_chain[0][0] == current_chain[-1][1]:
++                return current_chain
++            return None
++
++        for i in range(len(dominoes)):
++            if used[i]:
++                continue
++            d = dominoes[i]
++            # Try both orientations of the domino
++            for orient in (d, (d[1], d[0])):
++                if not current_chain or current_chain[-1][1] == orient[0]:
++                    used[i] = True
++                    current_chain.append(orient)
++                    res = backtrack(idx + 1, current_chain)
++                    if res is not None:
++                        return res
++                    current_chain.pop()
++                    used[i] = False
++        return None
++
++    used = [False] * len(dominoes)
++    # Optimization: fix the first domino orientation to avoid redundant symmetric branches
++    d = dominoes[0]
++    for orient in (d, (d[1], d[0])):
++        used[0] = True
++        res = backtrack(1, [orient])
++        if res is not None:
++            return res
++        used[0] = False
++
++    return None

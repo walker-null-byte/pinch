@@ -1,0 +1,25 @@
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm.turn_on_debug()'.
+
+
+--- stderr ---
+/opt/tools/mini/lib/python3.12/site-packages/pydantic/main.py:520: UserWarning: Pydantic serializer warnings:
+  PydanticSerializationUnexpectedValue(Expected `str` - serialized value may not be as expected [field_name='content', input_value=[{'type': 'text', 'text':...o be implemented.\n\n'}], input_type=list])
+  return self.__pydantic_serializer__.to_python(
+Retrying <unknown> in 4 seconds as it raised InternalServerError: litellm.InternalServerError: InternalServerError: OpenAIException - Invalid response object Traceback (most recent call last):
+  File "/opt/tools/mini/lib/python3.12/site-packages/litellm/litellm_core_utils/llm_response_utils/convert_dict_to_response.py", line 802, in convert_to_model_response_object
+    message = Message(
+              ^^^^^^^^
+  File "/opt/tools/mini/lib/python3.12/site-packages/litellm/types/utils.py", line 1519, in __init__
+    super().__init__(
+  File "/opt/tools/mini/lib/python3.12/site-packages/pydantic/main.py", line 280, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for Message
+content
+  Input should be a valid string [type=string_type, input_value=[{'type': 'text', 'text':...o be implemented.\n\n'}], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.14/v/string_type
+
+
+received_args={'response_object': {'id': 'S3b0auqqFNq1694P0_eCuQ0', 'choices': [{'finish_reason': 'tool_calls', 'index': 0, 'logprobs': None, 'message': {'content': [{'type': 'text', 'text': 'I will view the content of `pig_latin.py` and `pig_latin_test.py'}, {'type': 'text', 'text': '` to see what needs to be implemented.\n\n'}], 'refusal': None, 'role': 'assistant', 'tool_calls': [{'id': 'call_1353849476004260017_ts_EmAKXgFpFH0TOLG0Nc1P5E4YFUm3yIaE45qVlox8Wwu447mf5sSKsRj8r7DExeRjZnqYl8R3D2fjTfpcJfncpY0HMMXGy1vjUcf4ONIe_fVJicFKkcE6gtcWQhNUcSQAsZ0', 'function': {'arguments': '{\n                "command": "cat pig_latin.py && echo \\"---\\" && cat pig_latin_test.py"\n              }', 'name': 'bash'}, 'type': 'function', 'index': 0}], 'reasoning_details': [{'id': 'tool_call_call_1353849476004260017', 'index': 0, 'type': 'reasoning.encrypted', 'signature': 'EmAKXgFpFH0TOLG0Nc1P5E4YFUm3yIaE45qVlox8Wwu447mf5sSKsRj8r7DExeRjZnqYl8R3D2fjTfpcJfncpY0HMMXGy1vjUcf4ONIe/fVJicFKkcE6gtcWQhNUcSQAsZ0='}]}}], 'created': 1794405988, 'model': 'gemini-3.5-flash-lite', 'object': 'chat.completion', 'service_tier': 'default', 'system_fingerprint': '', 'usage': {'completion_tokens': 65, 'prompt_tokens': 1669, 'total_tokens': 1734, 'prompt_tokens_details': {'cache_write_tokens': 0, 'cached_tokens': 0, 'text_tokens': 1669}}, 'extra_fields': {'request_type': 'chat_completion', 'routing_info': {'provider': 'gemini', 'model': 'gemini-3.5-flash-lite', 'key': 'gemini-key', 'requested_provider': 'gemini', 'requested_model': 'gemini-3.5-flash-lite'}, 'provider': 'gemini', 'original_model_requested': 'gemini-3.5-flash-lite', 'resolved_model_used': 'gemini-3.5-flash-lite', 'latency': 25995, 'upstream_latency': 25995, 'chunk_index': 0, 'provider_response_headers': {'Accept-Ranges': 'none', 'Server-Timing': 'gfet4t7; dur=25853', 'Vary': 'X-Origin, Referer, Origin,Accept-Encoding', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'X-Gemini-Service-Tier': 'standard', 'X-Xss-Protection': '0'}}}, 'model_response_object': ModelResponse(id='chatcmpl-642b25c4-484b-450c-9836-10a84143bd78', created=1794405962, model=None, object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content=None, role='assistant', tool_calls=None, function_call=None, provider_specific_fields=None))], usage=Usage(completion_tokens=0, prompt_tokens=0, total_tokens=0, completion_tokens_details=None, prompt_tokens_details=None)), 'response_type': 'completion', 'stream': False, 'start_time': None, 'end_time': None, 'convert_tool_call_to_json_mode': None}.

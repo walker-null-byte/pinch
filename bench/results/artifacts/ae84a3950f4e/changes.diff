@@ -1,0 +1,49 @@
+diff --git a/pig_latin.py b/pig_latin.py
+index dda3f07..9b93959 100644
+--- a/pig_latin.py
++++ b/pig_latin.py
+@@ -1,2 +1,43 @@
++def translate_word(word):
++    vowels = set("aeiou")
++    
++    # Rule 1: If a word begins with a vowel, or starts with "xr" or "yt", add an "ay" sound to the end of the word.
++    if word[0] in vowels or word.startswith("xr") or word.startswith("yt"):
++        return word + "ay"
++
++    # Find the first vowel (a, e, i, o, u) or 'y' after index 0
++    first_vowel_idx = len(word)
++    for i, char in enumerate(word):
++        if char in vowels or (char == 'y' and i > 0):
++            first_vowel_idx = i
++            break
++
++    # Rule 3: If a word starts with zero or more consonants followed by "qu", first move those consonants (if any) and the "qu" part to the end of the word, and then add an "ay" sound.
++    qu_idx = word.find("qu")
++    if qu_idx != -1 and (first_vowel_idx > qu_idx):
++        return word[qu_idx + 2:] + word[:qu_idx + 2] + "ay"
++
++    # Rule 4: If a word starts with one or more consonants followed by "y", first move the consonants preceding the "y" to the end of the word, and then add an "ay" sound.
++    y_idx = word.find("y")
++    if y_idx > 0 and (first_vowel_idx > y_idx or first_vowel_idx == len(word)):
++        return word[y_idx:] + word[:y_idx] + "ay"
++
++    # Rule 2: If a word begins with one or more consonants, first move those consonants to the end of the word and then add an "ay" sound.
++    split_idx = 0
++    for i, char in enumerate(word):
++        if char in vowels:
++            split_idx = i
++            break
++        if char == 'y':
++            if i == 0:
++                continue
++            else:
++                split_idx = i
++                break
++    
++    return word[split_idx:] + word[:split_idx] + "ay"
++
+ def translate(text):
+-    pass
++    words = text.split()
++    translated_words = [translate_word(w) for w in words]
++    return " ".join(translated_words)

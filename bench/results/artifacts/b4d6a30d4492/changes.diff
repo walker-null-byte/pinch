@@ -1,0 +1,63 @@
+diff --git a/book_store.py b/book_store.py
+index 8a84288..f8567a5 100644
+--- a/book_store.py
++++ b/book_store.py
+@@ -1,2 +1,57 @@
+ def total(basket):
+-    pass
++    if not basket:
++        return 0
++
++    from collections import Counter
++    counts = list(Counter(basket).values())
++
++    DISCOUNTS = {
++        1: 800,
++        2: 800 * 2 * 0.95,
++        3: 800 * 3 * 0.90,
++        4: 800 * 4 * 0.80,
++        5: 800 * 5 * 0.75,
++    }
++
++    def get_min_price(counts):
++        counts = [c for c in counts if c > 0]
++        if not counts:
++            return 0
++        
++        counts.sort(reverse=True)
++        min_cost = float('inf')
++        
++        # Try forming groups of size 1 to 5
++        # Note: special case for 5 and 3 group substitution (two groups of 4 is cheaper than group of 5 + group of 3)
++        # Standard greedy or backtracking with memoization will handle combinations correctly if we try valid group sizes.
++        # But wait, python sets/tuples can be memoized.
++        
++        memo = {}
++        
++        def helper(curr_counts):
++            curr_tuple = tuple(sorted(curr_counts, reverse=True))
++            if not any(curr_tuple):
++                return 0
++            if curr_tuple in memo:
++                return memo[curr_tuple]
++            
++            res = float('inf')
++            n = len(curr_tuple)
++            # Try all group sizes from 5 down to 1 (or 1 to 5)
++            # A group of size k can be formed by taking 1 from the top k counts.
++            for k in range(1, min(5, n) + 1):
++                # We can form a group of size k if the top k counts are > 0
++                if curr_tuple[k-1] > 0:
++                    next_counts = list(curr_tuple)
++                    for i in range(k):
++                        next_counts[i] -= 1
++                    cost = DISCOUNTS[k] + helper(next_counts)
++                    if cost < res:
++                        res = cost
++            memo[curr_tuple] = res
++            return res
++
++        return helper(counts)
++
++    return int(round(get_min_price(counts)))
++

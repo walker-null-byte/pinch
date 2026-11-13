@@ -1,0 +1,44 @@
+diff --git a/grade_school.py b/grade_school.py
+index b57208f..0945c80 100644
+--- a/grade_school.py
++++ b/grade_school.py
+@@ -1,15 +1,34 @@
++from collections import defaultdict
++
+ class School:
+     def __init__(self):
+-        pass
++        self._grades = defaultdict(list)
++        self._added_results = []
++        self._all_students = set()
+ 
+     def add_student(self, name, grade):
+-        pass
++        if name in self._all_students:
++            self._added_results.append(False)
++            return False
++        
++        self._all_students.add(name)
++        self._grades[grade].append(name)
++        self._added_results.append(True)
++        return True
+ 
+     def roster(self):
+-        pass
++        # Sort grades numerically
++        sorted_grades = sorted(self._grades.keys())
++        roster_list = []
++        for g in sorted_grades:
++            # Sort students alphabetically within the grade
++            roster_list.extend(sorted(self._grades[g]))
++        return roster_list
+ 
+     def grade(self, grade_number):
+-        pass
++        if grade_number not in self._grades:
++            return []
++        return sorted(self._grades[grade_number])
+ 
+     def added(self):
+-        pass
++        return self._added_results

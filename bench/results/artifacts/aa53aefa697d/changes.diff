@@ -1,0 +1,144 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..c37d85a 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,137 @@
+ class StackUnderflowError(Exception):
+-    pass
++    """Exception raised when Stack is not full."""
++    def __init__(self, message):
++        self.message = message
++        super().__init__(message)
+ 
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    dictionary = {}
++
++    # Built-in arithmetic and stack manipulation words
++    def op_add():
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(a + b)
++
++    def op_sub():
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(a - b)
++
++    def op_mul():
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(a * b)
++
++    def op_div():
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        if b == 0:
++            raise ZeroDivisionError("divide by zero")
++        stack.append(int(a / b))
++
++    def op_dup():
++        if len(stack) < 1:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        stack.append(stack[-1])
++
++    def op_drop():
++        if len(stack) < 1:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        stack.pop()
++
++    def op_swap():
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(b)
++        stack.append(a)
++
++    def op_over():
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        stack.append(stack[-2])
++
++    builtins = {
++        "+": op_add,
++        "-": op_sub,
++        "*": op_mul,
++        "/": op_div,
++        "dup": op_dup,
++        "drop": op_drop,
++        "swap": op_swap,
++        "over": op_over,
++    }
++
++    def is_number(token):
++        # A number is a sequence of one or more ASCII digits, optionally preceded by '-'
++        if token.isdigit():
++            return True
++        if token.startswith("-") and token[1:].isdigit():
++            return True
++        return False
++
++    def compile_token(token):
++        tok_lower = token.lower()
++        if is_number(token):
++            val = int(token)
++            return lambda: stack.append(val)
++        elif tok_lower in dictionary:
++            sub_actions = dictionary[tok_lower]
++            return lambda: [action() for action in sub_actions]
++        elif tok_lower in builtins:
++            return builtins[tok_lower]
++        else:
++            raise ValueError("undefined operation")
++
++    def compile_definition_tokens(tokens):
++        actions = []
++        i = 0
++        while i < len(tokens):
++            actions.append(compile_token(tokens[i]))
++            i += 1
++        return actions
++
++    def compile_tokens(tokens):
++        # Tokens are expanded / parsed
++        i = 0
++        while i < len(tokens):
++            token = tokens[i].lower()
++            if token == ":":
++                # Definition starts
++                # : word-name definition ;
++                if i + 1 >= len(tokens):
++                    raise ValueError("undefined operation")
++                word_name = tokens[i + 1].lower()
++                if is_number(word_name):
++                    raise ValueError("illegal operation")
++                i += 2
++                def_tokens = []
++                while i < len(tokens) and tokens[i] != ";":
++                    def_tokens.append(tokens[i])
++                    i += 1
++                if i < len(tokens) and tokens[i] == ";":
++                    i += 1 # skip ';'
++                dictionary[word_name] = compile_definition_tokens(def_tokens)
++            else:
++                action = compile_token(tokens[i])
++                action()
++                i += 1
++
++    for line in input_data:
++        # Split tokens by whitespace
++        tokens = line.split()
++        compile_tokens(tokens)
++
++    return stack

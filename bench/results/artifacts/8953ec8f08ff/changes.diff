@@ -1,0 +1,72 @@
+diff --git a/work/_bench_check.py b/_bench_check.py
+new file mode 100644
+index 0000000..035189c
+--- /dev/null
++++ b/_bench_check.py
+@@ -0,0 +1,48 @@
++import sys
++import threading
++import anyio
++from anyio.from_thread import start_blocking_portal
++import bridge
++
++def fail(msg):
++    print("FAIL:", msg)
++    sys.exit(1)
++
++cancelled = threading.Event()
++
++async def slow(name):
++    try:
++        await anyio.sleep(0.4)
++        return name.upper()
++    except anyio.get_cancelled_exc_class():
++        cancelled.set()
++        raise
++
++bridge.lookup = slow
++ticks = 0
++
++async def ticker():
++    global ticks
++    while True:
++        await anyio.sleep(0.01)
++        ticks += 1
++
++async def main(portal):
++    global ticks
++    async with anyio.create_task_group() as tg:
++        tg.start_soon(ticker)
++        result = await bridge.lookup_in_worker(portal, "bob")
++        tg.cancel_scope.cancel()
++    if result != "BOB":
++        fail(f"wrong result {result!r}")
++    if ticks < 10:
++        fail(f"the caller's event loop was blocked (only {ticks} ticks in 0.4 s)")
++    with anyio.move_on_after(0.1):
++        await bridge.lookup_in_worker(portal, "never")
++        fail("the call should have been cancelled by the timeout")
++
++with start_blocking_portal() as portal:
++    anyio.run(main, portal)
++    if not cancelled.wait(2):
++        fail("cancelling the caller did not cancel the work in the worker loop")
++print("PASS")
+diff --git a/work/test_bridge.py b/test_bridge.py
+new file mode 100644
+index 0000000..6648b07
+--- /dev/null
++++ b/test_bridge.py
+@@ -0,0 +1,12 @@
++import anyio
++import pytest
++from anyio.from_thread import BlockingPortal
++from bridge import lookup, lookup_in_worker
++import threading
++
++
++def test_lookup_in_worker():
++    def worker_main(portal):
++        with portal:
++            anyio.run(worker_event_loop, portal) # wait, worker thread needs to run event loop hosting portal or portal is started via start_task_soon or similar.
++    # Actually, BlockingPortal is typically used when another thread runs an event loop.

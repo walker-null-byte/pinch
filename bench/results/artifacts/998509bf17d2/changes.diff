@@ -1,0 +1,118 @@
+diff --git a/bowling.py b/bowling.py
+index de2dbb0..78e26fd 100644
+--- a/bowling.py
++++ b/bowling.py
+@@ -1,9 +1,110 @@
+ class BowlingGame:
+     def __init__(self):
+-        pass
++        self.rolls = []
+ 
+     def roll(self, pins):
+-        pass
++        if pins < 0:
++            raise ValueError("negative pins not allowed")
++        if pins > 10:
++            raise ValueError("pin count exceeds pins on the lane")
++
++        if self._is_game_finished():
++            raise ValueError("cannot roll after game is over")
++
++        frames = self._parse_frames()
++        current_frame = len(frames) - 1 if frames else 0
++        if not frames:
++            current_frame = 0
++        elif len(frames[current_frame]) == 2 or (current_frame < 9 and frames[current_frame][0] == 10):
++            current_frame = len(frames)
++            if current_frame > 9:
++                current_frame = 9
++
++        if current_frame < 10 and current_frame < len(frames):
++            if len(frames[current_frame]) == 1 and frames[current_frame][0] != 10:
++                first_roll = frames[current_frame][0]
++                if first_roll + pins > 10:
++                    raise ValueError("pin count exceeds pins on the lane")
++
++        if current_frame == 9 and len(frames) == 10:
++            f = frames[9]
++            if len(f) == 1:
++                first_roll = f[0]
++                if first_roll < 10 and first_roll + pins > 10:
++                    raise ValueError("pin count exceeds pins on the lane")
++            elif len(f) == 2:
++                first_roll, second_roll = f[0], f[1]
++                if first_roll == 10:
++                    if second_roll < 10 and second_roll + pins > 10:
++                        raise ValueError("pin count exceeds pins on the lane")
++                else:
++                    if first_roll + second_roll != 10:
++                        raise ValueError("cannot throw bonus with an open tenth frame")
++
++        self.rolls.append(pins)
++
++    def _parse_frames(self):
++        frames = []
++        i = 0
++        for frame_idx in range(10):
++            if i >= len(self.rolls):
++                break
++            if frame_idx < 9:
++                if self.rolls[i] == 10:
++                    frames.append([10])
++                    i += 1
++                else:
++                    if i + 1 < len(self.rolls):
++                        frames.append([self.rolls[i], self.rolls[i+1]])
++                        i += 2
++                    else:
++                        frames.append([self.rolls[i]])
++                        i += 1
++            else:
++                frames.append(self.rolls[i:])
++                i = len(self.rolls)
++        return frames
++
++    def _is_game_finished(self):
++        frames = self._parse_frames()
++        if len(frames) < 10:
++            return False
++        f10 = frames[9]
++        if len(f10) < 2:
++            return False
++        if len(f10) == 2:
++            if f10[0] == 10 or f10[0] + f10[1] == 10:
++                return False
++            return True
++        if len(f10) >= 3:
++            return True
++        return False
+ 
+     def score(self):
+-        pass
++        frames = self._parse_frames()
++        if len(frames) < 10 or not self._is_game_finished():
++            raise ValueError("score cannot be taken until the end of the game")
++
++        total_score = 0
++        for i in range(10):
++            f = frames[i]
++            if i < 9:
++                if f[0] == 10:
++                    next_rolls = self._get_next_rolls(i, 2)
++                    total_score += 10 + sum(next_rolls)
++                elif f[0] + f[1] == 10:
++                    next_rolls = self._get_next_rolls(i, 1)
++                    total_score += 10 + sum(next_rolls)
++                else:
++                    total_score += sum(f)
++            else:
++                total_score += sum(f[:3])
++        return total_score
++
++    def _get_next_rolls(self, frame_idx, count):
++        frames = self._parse_frames()
++        roll_idx = 0
++        for idx in range(frame_idx + 1):
++            roll_idx += len(frames[idx])
++        return self.rolls[roll_idx:roll_idx + count]
++

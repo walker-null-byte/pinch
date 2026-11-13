@@ -1,0 +1,60 @@
+diff --git a/dominoes.py b/dominoes.py
+index d71e6a8..7dbe0f6 100644
+--- a/dominoes.py
++++ b/dominoes.py
+@@ -1,2 +1,54 @@
+ def can_chain(dominoes):
+-    pass
++    if not dominoes:
++        return []
++
++    # Build adjacency representation and find Eulerian circuit or use backtracking
++    def dfs(node, path, remaining):
++        if not remaining:
++            if path[0][0] == path[-1][1]:
++                return path
++            return None
++        
++        for i, (u, v) in enumerate(remaining):
++            next_remaining = remaining[:i] + remaining[i+1:]
++            if u == node:
++                res = dfs(v, path + [(u, v)], next_remaining)
++                if res is not None:
++                    return res
++            if v == node:
++                res = dfs(u, path + [(v, u)], next_remaining)
++                if res is not None:
++                    return res
++        return None
++
++    # Try starting from any node/orientation
++    # To optimize or try all possibilities:
++    # First check degrees and connectivity (Eulerian path/circuit conditions)
++    from collections import defaultdict, deque
++
++    # Check graph connectivity first
++    degrees = defaultdict(int)
++    for u, v in dominoes:
++        degrees[u] += 1
++        degrees[v] += 1
++    for node, deg in degrees.items():
++        if deg % 2 != 0:
++            return None
++
++    # Check connected component of edges
++    nodes_with_edges = [d[0] for d in dominoes] + [d[1] for d in dominoes]
++    start_node = nodes_with_edges[0]
++    
++    # Run backtracking DFS
++    for i, (u, v) in enumerate(dominoes):
++        remaining = dominoes[:i] + dominoes[i+1:]
++        res = dfs(v, [(u, v)], remaining)
++        if res is not None:
++            return res
++        if u != v:
++            res = dfs(u, [(v, u)], remaining)
++            if res is not None:
++                return res
++
++    return None
++

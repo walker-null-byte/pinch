@@ -1,0 +1,55 @@
+diff --git a/bottle_song.py b/bottle_song.py
+index 9a5e67f..096224e 100644
+--- a/bottle_song.py
++++ b/bottle_song.py
+@@ -1,2 +1,49 @@
++NUMBERS = {
++    10: "Ten",
++    9: "Nine",
++    8: "Eight",
++    7: "Seven",
++    6: "Six",
++    5: "Five",
++    4: "Four",
++    3: "Three",
++    2: "Two",
++    1: "One",
++    0: "no",
++}
++
+ def recite(start, take=1):
+-    pass
++    verses = []
++    current = start
++    for _ in range(take):
++        n_str = NUMBERS[current]
++        n_str_lower = NUMBERS[current].lower()
++        next_n_str = NUMBERS[current - 1].lower()
++        
++        bottle1 = "bottle" if current == 1 else "bottles"
++        bottle2 = "bottle" if (current - 1) == 1 else "bottles"
++        
++        verse = [
++            f"{n_str} green {bottle1} hanging on the wall,",
++            f"{n_str} green {bottle1} hanging on the wall,",
++            "And if one green bottle should accidentally fall,",
++            f"There'll be {next_n_str} green {bottle2} hanging on the wall."
++        ]
++        verses.extend(verse)
++        verses.append("")
++        current -= 1
++    # Remove trailing empty string if any, wait, does recite return verses separated by blank lines?
++    # Let's check how verses are joined or if they are separate lines.
++    # In test_first_two_verses:
++    # expected = [
++    #     "Ten green bottles hanging on the wall,",
++    #     ...,
++    #     "",
++    #     "Nine green bottles hanging on the wall,",
++    #     ...
++    # ]
++    # So verses are separated by "" between them.
++    # Therefore we should pop the last empty string.
++    if verses:
++        verses.pop()
++    return verses

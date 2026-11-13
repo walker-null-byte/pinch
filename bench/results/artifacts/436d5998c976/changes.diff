@@ -1,0 +1,139 @@
+diff --git a/react.py b/react.py
+index ab6be31..6ec8738 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,128 @@
+ class InputCell:
+     def __init__(self, initial_value):
+-        self.value = None
++        self._value = initial_value
++        self.observers = []
++
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value == new_value:
++            return
++        self._value = new_value
++        # Notify dependents and run transaction to stabilize
++        # Collect all affected compute cells
++        compute_cells = set()
++        def gather(cell):
++            for obs in cell.observers:
++                if isinstance(obs, ComputeCell):
++                    compute_cells.add(obs)
++                    gather(obs)
++        gather(self)
++
++        # Evaluate compute cells in topological / dependency order, or iterate until stable
++        # Actually, standard propagation: evaluate dependent compute cells.
++        # To handle diamonds correctly, we can sort compute cells by dependency depth or evaluate iteratively.
++        # Let's collect all compute cells in the dependency graph reachable from self, and update them.
++        
++        # Let's design a proper update propagation engine.
++        # When an input cell changes:
++        # 1. Update values of compute cells.
++        # 2. Check which compute cells changed value.
++        # 3. Fire callbacks for compute cells whose value changed in the new stable state.
++        
++        # Let's implement a complete update method or helper function.
++        update_system(self)
+ 
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.observers = []
++        self.callbacks = []
++        self._value = self._compute()
++        self.old_value = self._value
++
++        for inp in self.inputs:
++            inp.observers.append(self)
++
++    def _compute(self):
++        return self.compute_function([inp.value for inp in self.inputs])
++
++    @property
++    def value(self):
++        return self._value
+ 
+     def add_callback(self, callback):
+-        pass
++        if callback not in self.callbacks:
++            self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)
++
++
++def update_system(start_cell):
++    # Find all affected compute cells
++    affected = set()
++    queue = [start_cell]
++    while queue:
++        curr = queue.pop(0)
++        for obs in curr.observers:
++            if isinstance(obs, ComputeCell):
++                if obs not in affected:
++                    affected.add(obs)
++                    queue.append(obs)
++
++    # Topological sort or iterative re-evaluation until values stabilize
++    # Since there might be diamond dependencies, we should evaluate compute cells
++    # in an order where inputs are evaluated before outputs.
++    # Alternatively, keep evaluating all affected cells in a loop until no values change.
++    
++    # Let's determine order or iterate. Iterating until stable works if order is correct,
++    # but topological sort is robust.
++    # Let's do topological sort of affected compute cells.
++    
++    in_degree = {c: 0 for c in affected}
++    adj = {c: [] for c in affected}
++    
++    for c in affected:
++        for inp in c.inputs:
++            if isinstance(inp, ComputeCell) and inp in affected:
++                adj[inp].append(c)
++                in_degree[c] += 1
++
++    q = [c for c in affected if in_degree[c] == 0]
++    topo_order = []
++    while q:
++        node = q.pop(0)
++        topo_order.append(node)
++        for nxt in adj[node]:
++            in_degree[nxt] -= 1
++            if in_degree[nxt] == 0:
++                q.append(nxt)
++
++    # Evaluate in topo_order
++    # Also remember pre-update values (or values before the transaction started)
++    # Wait, the problem says:
++    # "Call a cell’s callbacks when the cell’s value in a new stable state has changed from the previous stable state."
++    # Previous stable state means the value of the cell before the input cell mutation was initiated.
++    # So we should record the initial values of all affected compute cells before re-evaluation,
++    # or keep `old_value` / snapshot values at the start of `update_system`.
++    
++    snapshots = {}
++    for c in affected:
++        snapshots[c] = c._value
++
++    for c in topo_order:
++        c._value = c._compute()
++
++    # Now check which compute cells changed value compared to their state before update_system began,
++    # and fire callbacks.
++    for c in topo_order:
++        if c._value != snapshots[c]:
++            for cb in list(c.callbacks):
++                cb(c._value)

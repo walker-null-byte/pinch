@@ -1,0 +1,72 @@
+diff --git a/connect.py b/connect.py
+index 688dd68..c290b92 100644
+--- a/connect.py
++++ b/connect.py
+@@ -1,7 +1,64 @@
+-
+ class ConnectGame:
+     def __init__(self, board):
+-        pass
++        self.board = [line.strip().split() for line in board.strip().splitlines()]
++        self.rows = len(self.board)
++        self.cols = len(self.board[0]) if self.rows > 0 else 0
+ 
+     def get_winner(self):
+-        pass
++        if self.rows == 0 or self.cols == 0:
++            return ""
++
++        if self._check_win("X"):
++            return "X"
++        if self._check_win("O"):
++            return "O"
++        return ""
++
++    def _check_win(self, player):
++        visited = set()
++        queue = []
++
++        if player == "X":
++            # Start from column 0
++            for r in range(self.rows):
++                if self.board[r][0] == "X":
++                    queue.append((r, 0))
++                    visited.add((r, 0))
++        else: # "O"
++            # Start from row 0
++            for c in range(self.cols):
++                if self.board[0][c] == "O":
++                    queue.append((0, c))
++                    visited.add((0, c))
++
++        while queue:
++            r, c = queue.pop(0)
++
++            # Check win condition
++            if player == "X" and c == self.cols - 1:
++                return True
++            if player == "O" and r == self.rows - 1:
++                return True
++
++            for nr, nc in self._get_neighbors(r, c):
++                if (nr, nc) not in visited and self.board[nr][nc] == player:
++                    visited.add((nr, nc))
++                    queue.append((nr, nc))
++
++        return False
++
++    def _get_neighbors(self, r, c):
++        directions = [
++            (-1, 0),   # top-left
++            (-1, 1),   # top-right
++            (0, -1),   # left
++            (0, 1),    # right
++            (1, -1),   # bottom-left
++            (1, 0)     # bottom-right
++        ]
++        neighbors = []
++        for dr, dc in directions:
++            nr, nc = r + dr, c + dc
++            if 0 <= nr < self.rows and 0 <= nc < self.cols:
++                neighbors.append((nr, nc))
++        return neighbors

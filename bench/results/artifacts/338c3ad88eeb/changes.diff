@@ -1,0 +1,62 @@
+diff --git a/grep.py b/grep.py
+index 3c8a8e1..ae2846a 100644
+--- a/grep.py
++++ b/grep.py
+@@ -1,2 +1,55 @@
+-def grep(pattern, flags, files):
+-    pass
++def grep(pattern, flags_str, files):
++    flags = flags_str.split() if flags_str else []
++    print_line_num = '-n' in flags
++    print_file_name_only = '-l' in flags
++    case_insensitive = '-i' in flags
++    invert = '-v' in flags
++    match_entire_line = '-x' in flags
++
++    mult_files = len(files) > 1
++    results = []
++
++    for filepath in files:
++        file_has_match = False
++        matching_lines = []
++        
++        with open(filepath, 'r') as f:
++            for line_num, line in enumerate(f, 1):
++                content = line.rstrip('\n')
++                
++                p = pattern.lower() if case_insensitive else pattern
++                c = content.lower() if case_insensitive else content
++                
++                if match_entire_line:
++                    is_match = (c == p)
++                else:
++                    is_match = (p in c)
++                    
++                if invert:
++                    is_match = not is_match
++                    
++                if is_match:
++                    file_has_match = True
++                    if print_file_name_only:
++                        break
++                    else:
++                        prefix_parts = []
++                        if mult_files:
++                            prefix_parts.append(filepath)
++                        if print_line_num:
++                            prefix_parts.append(str(line_num))
++                        
++                        prefix = ":".join(prefix_parts)
++                        if prefix:
++                            formatted_line = f"{prefix}:{content}\n"
++                        else:
++                            formatted_line = f"{content}\n"
++                        matching_lines.append(formatted_line)
++                        
++        if print_file_name_only:
++            if file_has_match:
++                results.append(f"{filepath}\n")
++        else:
++            results.extend(matching_lines)
++            
++    return "".join(results)

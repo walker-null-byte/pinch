@@ -1,0 +1,2076 @@
+diff --git a/work/build/lib/tlz/__init__.py b/build/lib/tlz/__init__.py
+new file mode 100644
+index 0000000..9c9c84a
+--- /dev/null
++++ b/build/lib/tlz/__init__.py
+@@ -0,0 +1,9 @@
++"""``tlz`` mirrors the ``toolz`` API and uses ``cytoolz`` if possible.
++
++The ``tlz`` package is installed when ``toolz`` is installed.  It provides
++a convenient way to use functions from ``cytoolz``--a faster Cython
++implementation of ``toolz``--if it is installed, otherwise it uses
++functions from ``toolz``.
++"""
++
++from . import _build_tlz
+diff --git a/work/build/lib/tlz/_build_tlz.py b/build/lib/tlz/_build_tlz.py
+new file mode 100644
+index 0000000..d7a60b5
+--- /dev/null
++++ b/build/lib/tlz/_build_tlz.py
+@@ -0,0 +1,93 @@
++import sys
++import types
++import toolz
++from importlib import import_module
++from importlib.machinery import ModuleSpec
++
++
++class TlzLoader:
++    """ Finds and loads ``tlz`` modules when added to sys.meta_path"""
++
++    def __init__(self):
++        self.always_from_toolz = {
++            toolz.pipe,
++        }
++
++    def _load_toolz(self, fullname):
++        rv = {}
++        package, dot, submodules = fullname.partition('.')
++        try:
++            module_name = ''.join(['cytoolz', dot, submodules])
++            rv['cytoolz'] = import_module(module_name)
++        except ImportError:
++            pass
++        try:
++            module_name = ''.join(['toolz', dot, submodules])
++            rv['toolz'] = import_module(module_name)
++        except ImportError:
++            pass
++        if not rv:
++            raise ImportError(fullname)
++        return rv
++
++    def find_module(self, fullname, path=None):  # pragma: py3 no cover
++        package, dot, submodules = fullname.partition('.')
++        if package == 'tlz':
++            return self
++
++    def load_module(self, fullname):  # pragma: py3 no cover
++        if fullname in sys.modules:  # pragma: no cover
++            return sys.modules[fullname]
++        spec = ModuleSpec(fullname, self)
++        module = self.create_module(spec)
++        sys.modules[fullname] = module
++        self.exec_module(module)
++        return module
++
++    def find_spec(self, fullname, path, target=None):  # pragma: no cover
++        package, dot, submodules = fullname.partition('.')
++        if package == 'tlz':
++            return ModuleSpec(fullname, self)
++
++    def create_module(self, spec):
++        return types.ModuleType(spec.name)
++
++    def exec_module(self, module):
++        toolz_mods = self._load_toolz(module.__name__)
++        fast_mod = toolz_mods.get('cytoolz') or toolz_mods['toolz']
++        slow_mod = toolz_mods.get('toolz') or toolz_mods['cytoolz']
++        module.__dict__.update(toolz.merge(fast_mod.__dict__, module.__dict__))
++        package = fast_mod.__package__
++        if package is not None:
++            package, dot, submodules = package.partition('.')
++            module.__package__ = ''.join(['tlz', dot, submodules])
++        if not module.__doc__:
++            module.__doc__ = fast_mod.__doc__
++
++        # show file from toolz during introspection
++        try:
++            module.__file__ = slow_mod.__file__
++        except AttributeError:
++            pass
++
++        for k, v in fast_mod.__dict__.items():
++            tv = slow_mod.__dict__.get(k)
++            try:
++                hash(tv)
++            except TypeError:
++                tv = None
++            if tv in self.always_from_toolz:
++                module.__dict__[k] = tv
++            elif (
++                isinstance(v, types.ModuleType)
++                and v.__package__ == fast_mod.__name__
++            ):
++                package, dot, submodules = v.__name__.partition('.')
++                module_name = ''.join(['tlz', dot, submodules])
++                submodule = import_module(module_name)
++                module.__dict__[k] = submodule
++
++
++tlz_loader = TlzLoader()
++sys.meta_path.append(tlz_loader)
++tlz_loader.exec_module(sys.modules['tlz'])
+diff --git a/work/build/lib/toolz/__init__.py b/build/lib/toolz/__init__.py
+new file mode 100644
+index 0000000..f94d389
+--- /dev/null
++++ b/build/lib/toolz/__init__.py
+@@ -0,0 +1,32 @@
++from .itertoolz import *
++
++from .functoolz import *
++
++from .dicttoolz import *
++
++from .recipes import *
++
++from functools import partial, reduce
++
++sorted = sorted
++
++map = map
++
++filter = filter
++
++# Aliases
++comp = compose
++
++from . import curried, sandbox
++
++functoolz._sigs.create_signature_registry()
++
++
++def __getattr__(name):
++    if name == "__version__":
++        from importlib.metadata import version
++
++        rv = version("toolz")
++        globals()[name] = rv
++        return rv
++    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+diff --git a/work/build/lib/toolz/_signatures.py b/build/lib/toolz/_signatures.py
+new file mode 100644
+index 0000000..a14ca33
+--- /dev/null
++++ b/build/lib/toolz/_signatures.py
+@@ -0,0 +1,787 @@
++"""Internal module for better introspection of builtins.
++
++The main functions are ``is_builtin_valid_args``, ``is_builtin_partial_args``,
++and ``has_unknown_args``.  Other functions in this module support these three.
++
++Notably, we create a ``signatures`` registry to enable introspection of
++builtin functions in any Python version.  This includes builtins that
++have more than one valid signature.  Currently, the registry includes
++builtins from ``builtins``, ``functools``, ``itertools``, and ``operator``
++modules.  More can be added as requested.  We don't guarantee full coverage.
++
++Everything in this module should be regarded as implementation details.
++Users should try to not use this module directly.
++"""
++import functools
++import inspect
++import itertools
++import operator
++from importlib import import_module
++
++from .functoolz import (is_partial_args, is_arity, has_varargs,
++                        has_keywords, num_required_args)
++
++import builtins
++
++# We mock builtin callables using lists of tuples with lambda functions.
++#
++# The tuple spec is (num_position_args, lambda_func, keyword_only_args).
++#
++#   num_position_args:
++#       - The number of positional-only arguments.  If not specified,
++#         all positional arguments are considered positional-only.
++#
++#   lambda_func:
++#       - lambda function that matches a signature of a builtin, but does
++#         not include keyword-only arguments.
++#
++#   keyword_only_args: (optional)
++#       - Tuple of keyword-only arguments.
++
++module_info = {}
++
++module_info[builtins] = dict(
++    abs=[
++        lambda x: None],
++    all=[
++        lambda iterable: None],
++    anext=[
++        lambda aiterator: None,
++        lambda aiterator, default: None],
++    any=[
++        lambda iterable: None],
++    apply=[
++        lambda object: None,
++        lambda object, args: None,
++        lambda object, args, kwargs: None],
++    ascii=[
++        lambda obj: None],
++    bin=[
++        lambda number: None],
++    bool=[
++        lambda x=False: None],
++    buffer=[
++        lambda object: None,
++        lambda object, offset: None,
++        lambda object, offset, size: None],
++    bytearray=[
++        lambda: None,
++        lambda int: None,
++        lambda string, encoding='utf8', errors='strict': None],
++    callable=[
++        lambda obj: None],
++    chr=[
++        lambda i: None],
++    classmethod=[
++        lambda function: None],
++    cmp=[
++        lambda x, y: None],
++    coerce=[
++        lambda x, y: None],
++    complex=[
++        lambda real=0, imag=0: None],
++    delattr=[
++        lambda obj, name: None],
++    dict=[
++        lambda **kwargs: None,
++        lambda mapping, **kwargs: None],
++    dir=[
++        lambda: None,
++        lambda object: None],
++    divmod=[
++        lambda x, y: None],
++    enumerate=[
++        (0, lambda iterable, start=0: None)],
++    eval=[
++        lambda source: None,
++        lambda source, globals: None,
++        lambda source, globals, locals: None],
++    execfile=[
++        lambda filename: None,
++        lambda filename, globals: None,
++        lambda filename, globals, locals: None],
++    file=[
++        (0, lambda name, mode='r', buffering=-1: None)],
++    filter=[
++        lambda function, iterable: None],
++    float=[
++        lambda x=0.0: None],
++    format=[
++        lambda value: None,
++        lambda value, format_spec: None],
++    frozendict=[
++        lambda **kwargs: None,
++        lambda mapping, **kwargs: None],
++    frozenset=[
++        lambda: None,
++        lambda iterable: None],
++    getattr=[
++        lambda object, name: None,
++        lambda object, name, default: None],
++    globals=[
++        lambda: None],
++    hasattr=[
++        lambda obj, name: None],
++    hash=[
++        lambda obj: None],
++    hex=[
++        lambda number: None],
++    id=[
++        lambda obj: None],
++    input=[
++        lambda: None,
++        lambda prompt: None],
++    int=[
++        lambda x=0: None,
++        (0, lambda x, base=10: None)],
++    intern=[
++        lambda string: None],
++    isinstance=[
++        lambda obj, class_or_tuple: None],
++    issubclass=[
++        lambda cls, class_or_tuple: None],
++    iter=[
++        lambda iterable: None,
++        lambda callable, sentinel: None],
++    len=[
++        lambda obj: None],
++    list=[
++        lambda: None,
++        lambda iterable: None],
++    locals=[
++        lambda: None],
++    long=[
++        lambda x=0: None,
++        (0, lambda x, base=10: None)],
++    map=[
++        lambda func, sequence, *iterables: None],
++    memoryview=[
++        (0, lambda object: None)],
++    next=[
++        lambda iterator: None,
++        lambda iterator, default: None],
++    object=[
++        lambda: None],
++    oct=[
++        lambda number: None],
++    ord=[
++        lambda c: None],
++    pow=[
++        lambda x, y: None,
++        lambda x, y, z: None],
++    property=[
++        lambda fget=None, fset=None, fdel=None, doc=None: None],
++    range=[
++        lambda stop: None,
++        lambda start, stop: None,
++        lambda start, stop, step: None],
++    raw_input=[
++        lambda: None,
++        lambda prompt: None],
++    reduce=[
++        lambda function, sequence: None,
++        lambda function, sequence, initial: None],
++    reload=[
++        lambda module: None],
++    repr=[
++        lambda obj: None],
++    reversed=[
++        lambda sequence: None],
++    round=[
++        (0, lambda number, ndigits=0: None)],
++    set=[
++        lambda: None,
++        lambda iterable: None],
++    setattr=[
++        lambda obj, name, value: None],
++    slice=[
++        lambda stop: None,
++        lambda start, stop: None,
++        lambda start, stop, step: None],
++    staticmethod=[
++        lambda function: None],
++    sum=[
++        lambda iterable: None,
++        lambda iterable, start: None],
++    super=[
++        lambda type: None,
++        lambda type, obj: None],
++    tuple=[
++        lambda: None,
++        lambda iterable: None],
++    type=[
++        lambda object: None,
++        lambda name, bases, dict: None],
++    unichr=[
++        lambda i: None],
++    unicode=[
++        lambda object: None,
++        lambda string='', encoding='utf8', errors='strict': None],
++    vars=[
++        lambda: None,
++        lambda object: None],
++    xrange=[
++        lambda stop: None,
++        lambda start, stop: None,
++        lambda start, stop, step: None],
++    zip=[
++        lambda *iterables: None],
++    __build_class__=[
++        (2, lambda func, name, *bases, **kwds: None, ('metaclass',))],
++    __import__=[
++        (0, lambda name, globals=None, locals=None, fromlist=None,
++            level=None: None)],
++)
++module_info[builtins]['exec'] = [
++    lambda source: None,
++    lambda source, globals: None,
++    lambda source, globals, locals: None]
++
++module_info[builtins].update(
++    breakpoint=[
++        lambda *args, **kws: None],
++    bytes=[
++        lambda: None,
++        lambda int: None,
++        lambda string, encoding='utf8', errors='strict': None],
++    compile=[
++        (0, lambda source, filename, mode, flags=0,
++            dont_inherit=False, optimize=-1: None)],
++    max=[
++        (1, lambda iterable: None, ('default', 'key',)),
++        (1, lambda arg1, arg2, *args: None, ('key',))],
++    min=[
++        (1, lambda iterable: None, ('default', 'key',)),
++        (1, lambda arg1, arg2, *args: None, ('key',))],
++    open=[
++        (0, lambda file, mode='r', buffering=-1, encoding=None,
++            errors=None, newline=None, closefd=True, opener=None: None)],
++    sorted=[
++        (1, lambda iterable: None, ('key', 'reverse'))],
++    str=[
++        lambda object='', encoding='utf', errors='strict': None],
++)
++module_info[builtins]['print'] = [
++    (0, lambda *args: None, ('sep', 'end', 'file', 'flush',))]
++
++
++module_info[functools] = dict(
++    cmp_to_key=[
++        (0, lambda mycmp: None)],
++    partial=[
++        lambda func, *args, **kwargs: None],
++    partialmethod=[
++        lambda func, *args, **kwargs: None],
++    reduce=[
++        lambda function, sequence: None,
++        lambda function, sequence, initial: None],
++)
++
++module_info[itertools] = dict(
++    accumulate=[
++        (0, lambda iterable, func=None: None)],
++    chain=[
++        lambda *iterables: None],
++    combinations=[
++        (0, lambda iterable, r: None)],
++    combinations_with_replacement=[
++        (0, lambda iterable, r: None)],
++    compress=[
++        (0, lambda data, selectors: None)],
++    count=[
++        lambda start=0, step=1: None],
++    cycle=[
++        lambda iterable: None],
++    dropwhile=[
++        lambda predicate, iterable: None],
++    filterfalse=[
++        lambda function, sequence: None],
++    groupby=[
++        (0, lambda iterable, key=None: None)],
++    ifilter=[
++        lambda function, sequence: None],
++    ifilterfalse=[
++        lambda function, sequence: None],
++    imap=[
++        lambda func, sequence, *iterables: None],
++    islice=[
++        lambda iterable, stop: None,
++        lambda iterable, start, stop: None,
++        lambda iterable, start, stop, step: None],
++    izip=[
++        lambda *iterables: None],
++    izip_longest=[
++        (0, lambda *iterables: None, ('fillvalue',))],
++    pairwise=[
++        lambda iterable: None],
++    permutations=[
++        (0, lambda iterable, r=0: None)],
++    product=[
++        (0, lambda *iterables: None, ('repeat',))],
++    repeat=[
++        (0, lambda object, times=0: None)],
++    starmap=[
++        lambda function, sequence: None],
++    takewhile=[
++        lambda predicate, iterable: None],
++    tee=[
++        lambda iterable: None,
++        lambda iterable, n: None],
++    zip_longest=[
++        (0, lambda *iterables: None, ('fillvalue',))],
++)
++
++
++module_info[operator] = dict(
++    __abs__=[
++        lambda a: None],
++    __add__=[
++        lambda a, b: None],
++    __and__=[
++        lambda a, b: None],
++    __concat__=[
++        lambda a, b: None],
++    __contains__=[
++        lambda a, b: None],
++    __delitem__=[
++        lambda a, b: None],
++    __delslice__=[
++        lambda a, b, c: None],
++    __div__=[
++        lambda a, b: None],
++    __eq__=[
++        lambda a, b: None],
++    __floordiv__=[
++        lambda a, b: None],
++    __ge__=[
++        lambda a, b: None],
++    __getitem__=[
++        lambda a, b: None],
++    __getslice__=[
++        lambda a, b, c: None],
++    __gt__=[
++        lambda a, b: None],
++    __iadd__=[
++        lambda a, b: None],
++    __iand__=[
++        lambda a, b: None],
++    __iconcat__=[
++        lambda a, b: None],
++    __idiv__=[
++        lambda a, b: None],
++    __ifloordiv__=[
++        lambda a, b: None],
++    __ilshift__=[
++        lambda a, b: None],
++    __imatmul__=[
++        lambda a, b: None],
++    __imod__=[
++        lambda a, b: None],
++    __imul__=[
++        lambda a, b: None],
++    __index__=[
++        lambda a: None],
++    __inv__=[
++        lambda a: None],
++    __invert__=[
++        lambda a: None],
++    __ior__=[
++        lambda a, b: None],
++    __ipow__=[
++        lambda a, b: None],
++    __irepeat__=[
++        lambda a, b: None],
++    __irshift__=[
++        lambda a, b: None],
++    __isub__=[
++        lambda a, b: None],
++    __itruediv__=[
++        lambda a, b: None],
++    __ixor__=[
++        lambda a, b: None],
++    __le__=[
++        lambda a, b: None],
++    __lshift__=[
++        lambda a, b: None],
++    __lt__=[
++        lambda a, b: None],
++    __matmul__=[
++        lambda a, b: None],
++    __mod__=[
++        lambda a, b: None],
++    __mul__=[
++        lambda a, b: None],
++    __ne__=[
++        lambda a, b: None],
++    __neg__=[
++        lambda a: None],
++    __not__=[
++        lambda a: None],
++    __or__=[
++        lambda a, b: None],
++    __pos__=[
++        lambda a: None],
++    __pow__=[
++        lambda a, b: None],
++    __repeat__=[
++        lambda a, b: None],
++    __rshift__=[
++        lambda a, b: None],
++    __setitem__=[
++        lambda a, b, c: None],
++    __setslice__=[
++        lambda a, b, c, d: None],
++    __sub__=[
++        lambda a, b: None],
++    __truediv__=[
++        lambda a, b: None],
++    __xor__=[
++        lambda a, b: None],
++    _abs=[
++        lambda x: None],
++    _compare_digest=[
++        lambda a, b: None],
++    abs=[
++        lambda a: None],
++    add=[
++        lambda a, b: None],
++    and_=[
++        lambda a, b: None],
++    attrgetter=[
++        lambda attr, *args: None],
++    concat=[
++        lambda a, b: None],
++    contains=[
++        lambda a, b: None],
++    countOf=[
++        lambda a, b: None],
++    delitem=[
++        lambda a, b: None],
++    delslice=[
++        lambda a, b, c: None],
++    div=[
++        lambda a, b: None],
++    eq=[
++        lambda a, b: None],
++    floordiv=[
++        lambda a, b: None],
++    ge=[
++        lambda a, b: None],
++    getitem=[
++        lambda a, b: None],
++    getslice=[
++        lambda a, b, c: None],
++    gt=[
++        lambda a, b: None],
++    iadd=[
++        lambda a, b: None],
++    iand=[
++        lambda a, b: None],
++    iconcat=[
++        lambda a, b: None],
++    idiv=[
++        lambda a, b: None],
++    ifloordiv=[
++        lambda a, b: None],
++    ilshift=[
++        lambda a, b: None],
++    imatmul=[
++        lambda a, b: None],
++    imod=[
++        lambda a, b: None],
++    imul=[
++        lambda a, b: None],
++    index=[
++        lambda a: None],
++    indexOf=[
++        lambda a, b: None],
++    inv=[
++        lambda a: None],
++    invert=[
++        lambda a: None],
++    ior=[
++        lambda a, b: None],
++    ipow=[
++        lambda a, b: None],
++    irepeat=[
++        lambda a, b: None],
++    irshift=[
++        lambda a, b: None],
++    is_=[
++        lambda a, b: None],
++    is_not=[
++        lambda a, b: None],
++    isCallable=[
++        lambda a: None],
++    isMappingType=[
++        lambda a: None],
++    isNumberType=[
++        lambda a: None],
++    isSequenceType=[
++        lambda a: None],
++    isub=[
++        lambda a, b: None],
++    itemgetter=[
++        lambda item, *args: None],
++    itruediv=[
++        lambda a, b: None],
++    ixor=[
++        lambda a, b: None],
++    le=[
++        lambda a, b: None],
++    length_hint=[
++        lambda obj: None,
++        lambda obj, default: None],
++    lshift=[
++        lambda a, b: None],
++    lt=[
++        lambda a, b: None],
++    matmul=[
++        lambda a, b: None],
++    methodcaller=[
++        lambda name, *args, **kwargs: None],
++    mod=[
++        lambda a, b: None],
++    mul=[
++        lambda a, b: None],
++    ne=[
++        lambda a, b: None],
++    neg=[
++        lambda a: None],
++    not_=[
++        lambda a: None],
++    or_=[
++        lambda a, b: None],
++    pos=[
++        lambda a: None],
++    pow=[
++        lambda a, b: None],
++    repeat=[
++        lambda a, b: None],
++    rshift=[
++        lambda a, b: None],
++    sequenceIncludes=[
++        lambda a, b: None],
++    setitem=[
++        lambda a, b, c: None],
++    setslice=[
++        lambda a, b, c, d: None],
++    sub=[
++        lambda a, b: None],
++    truediv=[
++        lambda a, b: None],
++    truth=[
++        lambda a: None],
++    xor=[
++        lambda a, b: None],
++)
++
++module_info['toolz'] = dict(
++    curry=[
++        (0, lambda *args, **kwargs: None)],
++    excepts=[
++        (0, lambda exc, func, handler=None: None)],
++    flip=[
++        (0, lambda func=None, a=None, b=None: None)],
++    juxt=[
++        (0, lambda *funcs: None)],
++    memoize=[
++        (0, lambda func=None, cache=None, key=None: None)],
++)
++
++module_info['toolz.functoolz'] = dict(
++    Compose=[
++        (0, lambda funcs: None)],
++    InstanceProperty=[
++        (0, lambda fget=None, fset=None, fdel=None, doc=None,
++            classval=None: None)],
++)
++
++
++def num_pos_args(sigspec):
++    """ Return the number of positional arguments.  ``f(x, y=1)`` has 1"""
++    return sum(1 for x in sigspec.parameters.values()
++               if x.kind == x.POSITIONAL_OR_KEYWORD
++               and x.default is x.empty)
++
++
++def get_exclude_keywords(num_pos_only, sigspec):
++    """ Return the names of position-only arguments if func has **kwargs"""
++    if num_pos_only == 0:
++        return ()
++    has_kwargs = any(x.kind == x.VAR_KEYWORD
++                     for x in sigspec.parameters.values())
++    if not has_kwargs:
++        return ()
++    pos_args = list(sigspec.parameters.values())[:num_pos_only]
++    return tuple(x.name for x in pos_args)
++
++
++def signature_or_spec(func):
++    try:
++        return inspect.signature(func)
++    except (ValueError, TypeError):
++        return None
++
++
++def expand_sig(sig):
++    """ Convert the signature spec in ``module_info`` to add to ``signatures``
++
++    The input signature spec is one of:
++        - ``lambda_func``
++        - ``(num_position_args, lambda_func)``
++        - ``(num_position_args, lambda_func, keyword_only_args)``
++
++    The output signature spec is:
++        ``(num_position_args, lambda_func, keyword_exclude, sigspec)``
++
++    where ``keyword_exclude`` includes keyword only arguments and, if variadic
++    keywords is present, the names of position-only argument.  The latter is
++    included to support builtins such as ``partial(func, *args, **kwargs)``,
++    which allows ``func=`` to be used as a keyword even though it's the name
++    of a positional argument.
++    """
++    if isinstance(sig, tuple):
++        if len(sig) == 3:
++            num_pos_only, func, keyword_only = sig
++            assert isinstance(sig[-1], tuple)
++        else:
++            num_pos_only, func = sig
++            keyword_only = ()
++        sigspec = signature_or_spec(func)
++    else:
++        func = sig
++        sigspec = signature_or_spec(func)
++        num_pos_only = num_pos_args(sigspec)
++        keyword_only = ()
++    keyword_exclude = get_exclude_keywords(num_pos_only, sigspec)
++    return num_pos_only, func, keyword_only + keyword_exclude, sigspec
++
++
++signatures = {}
++
++
++def create_signature_registry(module_info=module_info, signatures=signatures):
++    for module, info in module_info.items():
++        if isinstance(module, str):
++            module = import_module(module)
++        for name, sigs in info.items():
++            if hasattr(module, name):
++                new_sigs = tuple(expand_sig(sig) for sig in sigs)
++                signatures[getattr(module, name)] = new_sigs
++
++
++def check_valid(sig, args, kwargs):
++    """ Like ``is_valid_args`` for the given signature spec"""
++    num_pos_only, func, keyword_exclude, sigspec = sig
++    if len(args) < num_pos_only:
++        return False
++    if keyword_exclude:
++        kwargs = dict(kwargs)
++        for item in keyword_exclude:
++            kwargs.pop(item, None)
++    try:
++        func(*args, **kwargs)
++        return True
++    except TypeError:
++        return False
++
++
++def _is_valid_args(func, args, kwargs):
++    """ Like ``is_valid_args`` for builtins in our ``signatures`` registry"""
++    if func not in signatures:
++        return None
++    sigs = signatures[func]
++    return any(check_valid(sig, args, kwargs) for sig in sigs)
++
++
++def check_partial(sig, args, kwargs):
++    """ Like ``is_partial_args`` for the given signature spec"""
++    num_pos_only, func, keyword_exclude, sigspec = sig
++    if len(args) < num_pos_only:
++        pad = (None,) * (num_pos_only - len(args))
++        args = args + pad
++    if keyword_exclude:
++        kwargs = dict(kwargs)
++        for item in keyword_exclude:
++            kwargs.pop(item, None)
++    return is_partial_args(func, args, kwargs, sigspec)
++
++
++def _is_partial_args(func, args, kwargs):
++    """ Like ``is_partial_args`` for builtins in our ``signatures`` registry"""
++    if func not in signatures:
++        return None
++    sigs = signatures[func]
++    return any(check_partial(sig, args, kwargs) for sig in sigs)
++
++
++def check_arity(n, sig):
++    num_pos_only, func, keyword_exclude, sigspec = sig
++    if keyword_exclude or num_pos_only > n:
++        return False
++    return is_arity(n, func, sigspec)
++
++
++def _is_arity(n, func):
++    if func not in signatures:
++        return None
++    sigs = signatures[func]
++    checks = [check_arity(n, sig) for sig in sigs]
++    if all(checks):
++        return True
++    elif any(checks):
++        return None
++    return False
++
++
++def check_varargs(sig):
++    num_pos_only, func, keyword_exclude, sigspec = sig
++    return has_varargs(func, sigspec)
++
++
++def _has_varargs(func):
++    if func not in signatures:
++        return None
++    sigs = signatures[func]
++    checks = [check_varargs(sig) for sig in sigs]
++    if all(checks):
++        return True
++    elif any(checks):
++        return None
++    return False
++
++
++def check_keywords(sig):
++    num_pos_only, func, keyword_exclude, sigspec = sig
++    if keyword_exclude:
++        return True
++    return has_keywords(func, sigspec)
++
++
++def _has_keywords(func):
++    if func not in signatures:
++        return None
++    sigs = signatures[func]
++    checks = [check_keywords(sig) for sig in sigs]
++    if all(checks):
++        return True
++    elif any(checks):
++        return None
++    return False
++
++
++def check_required_args(sig):
++    num_pos_only, func, keyword_exclude, sigspec = sig
++    return num_required_args(func, sigspec)
++
++
++def _num_required_args(func):
++    if func not in signatures:
++        return None
++    sigs = signatures[func]
++    vals = [check_required_args(sig) for sig in sigs]
++    val = vals[0]
++    if all(x == val for x in vals):
++        return val
++    return None
+diff --git a/work/build/lib/toolz/compatibility.py b/build/lib/toolz/compatibility.py
+new file mode 100644
+index 0000000..28bef91
+--- /dev/null
++++ b/build/lib/toolz/compatibility.py
+@@ -0,0 +1,30 @@
++import warnings
++warnings.warn("The toolz.compatibility module is no longer "
++              "needed in Python 3 and has been deprecated. Please "
++              "import these utilities directly from the standard library. "
++              "This module will be removed in a future release.",
++              category=DeprecationWarning, stacklevel=2)
++
++import operator
++import sys
++
++PY3 = sys.version_info[0] > 2
++PY34 = sys.version_info[0] == 3 and sys.version_info[1] == 4
++PYPY = hasattr(sys, 'pypy_version_info') and PY3
++
++__all__ = ('map', 'filter', 'range', 'zip', 'reduce', 'zip_longest',
++           'iteritems', 'iterkeys', 'itervalues', 'filterfalse',
++           'PY3', 'PY34', 'PYPY')
++
++
++map = map
++filter = filter
++range = range
++zip = zip
++from functools import reduce
++from itertools import zip_longest
++from itertools import filterfalse
++iteritems = operator.methodcaller('items')
++iterkeys = operator.methodcaller('keys')
++itervalues = operator.methodcaller('values')
++from collections.abc import Sequence
+diff --git a/work/build/lib/toolz/curried/__init__.py b/build/lib/toolz/curried/__init__.py
+new file mode 100644
+index 0000000..356eddb
+--- /dev/null
++++ b/build/lib/toolz/curried/__init__.py
+@@ -0,0 +1,103 @@
++"""
++Alternate namespace for toolz such that all functions are curried
++
++Currying provides implicit partial evaluation of all functions
++
++Example:
++
++    Get usually requires two arguments, an index and a collection
++    >>> from toolz.curried import get
++    >>> get(0, ('a', 'b'))
++    'a'
++
++    When we use it in higher order functions we often want to pass a partially
++    evaluated form
++    >>> data = [(1, 2), (11, 22), (111, 222)]
++    >>> list(map(lambda seq: get(0, seq), data))
++    [1, 11, 111]
++
++    The curried version allows simple expression of partial evaluation
++    >>> list(map(get(0), data))
++    [1, 11, 111]
++
++See Also:
++    toolz.functoolz.curry
++"""
++import toolz
++from . import operator
++from toolz import (
++    apply,
++    comp,
++    complement,
++    compose,
++    compose_left,
++    concat,
++    concatv,
++    count,
++    curry,
++    diff,
++    first,
++    flip,
++    frequencies,
++    identity,
++    interleave,
++    isdistinct,
++    isiterable,
++    juxt,
++    last,
++    memoize,
++    merge_sorted,
++    peek,
++    pipe,
++    second,
++    thread_first,
++    thread_last,
++)
++from .exceptions import merge, merge_with
++
++accumulate = toolz.curry(toolz.accumulate)
++assoc = toolz.curry(toolz.assoc)
++assoc_in = toolz.curry(toolz.assoc_in)
++cons = toolz.curry(toolz.cons)
++countby = toolz.curry(toolz.countby)
++dissoc = toolz.curry(toolz.dissoc)
++do = toolz.curry(toolz.do)
++drop = toolz.curry(toolz.drop)
++excepts = toolz.curry(toolz.excepts)
++filter = toolz.curry(toolz.filter)
++get = toolz.curry(toolz.get)
++get_in = toolz.curry(toolz.get_in)
++groupby = toolz.curry(toolz.groupby)
++interpose = toolz.curry(toolz.interpose)
++itemfilter = toolz.curry(toolz.itemfilter)
++itemmap = toolz.curry(toolz.itemmap)
++iterate = toolz.curry(toolz.iterate)
++join = toolz.curry(toolz.join)
++keyfilter = toolz.curry(toolz.keyfilter)
++keymap = toolz.curry(toolz.keymap)
++map = toolz.curry(toolz.map)
++mapcat = toolz.curry(toolz.mapcat)
++nth = toolz.curry(toolz.nth)
++partial = toolz.curry(toolz.partial)
++partition = toolz.curry(toolz.partition)
++partition_all = toolz.curry(toolz.partition_all)
++partitionby = toolz.curry(toolz.partitionby)
++peekn = toolz.curry(toolz.peekn)
++pluck = toolz.curry(toolz.pluck)
++random_sample = toolz.curry(toolz.random_sample)
++reduce = toolz.curry(toolz.reduce)
++reduceby = toolz.curry(toolz.reduceby)
++remove = toolz.curry(toolz.remove)
++sliding_window = toolz.curry(toolz.sliding_window)
++sorted = toolz.curry(toolz.sorted)
++tail = toolz.curry(toolz.tail)
++take = toolz.curry(toolz.take)
++take_nth = toolz.curry(toolz.take_nth)
++topk = toolz.curry(toolz.topk)
++unique = toolz.curry(toolz.unique)
++update_in = toolz.curry(toolz.update_in)
++valfilter = toolz.curry(toolz.valfilter)
++valmap = toolz.curry(toolz.valmap)
++
++del exceptions
++del toolz
+diff --git a/work/build/lib/toolz/curried/exceptions.py b/build/lib/toolz/curried/exceptions.py
+new file mode 100644
+index 0000000..75a52bb
+--- /dev/null
++++ b/build/lib/toolz/curried/exceptions.py
+@@ -0,0 +1,18 @@
++import toolz
++
++
++__all__ = ['merge_with', 'merge']
++
++
++@toolz.curry
++def merge_with(func, d, *dicts, **kwargs):
++    return toolz.merge_with(func, d, *dicts, **kwargs)
++
++
++@toolz.curry
++def merge(d, *dicts, **kwargs):
++    return toolz.merge(d, *dicts, **kwargs)
++
++
++merge_with.__doc__ = toolz.merge_with.__doc__
++merge.__doc__ = toolz.merge.__doc__
+diff --git a/work/build/lib/toolz/curried/operator.py b/build/lib/toolz/curried/operator.py
+new file mode 100644
+index 0000000..5ffa2c3
+--- /dev/null
++++ b/build/lib/toolz/curried/operator.py
+@@ -0,0 +1,20 @@
++import operator
++
++from toolz.functoolz import curry
++
++
++# Tests will catch if/when this needs updated
++IGNORE = {
++    "__abs__", "__index__", "__inv__", "__invert__", "__neg__", "__not__",
++    "__pos__", "_abs", "abs", "attrgetter", "index", "inv", "invert",
++    "is_none", "is_not_none", "itemgetter", "neg", "not_", "pos", "truth"
++}
++locals().update(
++    {name: f if name in IGNORE else curry(f)
++     for name, f in vars(operator).items() if callable(f)}
++)
++
++# Clean up the namespace.
++del IGNORE
++del curry
++del operator
+diff --git a/work/build/lib/toolz/dicttoolz.py b/build/lib/toolz/dicttoolz.py
+new file mode 100644
+index 0000000..457bc26
+--- /dev/null
++++ b/build/lib/toolz/dicttoolz.py
+@@ -0,0 +1,339 @@
++import operator
++import collections
++from functools import reduce
++from collections.abc import Mapping
++
++__all__ = ('merge', 'merge_with', 'valmap', 'keymap', 'itemmap',
++           'valfilter', 'keyfilter', 'itemfilter',
++           'assoc', 'dissoc', 'assoc_in', 'update_in', 'get_in')
++
++
++def _get_factory(f, kwargs):
++    factory = kwargs.pop('factory', dict)
++    if kwargs:
++        raise TypeError("{}() got an unexpected keyword argument "
++                        "'{}'".format(f.__name__, kwargs.popitem()[0]))
++    return factory
++
++
++def merge(*dicts, **kwargs):
++    """ Merge a collection of dictionaries
++
++    >>> merge({1: 'one'}, {2: 'two'})
++    {1: 'one', 2: 'two'}
++
++    Later dictionaries have precedence
++
++    >>> merge({1: 2, 3: 4}, {3: 3, 4: 4})
++    {1: 2, 3: 3, 4: 4}
++
++    See Also:
++        merge_with
++    """
++    if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
++        dicts = dicts[0]
++    factory = _get_factory(merge, kwargs)
++
++    rv = factory()
++    for d in dicts:
++        rv.update(d)
++    return rv
++
++
++def merge_with(func, *dicts, **kwargs):
++    """ Merge dictionaries and apply function to combined values
++
++    A key may occur in more than one dict, and all values mapped from the key
++    will be passed to the function as a list, such as func([val1, val2, ...]).
++
++    >>> merge_with(sum, {1: 1, 2: 2}, {1: 10, 2: 20})
++    {1: 11, 2: 22}
++
++    >>> merge_with(first, {1: 1, 2: 2}, {2: 20, 3: 30})  # doctest: +SKIP
++    {1: 1, 2: 2, 3: 30}
++
++    See Also:
++        merge
++    """
++    if len(dicts) == 1 and not isinstance(dicts[0], Mapping):
++        dicts = dicts[0]
++    factory = _get_factory(merge_with, kwargs)
++
++    values = collections.defaultdict(lambda: [].append)
++    for d in dicts:
++        for k, v in d.items():
++            values[k](v)
++
++    result = factory()
++    for k, v in values.items():
++        result[k] = func(v.__self__)
++    return result
++
++
++def valmap(func, d, factory=dict):
++    """ Apply function to values of dictionary
++
++    >>> bills = {"Alice": [20, 15, 30], "Bob": [10, 35]}
++    >>> valmap(sum, bills)  # doctest: +SKIP
++    {'Alice': 65, 'Bob': 45}
++
++    See Also:
++        keymap
++        itemmap
++    """
++    rv = factory()
++    rv.update(zip(d.keys(), map(func, d.values())))
++    return rv
++
++
++def keymap(func, d, factory=dict):
++    """ Apply function to keys of dictionary
++
++    >>> bills = {"Alice": [20, 15, 30], "Bob": [10, 35]}
++    >>> keymap(str.lower, bills)  # doctest: +SKIP
++    {'alice': [20, 15, 30], 'bob': [10, 35]}
++
++    See Also:
++        valmap
++        itemmap
++    """
++    rv = factory()
++    rv.update(zip(map(func, d.keys()), d.values()))
++    return rv
++
++
++def itemmap(func, d, factory=dict):
++    """ Apply function to items of dictionary
++
++    >>> accountids = {"Alice": 10, "Bob": 20}
++    >>> itemmap(reversed, accountids)  # doctest: +SKIP
++    {10: "Alice", 20: "Bob"}
++
++    See Also:
++        keymap
++        valmap
++    """
++    rv = factory()
++    rv.update(map(func, d.items()))
++    return rv
++
++
++def valfilter(predicate, d, factory=dict):
++    """ Filter items in dictionary by value
++
++    >>> iseven = lambda x: x % 2 == 0
++    >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
++    >>> valfilter(iseven, d)
++    {1: 2, 3: 4}
++
++    See Also:
++        keyfilter
++        itemfilter
++        valmap
++    """
++    rv = factory()
++    for k, v in d.items():
++        if predicate(v):
++            rv[k] = v
++    return rv
++
++
++def keyfilter(predicate, d, factory=dict):
++    """ Filter items in dictionary by key
++
++    >>> iseven = lambda x: x % 2 == 0
++    >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
++    >>> keyfilter(iseven, d)
++    {2: 3, 4: 5}
++
++    See Also:
++        valfilter
++        itemfilter
++        keymap
++    """
++    rv = factory()
++    for k, v in d.items():
++        if predicate(k):
++            rv[k] = v
++    return rv
++
++
++def itemfilter(predicate, d, factory=dict):
++    """ Filter items in dictionary by item
++
++    >>> def isvalid(item):
++    ...     k, v = item
++    ...     return k % 2 == 0 and v < 4
++
++    >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
++    >>> itemfilter(isvalid, d)
++    {2: 3}
++
++    See Also:
++        keyfilter
++        valfilter
++        itemmap
++    """
++    rv = factory()
++    for item in d.items():
++        if predicate(item):
++            k, v = item
++            rv[k] = v
++    return rv
++
++
++def assoc(d, key, value, factory=dict):
++    """ Return a new dict with new key value pair
++
++    New dict has d[key] set to value. Does not modify the initial dictionary.
++
++    >>> assoc({'x': 1}, 'x', 2)
++    {'x': 2}
++    >>> assoc({'x': 1}, 'y', 3)   # doctest: +SKIP
++    {'x': 1, 'y': 3}
++    """
++    d2 = factory()
++    d2.update(d)
++    d2[key] = value
++    return d2
++
++
++def dissoc(d, *keys, **kwargs):
++    """ Return a new dict with the given key(s) removed.
++
++    New dict has d[key] deleted for each supplied key.
++    Does not modify the initial dictionary.
++
++    >>> dissoc({'x': 1, 'y': 2}, 'y')
++    {'x': 1}
++    >>> dissoc({'x': 1, 'y': 2}, 'y', 'x')
++    {}
++    >>> dissoc({'x': 1}, 'y') # Ignores missing keys
++    {'x': 1}
++    """
++    factory = _get_factory(dissoc, kwargs)
++    d2 = factory()
++
++    if len(keys) < len(d) * .6:
++        d2.update(d)
++        for key in keys:
++            if key in d2:
++                del d2[key]
++    else:
++        remaining = set(d)
++        remaining.difference_update(keys)
++        for k in remaining:
++            d2[k] = d[k]
++    return d2
++
++
++def assoc_in(d, keys, value, factory=dict):
++    """ Return a new dict with new, potentially nested, key value pair
++
++    >>> purchase = {'name': 'Alice',
++    ...             'order': {'items': ['Apple', 'Orange'],
++    ...                       'costs': [0.50, 1.25]},
++    ...             'credit card': '5555-1234-1234-1234'}
++    >>> assoc_in(purchase, ['order', 'costs'], [0.25, 1.00]) # doctest: +SKIP
++    {'credit card': '5555-1234-1234-1234',
++     'name': 'Alice',
++     'order': {'costs': [0.25, 1.00], 'items': ['Apple', 'Orange']}}
++    """
++    return update_in(d, keys, lambda x: value, value, factory)
++
++
++def update_in(d, keys, func, default=None, factory=dict):
++    """ Update value in a (potentially) nested dictionary
++
++    inputs:
++    d - dictionary on which to operate
++    keys - list or tuple giving the location of the value to be changed in d
++    func - function to operate on that value
++
++    If keys == [k0,..,kX] and d[k0]..[kX] == v, update_in returns a copy of the
++    original dictionary with v replaced by func(v), but does not mutate the
++    original dictionary.
++
++    If k0 is not a key in d, update_in creates nested dictionaries to the depth
++    specified by the keys, with the innermost value set to func(default).
++
++    >>> inc = lambda x: x + 1
++    >>> update_in({'a': 0}, ['a'], inc)
++    {'a': 1}
++
++    >>> transaction = {'name': 'Alice',
++    ...                'purchase': {'items': ['Apple', 'Orange'],
++    ...                             'costs': [0.50, 1.25]},
++    ...                'credit card': '5555-1234-1234-1234'}
++    >>> update_in(transaction, ['purchase', 'costs'], sum) # doctest: +SKIP
++    {'credit card': '5555-1234-1234-1234',
++     'name': 'Alice',
++     'purchase': {'costs': 1.75, 'items': ['Apple', 'Orange']}}
++
++    >>> # updating a value when k0 is not in d
++    >>> update_in({}, [1, 2, 3], str, default="bar")
++    {1: {2: {3: 'bar'}}}
++    >>> update_in({1: 'foo'}, [2, 3, 4], inc, 0)
++    {1: 'foo', 2: {3: {4: 1}}}
++    """
++    ks = iter(keys)
++    k = next(ks)
++
++    rv = inner = factory()
++    rv.update(d)
++
++    for key in ks:
++        if k in d:
++            d = d[k]
++            dtemp = factory()
++            dtemp.update(d)
++        else:
++            d = dtemp = factory()
++
++        inner[k] = inner = dtemp
++        k = key
++
++    if k in d:
++        inner[k] = func(d[k])
++    else:
++        inner[k] = func(default)
++    return rv
++
++
++def get_in(keys, coll, default=None, no_default=False):
++    """ Returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
++
++    If coll[i0][i1]...[iX] cannot be found, returns ``default``, unless
++    ``no_default`` is specified, then it raises KeyError or IndexError.
++
++    ``get_in`` is a generalization of ``operator.getitem`` for nested data
++    structures such as dictionaries and lists.
++
++    >>> transaction = {'name': 'Alice',
++    ...                'purchase': {'items': ['Apple', 'Orange'],
++    ...                             'costs': [0.50, 1.25]},
++    ...                'credit card': '5555-1234-1234-1234'}
++    >>> get_in(['purchase', 'items', 0], transaction)
++    'Apple'
++    >>> get_in(['name'], transaction)
++    'Alice'
++    >>> get_in(['purchase', 'total'], transaction)
++    >>> get_in(['purchase', 'items', 'apple'], transaction)
++    >>> get_in(['purchase', 'items', 10], transaction)
++    >>> get_in(['purchase', 'total'], transaction, 0)
++    0
++    >>> get_in(['y'], {}, no_default=True)
++    Traceback (most recent call last):
++        ...
++    KeyError: 'y'
++
++    See Also:
++        itertoolz.get
++        operator.getitem
++    """
++    try:
++        return reduce(operator.getitem, keys, coll)
++    except (KeyError, IndexError, TypeError):
++        if no_default:
++            raise
++        return default
+diff --git a/work/build/lib/toolz/functoolz.py b/build/lib/toolz/functoolz.py
+new file mode 100644
+index 0000000..b4cacac
+--- /dev/null
++++ b/build/lib/toolz/functoolz.py
+@@ -0,0 +1,1141 @@
++from functools import reduce, partial
++import inspect
++import sys
++from operator import attrgetter, not_
++from importlib import import_module
++from types import MethodType
++
++from .utils import no_default
++
++if sys.version_info >= (3, 14):
++    import annotationlib  # already imported by inspect
++
++
++__all__ = ('identity', 'apply', 'thread_first', 'thread_last', 'memoize',
++           'compose', 'compose_left', 'pipe', 'complement', 'juxt', 'do',
++           'curry', 'flip', 'excepts')
++
++PYPY = hasattr(sys, 'pypy_version_info')
++
++
++def identity(x):
++    """ Identity function. Return x
++
++    >>> identity(3)
++    3
++    """
++    return x
++
++
++def apply(*func_and_args, **kwargs):
++    """ Applies a function and returns the results
++
++    >>> def double(x): return 2*x
++    >>> def inc(x):    return x + 1
++    >>> apply(double, 5)
++    10
++
++    >>> tuple(map(apply, [double, inc, double], [10, 500, 8000]))
++    (20, 501, 16000)
++    """
++    if not func_and_args:
++        raise TypeError('func argument is required')
++    func, args = func_and_args[0], func_and_args[1:]
++    return func(*args, **kwargs)
++
++
++def thread_first(val, *forms):
++    """ Thread value through a sequence of functions/forms
++
++    >>> def double(x): return 2*x
++    >>> def inc(x):    return x + 1
++    >>> thread_first(1, inc, double)
++    4
++
++    If the function expects more than one input you can specify those inputs
++    in a tuple.  The value is used as the first input.
++
++    >>> def add(x, y): return x + y
++    >>> def pow(x, y): return x**y
++    >>> thread_first(1, (add, 4), (pow, 2))  # pow(add(1, 4), 2)
++    25
++
++    So in general
++        thread_first(x, f, (g, y, z))
++    expands to
++        g(f(x), y, z)
++
++    See Also:
++        thread_last
++    """
++    def evalform_front(val, form):
++        if callable(form):
++            return form(val)
++        if isinstance(form, tuple):
++            func, args = form[0], form[1:]
++            args = (val,) + args
++            return func(*args)
++    return reduce(evalform_front, forms, val)
++
++
++def thread_last(val, *forms):
++    """ Thread value through a sequence of functions/forms
++
++    >>> def double(x): return 2*x
++    >>> def inc(x):    return x + 1
++    >>> thread_last(1, inc, double)
++    4
++
++    If the function expects more than one input you can specify those inputs
++    in a tuple.  The value is used as the last input.
++
++    >>> def add(x, y): return x + y
++    >>> def pow(x, y): return x**y
++    >>> thread_last(1, (add, 4), (pow, 2))  # pow(2, add(4, 1))
++    32
++
++    So in general
++        thread_last(x, f, (g, y, z))
++    expands to
++        g(y, z, f(x))
++
++    >>> def iseven(x):
++    ...     return x % 2 == 0
++    >>> list(thread_last([1, 2, 3], (map, inc), (filter, iseven)))
++    [2, 4]
++
++    See Also:
++        thread_first
++    """
++    def evalform_back(val, form):
++        if callable(form):
++            return form(val)
++        if isinstance(form, tuple):
++            func, args = form[0], form[1:]
++            args = args + (val,)
++            return func(*args)
++    return reduce(evalform_back, forms, val)
++
++
++def instanceproperty(fget=None, fset=None, fdel=None, doc=None, classval=None):
++    """ Like @property, but returns ``classval`` when used as a class attribute
++
++    >>> class MyClass(object):
++    ...     '''The class docstring'''
++    ...     @instanceproperty(classval=__doc__)
++    ...     def __doc__(self):
++    ...         return 'An object docstring'
++    ...     @instanceproperty
++    ...     def val(self):
++    ...         return 42
++    ...
++    >>> MyClass.__doc__
++    'The class docstring'
++    >>> MyClass.val is None
++    True
++    >>> obj = MyClass()
++    >>> obj.__doc__
++    'An object docstring'
++    >>> obj.val
++    42
++    """
++    if fget is None:
++        return partial(instanceproperty, fset=fset, fdel=fdel, doc=doc,
++                       classval=classval)
++    return InstanceProperty(fget=fget, fset=fset, fdel=fdel, doc=doc,
++                            classval=classval)
++
++
++class InstanceProperty(property):
++    """ Like @property, but returns ``classval`` when used as a class attribute
++
++    Should not be used directly.  Use ``instanceproperty`` instead.
++    """
++    def __init__(self, fget=None, fset=None, fdel=None, doc=None,
++                 classval=None):
++        self.classval = classval
++        property.__init__(self, fget=fget, fset=fset, fdel=fdel, doc=doc)
++
++    def __get__(self, obj, type=None):
++        if obj is None:
++            return self.classval
++        return property.__get__(self, obj, type)
++
++    def __reduce__(self):
++        state = (self.fget, self.fset, self.fdel, self.__doc__, self.classval)
++        return InstanceProperty, state
++
++
++class curry:
++    """ Curry a callable function
++
++    Enables partial application of arguments through calling a function with an
++    incomplete set of arguments.
++
++    >>> def mul(x, y):
++    ...     return x * y
++    >>> mul = curry(mul)
++
++    >>> double = mul(2)
++    >>> double(10)
++    20
++
++    Also supports keyword arguments
++
++    >>> @curry                  # Can use curry as a decorator
++    ... def f(x, y, a=10):
++    ...     return a * (x + y)
++
++    >>> add = f(a=1)
++    >>> add(2, 3)
++    5
++
++    See Also:
++        toolz.curried - namespace of curried functions
++                        https://toolz.readthedocs.io/en/latest/curry.html
++    """
++    def __init__(self, *args, **kwargs):
++        if not args:
++            raise TypeError('__init__() takes at least 2 arguments (1 given)')
++        func, args = args[0], args[1:]
++        if not callable(func):
++            raise TypeError("Input must be callable")
++
++        # curry- or functools.partial-like object?  Unpack and merge arguments
++        if (
++            hasattr(func, 'func')
++            and hasattr(func, 'args')
++            and hasattr(func, 'keywords')
++            and isinstance(func.args, tuple)
++        ):
++            _kwargs = {}
++            if func.keywords:
++                _kwargs.update(func.keywords)
++            _kwargs.update(kwargs)
++            kwargs = _kwargs
++            args = func.args + args
++            func = func.func
++
++        if kwargs:
++            self._partial = partial(func, *args, **kwargs)
++        else:
++            self._partial = partial(func, *args)
++
++        self.__doc__ = getattr(func, '__doc__', None)
++        self.__name__ = getattr(func, '__name__', '<curry>')
++        self.__module__ = getattr(func, '__module__', None)
++        self.__qualname__ = getattr(func, '__qualname__', None)
++        self._sigspec = None
++        self._has_unknown_args = None
++
++    @instanceproperty
++    def func(self):
++        return self._partial.func
++
++    @instanceproperty
++    def __signature__(self):
++        sig = inspect.signature(self.func)
++        args = self.args or ()
++        keywords = self.keywords or {}
++        if is_partial_args(self.func, args, keywords, sig) is False:
++            raise TypeError('curry object has incorrect arguments')
++
++        params = list(sig.parameters.values())
++        skip = 0
++        for param in params[:len(args)]:
++            if param.kind == param.VAR_POSITIONAL:
++                break
++            skip += 1
++
++        kwonly = False
++        newparams = []
++        for param in params[skip:]:
++            kind = param.kind
++            default = param.default
++            if kind == param.VAR_KEYWORD:
++                pass
++            elif kind == param.VAR_POSITIONAL:
++                if kwonly:
++                    continue
++            elif param.name in keywords:
++                default = keywords[param.name]
++                kind = param.KEYWORD_ONLY
++                kwonly = True
++            else:
++                if kwonly:
++                    kind = param.KEYWORD_ONLY
++                if default is param.empty:
++                    default = no_default
++            newparams.append(param.replace(default=default, kind=kind))
++
++        return sig.replace(parameters=newparams)
++
++    @instanceproperty
++    def args(self):
++        return self._partial.args
++
++    @instanceproperty
++    def keywords(self):
++        return self._partial.keywords
++
++    @instanceproperty
++    def func_name(self):
++        return self.__name__
++
++    def __str__(self):
++        return str(self.func)
++
++    def __repr__(self):
++        return repr(self.func)
++
++    def __hash__(self):
++        return hash((self.func, self.args,
++                     frozenset(self.keywords.items()) if self.keywords
++                     else None))
++
++    def __eq__(self, other):
++        return (isinstance(other, curry) and self.func == other.func and
++                self.args == other.args and self.keywords == other.keywords)
++
++    def __ne__(self, other):
++        return not self.__eq__(other)
++
++    def __call__(self, *args, **kwargs):
++        try:
++            return self._partial(*args, **kwargs)
++        except TypeError as exc:
++            if self._should_curry(args, kwargs, exc):
++                return self.bind(*args, **kwargs)
++            raise
++
++    def _should_curry(self, args, kwargs, exc=None):
++        func = self.func
++        args = self.args + args
++        if self.keywords:
++            kwargs = dict(self.keywords, **kwargs)
++        if self._sigspec is None:
++            sigspec = self._sigspec = _sigs.signature_or_spec(func)
++            self._has_unknown_args = has_varargs(func, sigspec) is not False
++        else:
++            sigspec = self._sigspec
++
++        if is_partial_args(func, args, kwargs, sigspec) is False:
++            # Nothing can make the call valid
++            return False
++        elif self._has_unknown_args:
++            # The call may be valid and raised a TypeError, but we curry
++            # anyway because the function may have `*args`.  This is useful
++            # for decorators with signature `func(*args, **kwargs)`.
++            return True
++        elif not is_valid_args(func, args, kwargs, sigspec):
++            # Adding more arguments may make the call valid
++            return True
++        else:
++            # There was a genuine TypeError
++            return False
++
++    def bind(self, *args, **kwargs):
++        return type(self)(self, *args, **kwargs)
++
++    def call(self, *args, **kwargs):
++        return self._partial(*args, **kwargs)
++
++    def __get__(self, instance, owner):
++        if instance is None:
++            return self
++        return curry(self, instance)
++
++    def __reduce__(self):
++        func = self.func
++        modname = getattr(func, '__module__', None)
++        qualname = getattr(func, '__qualname__', None)
++        if qualname is None:  # pragma: no cover
++            qualname = getattr(func, '__name__', None)
++        is_decorated = None
++        if modname and qualname:
++            attrs = []
++            obj = import_module(modname)
++            for attr in qualname.split('.'):
++                if isinstance(obj, curry):
++                    attrs.append('func')
++                    obj = obj.func
++                obj = getattr(obj, attr, None)
++                if obj is None:
++                    break
++                attrs.append(attr)
++            if isinstance(obj, curry) and obj.func is func:
++                is_decorated = obj is self
++                qualname = '.'.join(attrs)
++                func = f'{modname}:{qualname}'
++
++        # functools.partial objects can't be pickled
++        userdict = tuple((k, v) for k, v in self.__dict__.items()
++                         if k not in ('_partial', '_sigspec'))
++        state = (type(self), func, self.args, self.keywords, userdict,
++                 is_decorated)
++        return _restore_curry, state
++
++
++def _restore_curry(cls, func, args, kwargs, userdict, is_decorated):
++    if isinstance(func, str):
++        modname, qualname = func.rsplit(':', 1)
++        obj = import_module(modname)
++        for attr in qualname.split('.'):
++            obj = getattr(obj, attr)
++        if is_decorated:
++            return obj
++        func = obj.func
++    obj = cls(func, *args, **(kwargs or {}))
++    obj.__dict__.update(userdict)
++    return obj
++
++
++@curry
++def memoize(func, cache=None, key=None):
++    """ Cache a function's result for speedy future evaluation
++
++    Considerations:
++        Trades memory for speed.
++        Only use on pure functions.
++
++    >>> def add(x, y):  return x + y
++    >>> add = memoize(add)
++
++    Or use as a decorator
++
++    >>> @memoize
++    ... def add(x, y):
++    ...     return x + y
++
++    Use the ``cache`` keyword to provide a dict-like object as an initial cache
++
++    >>> @memoize(cache={(1, 2): 3})
++    ... def add(x, y):
++    ...     return x + y
++
++    Note that the above works as a decorator because ``memoize`` is curried.
++
++    It is also possible to provide a ``key(args, kwargs)`` function that
++    calculates keys used for the cache, which receives an ``args`` tuple and
++    ``kwargs`` dict as input, and must return a hashable value.  However,
++    the default key function should be sufficient most of the time.
++
++    >>> # Use key function that ignores extraneous keyword arguments
++    >>> @memoize(key=lambda args, kwargs: args)
++    ... def add(x, y, verbose=False):
++    ...     if verbose:
++    ...         print('Calculating %s + %s' % (x, y))
++    ...     return x + y
++    """
++    if cache is None:
++        cache = {}
++
++    try:
++        may_have_kwargs = has_keywords(func) is not False
++        # Is unary function (single arg, no variadic argument or keywords)?
++        is_unary = is_arity(1, func)
++    except TypeError:  # pragma: no cover
++        may_have_kwargs = True
++        is_unary = False
++
++    if key is None:
++        if is_unary:
++            def key(args, kwargs):
++                return args[0]
++        elif may_have_kwargs:
++            def key(args, kwargs):
++                return (
++                    args or None,
++                    frozenset(kwargs.items()) if kwargs else None,
++                )
++        else:
++            def key(args, kwargs):
++                return args
++
++    def memof(*args, **kwargs):
++        k = key(args, kwargs)
++        try:
++            return cache[k]
++        except TypeError:
++            raise TypeError("Arguments to memoized function must be hashable")
++        except KeyError:
++            cache[k] = result = func(*args, **kwargs)
++            return result
++
++    try:
++        memof.__name__ = func.__name__
++    except AttributeError:
++        pass
++    memof.__doc__ = func.__doc__
++    memof.__wrapped__ = func
++    return memof
++
++
++class _InstanceAnnotations(dict):
++    """ Descriptor for an ``__annotations__`` computed by ``fget`` on instances
++
++    Accessed on the class, this is an empty dict, because ``typing`` and
++    ``inspect`` require a class's ``__annotations__`` to be a dict (before
++    Python 3.14 they read it directly from the class ``__dict__``).
++    """
++    __slots__ = ('fget',)
++
++    def __init__(self, fget):
++        self.fget = fget
++
++    def __get__(self, obj, type=None):
++        return self if obj is None else self.fget(obj)
++
++
++class Compose:
++    """ A composition of functions
++
++    See Also:
++        compose
++    """
++    __slots__ = 'first', 'funcs'
++
++    def __init__(self, funcs):
++        funcs = tuple(reversed(funcs))
++        self.first = funcs[0]
++        self.funcs = funcs[1:]
++
++    def __call__(self, *args, **kwargs):
++        ret = self.first(*args, **kwargs)
++        for f in self.funcs:
++            ret = f(ret)
++        return ret
++
++    def __getstate__(self):
++        return self.first, self.funcs
++
++    def __setstate__(self, state):
++        self.first, self.funcs = state
++
++    @instanceproperty(classval=__doc__)
++    def __doc__(self):
++        def composed_doc(*fs):
++            """Generate a docstring for the composition of fs.
++            """
++            if not fs:
++                # Argument name for the docstring.
++                return '*args, **kwargs'
++
++            return f'{fs[0].__name__}({composed_doc(*fs[1:])})'
++
++        try:
++            return (
++                'lambda *args, **kwargs: ' +
++                composed_doc(*reversed((self.first,) + self.funcs))
++            )
++        except AttributeError:
++            # One of our callables does not have a `__name__`, whatever.
++            return 'A composition of functions'
++
++    @property
++    def __name__(self):
++        try:
++            return '_of_'.join(
++                f.__name__ for f in reversed((self.first,) + self.funcs)
++            )
++        except AttributeError:
++            return type(self).__name__
++
++    def __repr__(self):
++        return '{.__class__.__name__}{!r}'.format(
++            self, tuple(reversed((self.first, ) + self.funcs)))
++
++    def __eq__(self, other):
++        if isinstance(other, Compose):
++            return other.first == self.first and other.funcs == self.funcs
++        return NotImplemented
++
++    def __ne__(self, other):
++        equality = self.__eq__(other)
++        return NotImplemented if equality is NotImplemented else not equality
++
++    def __hash__(self):
++        return hash(self.first) ^ hash(self.funcs)
++
++    # Mimic the descriptor behavior of python functions.
++    # i.e. let Compose be called as a method when bound to a class.
++    # adapted from
++    # docs.python.org/3/howto/descriptor.html#functions-and-methods
++    def __get__(self, obj, objtype=None):
++        return self if obj is None else MethodType(self, obj)
++
++    # introspection with Signature is only possible from py3.3+
++    @instanceproperty
++    def __signature__(self):
++        base = inspect.signature(self.first)
++        last = inspect.signature(self.funcs[-1])
++        return base.replace(return_annotation=last.return_annotation)
++
++    __wrapped__ = instanceproperty(attrgetter('first'))
++
++    def _combined_annotations(self, annotation_format=None):
++        """ Combined type annotations for the composed callable.
++
++        Parameter annotations come from the first function applied in the
++        composition, and the return annotation comes from the last function
++        applied, as ``inspect.signature`` reports them (so this agrees with
++        ``__signature__``).  Functions without a signature contribute nothing.
++
++        ``annotation_format`` (Python 3.14+) is passed to
++        ``inspect.

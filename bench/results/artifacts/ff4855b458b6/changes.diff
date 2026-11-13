@@ -1,0 +1,123 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..0e119c2 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,116 @@
+ class StackUnderflowError(Exception):
+-    pass
++    def __init__(self, message):
++        self.message = message
++        super().__init__(message)
+ 
+ 
+ def evaluate(input_data):
+-    pass
++    tokens = []
++    for line in input_data:
++        tokens.extend(line.split())
++
++    stack = []
++    dictionary = {}
++
++    def is_number(token):
++        if token.isdigit():
++            return True
++        if token.startswith('-') and token[1:].isdigit():
++            return True
++        return False
++
++    def expand(def_tokens):
++        res = []
++        for t in def_tokens:
++            t_lower = t.lower()
++            if is_number(t) or t_lower in {'+', '-', '*', '/', 'dup', 'drop', 'swap', 'over'}:
++                res.append(t)
++            elif t_lower in dictionary:
++                res.extend(dictionary[t_lower])
++            else:
++                res.append(t)
++        return res
++
++    i = 0
++    while i < len(tokens):
++        token = tokens[i]
++        if token == ':':
++            i += 1
++            if i >= len(tokens):
++                raise ValueError("undefined operation")
++            word_name = tokens[i]
++            if is_number(word_name):
++                raise ValueError("illegal operation")
++            i += 1
++            def_tokens = []
++            while i < len(tokens) and tokens[i] != ';':
++                def_tokens.append(tokens[i])
++                i += 1
++            if i < len(tokens) and tokens[i] == ';':
++                i += 1 # skip ';'
++            dictionary[word_name.lower()] = expand(def_tokens)
++        else:
++            execute_token(token, stack, dictionary)
++            i += 1
++
++    return stack
++
++
++def execute_token(token, stack, dictionary):
++    t_lower = token.lower()
++    if token.isdigit() or (token.startswith('-') and token[1:].isdigit()):
++        stack.append(int(token))
++    elif t_lower in dictionary:
++        for t in dictionary[t_lower]:
++            execute_token(t, stack, dictionary)
++    elif t_lower == '+':
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(a + b)
++    elif t_lower == '-':
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(a - b)
++    elif t_lower == '*':
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(a * b)
++    elif t_lower == '/':
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        if b == 0:
++            raise ZeroDivisionError("divide by zero")
++        stack.append(int(a / b))
++    elif t_lower == 'dup':
++        if len(stack) < 1:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        stack.append(stack[-1])
++    elif t_lower == 'drop':
++        if len(stack) < 1:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        stack.pop()
++    elif t_lower == 'swap':
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(b)
++        stack.append(a)
++    elif t_lower == 'over':
++        if len(stack) < 2:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        b = stack.pop()
++        a = stack.pop()
++        stack.append(a)
++        stack.append(b)
++        stack.append(a)
++    else:
++        raise ValueError("undefined operation")

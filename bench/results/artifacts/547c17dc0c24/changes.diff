@@ -1,0 +1,64 @@
+diff --git a/book_store.py b/book_store.py
+index 8a84288..f8ed860 100644
+--- a/book_store.py
++++ b/book_store.py
+@@ -1,2 +1,58 @@
++from collections import Counter
++
++DISCOUNTS = {
++    1: 1.0,
++    2: 0.95,
++    3: 0.90,
++    4: 0.80,
++    5: 0.75
++}
++
+ def total(basket):
+-    pass
++    if not basket:
++        return 0
++
++    counts = list(Counter(basket).values())
++    
++    memo = {}
++
++    def get_min_price(counts_tuple):
++        if not any(counts_tuple):
++            return 0
++        if counts_tuple in memo:
++            return memo[counts_tuple]
++
++        # Normalize counts by sorting descending so isomorphic states map to the same key
++        counts_list = sorted([c for c in counts_tuple if c > 0], reverse=True)
++        normalized_tuple = tuple(counts_list)
++        if normalized_tuple in memo:
++            return memo[normalized_tuple]
++
++        min_cost = float('inf')
++
++        # Try forming groups of size k from 5 down to 1
++        # To handle the special optimization (5 + 3 vs 4 + 4), exploring all combinations or greedily trying group sizes
++        # actually, trying group sizes from 5 down to 1 (or 1 to 5) recursively works, 
++        # but wait! To ensure 5 + 3 gets converted to 4 + 4 when cheaper, let's check combinations of group sizes or use recursive DFS over possible group sizes.
++        
++        # Let's write a generator or recursive function that picks a group of size k (where k <= number of non-zero counts)
++        # and recurses.
++        
++        # To avoid combinatorial explosion or redundant work, we can generate all valid group sizes we can take from the current counts.
++        # A group can have size k from 1 to min(5, number of available distinct books).
++        # But wait, to properly handle 5+3 vs 4+4, let's consider subsets of distinct books of size k.
++        
++        n_distinct = len(counts_list)
++        for k in range(min(5, n_distinct), 0, -1):
++            # We want to take one of each of the top k books
++            new_counts = list(counts_list)
++            for i in range(k):
++                new_counts[i] -= 1
++            cost = k * 800 * DISCOUNTS[k] + get_min_price(tuple(new_counts))
++            if cost < min_cost:
++                min_cost = cost
++
++        memo[normalized_tuple] = min_cost
++        return min_cost
++
++    return int(get_min_price(tuple(counts)))

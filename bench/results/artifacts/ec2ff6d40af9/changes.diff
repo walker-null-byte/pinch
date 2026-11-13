@@ -1,0 +1,132 @@
+diff --git a/src/dotenv/parser.py b/src/dotenv/parser.py
+index 02648ab..f31a360 100644
+--- a/src/dotenv/parser.py
++++ b/src/dotenv/parser.py
+@@ -124,7 +124,7 @@ def parse_key(reader: Reader) -> Optional[str]:
+ 
+ def parse_unquoted_value(reader: Reader) -> str:
+     (part,) = reader.read_regex(_unquoted_value)
+-    return re.sub(r"\s+#.*", "", part).rstrip()
++    return re.sub(r"(?<!\\)\s+#.*", "", part).rstrip()
+ 
+ 
+ def parse_value(reader: Reader) -> str:
+@@ -135,7 +135,7 @@ def parse_value(reader: Reader) -> str:
+     elif char == '"':
+         (value,) = reader.read_regex(_double_quoted_value)
+         return decode_escapes(_double_quote_escapes, value)
+-    elif char in ("", "\n", "\r"):
++    elif char in ("", "\n", "\r", "#"):
+         return ""
+     else:
+         return parse_unquoted_value(reader)
+diff --git a/tests/test_main.py b/tests/test_main.py
+index 48dd7bf..6f9d4c5 100644
+--- a/tests/test_main.py
++++ b/tests/test_main.py
+@@ -737,3 +737,22 @@ def test_dotenv_values_file_stream(dotenv_path):
+         result = dotenv.dotenv_values(stream=f)
+ 
+     assert result == {"a": "b"}
++
++
++@pytest.mark.parametrize(
++    "string,expected",
++    [
++        ("KEY= # comment", {"KEY": ""}),
++        ("KEY=  # comment", {"KEY": ""}),
++        ("KEY=val # comment", {"KEY": "val"}),
++        ("KEY=a#b", {"KEY": "a#b"}),
++        ("KEY=#novalue", {"KEY": "#novalue"}),
++        ("KEY=# # comment", {"KEY": "#"}),
++        ("KEY=\t# comment", {"KEY": ""}),
++        ("KEY= # comment\nOTHER=val", {"KEY": "", "OTHER": "val"}),
++    ],
++)
++def test_dotenv_values_empty_value_with_inline_comment(string, expected):
++    result = dotenv.dotenv_values(stream=io.StringIO(string))
++
++    assert result == expected
+diff --git a/tests/test_parser.py b/tests/test_parser.py
+index dd638d9..667eae1 100644
+--- a/tests/test_parser.py
++++ b/tests/test_parser.py
+@@ -119,6 +119,78 @@ from dotenv.parser import Binding, Original, parse_stream
+                 )
+             ],
+         ),
++        (
++            "a= #b",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a= #b", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=  # b",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a=  # b", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=#b",
++            [
++                Binding(
++                    key="a",
++                    value="#b",
++                    original=Original(string="a=#b", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=# # comment",
++            [
++                Binding(
++                    key="a",
++                    value="#",
++                    original=Original(string="a=# # comment", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a=\t#c",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a=\t#c", line=1),
++                    error=False,
++                )
++            ],
++        ),
++        (
++            "a= #c\nd=e",
++            [
++                Binding(
++                    key="a",
++                    value="",
++                    original=Original(string="a= #c\n", line=1),
++                    error=False,
++                ),
++                Binding(
++                    key="d",
++                    value="e",
++                    original=Original(string="d=e", line=2),
++                    error=False,
++                ),
++            ],
++        ),
+         (
+             "a=b c",
+             [

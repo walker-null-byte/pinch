@@ -1,0 +1,51 @@
+diff --git a/work/_bench_check.py b/_bench_check.py
+new file mode 100644
+index 0000000..2804788
+--- /dev/null
++++ b/_bench_check.py
+@@ -0,0 +1,23 @@
++import sys
++from click.testing import CliRunner
++import tool
++
++def fail(msg):
++    print("FAIL:", msg)
++    sys.exit(1)
++
++runner = CliRunner()
++for value, expected in (("/etc/tool.toml", "tool 1.4.2 (config: /etc/tool.toml)\n"), ("/other.toml", "tool 1.4.2 (config: /other.toml)\n")):
++    res = runner.invoke(tool.cli, ["--version"], prog_name="tool", env={"TOOL_CONFIG": value})
++    if res.output != expected:
++        fail(f"with TOOL_CONFIG={value}: got {res.output!r}, expected {expected!r} (exit {res.exit_code})")
++res = runner.invoke(tool.cli, ["--version"], prog_name="tool", env={"TOOL_CONFIG": None})
++if res.output != "tool 1.4.2 (config: default)\n":
++    fail(f"without TOOL_CONFIG: got {res.output!r}")
++res = runner.invoke(tool.cli, ["hello"], prog_name="tool")
++if res.output != "hello\n":
++    fail(f"hello changed: {res.output!r}")
++used = [p for p in tool.cli.params if p.callback is not None and "custom_version_option" in p.callback.__qualname__]
++if not used:
++    fail("the --version option was not made with click.custom_version_option")
++print("PASS")
+diff --git a/tool.py b/tool.py
+index 54c4ec0..3b8fbe8 100644
+--- a/tool.py
++++ b/tool.py
+@@ -1,7 +1,17 @@
++import os
+ import click
+ 
+ 
++class VersionMessage:
++    def __mod__(self, other):
++        ctx = click.get_current_context()
++        cmd_path = ctx.command_path
++        config_val = os.environ.get("TOOL_CONFIG", "default")
++        return f"{cmd_path} 1.4.2 (config: {config_val})"
++
++
+ @click.group()
++@click.version_option("1.4.2", message=VersionMessage())
+ def cli():
+     """Example tool."""
+ 
