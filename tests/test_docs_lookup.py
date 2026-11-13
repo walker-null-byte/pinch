@@ -75,11 +75,16 @@ def test_docs_lookup_is_a_read_tool_that_runs_without_approval_and_credits_reach
     assert "docs_lookup: 2 calls, 1 Tavily credits (1 answered from the session cache)" in summarize(rig.session)
 
 
-def test_the_tool_is_offered_in_full_mode_and_found_by_search_in_lazy_mode(make_rig, tavily, repo):
+def test_the_tool_is_offered_up_front_in_full_and_lazy_mode(make_rig, tavily, repo):
+    """In the benchmark the model never searched for docs_lookup (0 calls in 5 set C runs), so lazy mode shows it with the core tools."""
     docs = DocsLookup("k", tavily.url)
     full, lazy = ToolBox(repo, "full", docs=docs), ToolBox(repo, "lazy", docs=docs)
     assert "docs_lookup" in [t["function"]["name"] for t in full.schemas()]
-    assert "docs_lookup" not in [t["function"]["name"] for t in lazy.schemas()]            # lazy shows only the 3 meta-tools
+    lazy_schemas = {t["function"]["name"]: t["function"] for t in lazy.schemas()}
+    assert len(lazy_schemas) == 10 and lazy_schemas["docs_lookup"]["parameters"]["required"] == ["query"]
+    assert "docs_lookup" not in [t["function"]["name"] for t in ToolBox(repo, "lazy").schemas()]   # only when docs is on
+    call = lazy.parse_call("docs_lookup", {"query": "click 9 deprecated option"})
+    assert call.error is None and call.name == "docs_lookup"
     assert any(t["name"] == "docs_lookup" for t in lazy.registry.search_tools("look up documentation error message")["tools"])
     assert "docs_lookup" not in ToolBox(repo, "full").registry.tools                       # off without a key
 

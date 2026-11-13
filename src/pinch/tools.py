@@ -138,7 +138,12 @@ class ToolBox:
                                               "description": SEARCH_TOOLS_DESCRIPTION if t["name"] == "search_tools" else t["description"]}}
             for t in self._meta.values()
         ]
-        return meta + [self._core_schema(name) for name in CORE_TOOLS if name in self.registry.tools]
+        core = [self._core_schema(name) for name in CORE_TOOLS if name in self.registry.tools]
+        # docs_lookup is registered only when the docs technique is on. Shown up front: behind search_tools the model never found it.
+        if "docs_lookup" in self.registry.tools:
+            core.append({"type": "function", "function": {"name": "docs_lookup", "description": DOCS_DESCRIPTION, "parameters": {
+                "type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}}})
+        return meta + core
 
     def _core_schema(self, name: str) -> dict:
         text, props, required = CORE_TOOLS[name]
