@@ -26,6 +26,22 @@ One run per task. Pass or fail comes from hidden tests run after the agent stops
 | Cost per solved task | $0.0404 | $0.0237 (−41%) |
 | Model calls, all 8 tasks | 193 | 95 |
 
+**One technique off at a time, set A, `gemini-3.1-flash-lite`** ([report](bench/results/run2.md), early read). These are the 3 tasks every mode solved, so a lucky pass or an unlucky failure can't decide the comparison:
+
+| pinch with… | Tokens, 3 tasks | vs everything on |
+|---|---|---|
+| everything on | 13,017 | - |
+| stopongreen off | 73,959 | +468% |
+| pretest off | 37,083 | +185% |
+| filememory off | 32,638 | +151% |
+| context off | 27,520 | +111% |
+| testcompress off | 16,463 | +26% |
+| trim off | 16,365 | +26% |
+| smalledits off | 12,862 | −1% |
+| everything off | 91,122 | +600% |
+
+Counted per solved task over all 5 finished tasks, the picture is different: two tasks flipped between pass and fail from mode to mode, and a failed run spends up to 30 calls. With one run each, that table is noise. Both tables are in the report.
+
 What this shows so far:
 - **Exercises:** pinch solves everything mini-swe-agent solves, on about a fifth of the tokens.
 - **Real bugs and docs tasks:** pinch is cheaper per solved task but solves fewer on `gemini-3.5-flash-lite` (5 vs 7 bugs, 3 vs 4 docs tasks). On `gemini-3.1-flash-lite` it ties on bugs. With one run per task, a difference of one or two tasks is within run-to-run noise. The token gaps are much larger than that.
