@@ -68,6 +68,11 @@ input = 0.75
 cached = 0.075
 output = 3.75
 
+[models."gemini-4-hydrogen"]  # checked on aistudio.google.com/docs/pricing on 2026-11-13; output includes thinking tokens
+input = 1.50
+cached = 0.075
+output = 7.50
+
 # Groq (the failover provider; console.groq.com/docs/models). Bifrost names them with the "openai/" or "qwen/" part.
 [models."openai/gpt-oss-120b"]
 input = 0.15
