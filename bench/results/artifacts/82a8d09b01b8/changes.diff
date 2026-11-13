@@ -1,0 +1,117 @@
+diff --git a/react.py b/react.py
+index ab6be31..7b3ea6a 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,78 @@
+ class InputCell:
+-    def __init__(self, initial_value):
+-        self.value = None
++    def __init__(self, value):
++        self._value = value
++        self.observers = []
+ 
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, value):
++        if self._value != value:
++            self._value = value
++            self._propagate()
++
++    def _propagate(self):
++        # 1. Identify all affected compute cells
++        affected = []
++        queue = [self]
++        visited = {self}
++        
++        while queue:
++            node = queue.pop(0)
++            if hasattr(node, 'observers'):
++                for observer in node.observers:
++                    if observer not in visited:
++                        visited.add(observer)
++                        affected.append(observer)
++                        queue.append(observer)
++        
++        # 2. Re-evaluate all affected cells in a way that respects dependencies
++        #    A simple approach: topological sort
++        
++        # 3. Trigger callbacks for cells that changed value in the final stable state
++        
++        # Let's store initial values for comparison
++        old_values = {cell: cell.value for cell in affected}
++        
++        # Topological sort of affected cells
++        # This is a bit complex, let's try a simple re-evaluation loop
++        # that will definitely be correct even if not the most efficient.
++        # Given the number of cells is likely small, this should be fine.
++        
++        changed = True
++        while changed:
++            changed = False
++            for cell in affected:
++                new_val = cell._compute()
++                if new_val != cell.value:
++                    cell.value = new_val
++                    changed = True
++        
++        # 4. Fire callbacks
++        for cell in affected:
++            if cell.value != old_values[cell]:
++                for callback in cell.callbacks:
++                    callback(cell.value)
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
+-
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.value = self._compute()
++        self.callbacks = []
++        self.observers = []
++        for input in inputs:
++            if hasattr(input, 'observers'):
++                input.observers.append(self)
++        
++    def _compute(self):
++        return self.compute_function([i.value for i in self.inputs])
++    
+     def add_callback(self, callback):
+-        pass
+-
++        self.callbacks.append(callback)
++        
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)
+diff --git a/work/test_callback.py b/test_callback.py
+new file mode 100644
+index 0000000..2a175e0
+--- /dev/null
++++ b/test_callback.py
+@@ -0,0 +1,7 @@
++from react import InputCell, ComputeCell
++input = InputCell(1)
++output = ComputeCell([input], lambda inputs: inputs[0] + 1)
++cb_called = []
++output.add_callback(lambda val: cb_called.append(val))
++input.value = 2
++print(cb_called)
+diff --git a/work/test_simple.py b/test_simple.py
+new file mode 100644
+index 0000000..369fee4
+--- /dev/null
++++ b/test_simple.py
+@@ -0,0 +1,6 @@
++from react import InputCell, ComputeCell
++input = InputCell(1)
++output = ComputeCell([input], lambda inputs: inputs[0] + 1)
++print(output.value)
++input.value = 2
++print(output.value)

@@ -1,0 +1,160 @@
+diff --git a/work/.pytest_cache/.gitignore b/.pytest_cache/.gitignore
+new file mode 100644
+index 0000000..bc1a1f6
+--- /dev/null
++++ b/.pytest_cache/.gitignore
+@@ -0,0 +1,2 @@
++# Created by pytest automatically.
++*
+diff --git a/work/.pytest_cache/CACHEDIR.TAG b/.pytest_cache/CACHEDIR.TAG
+new file mode 100644
+index 0000000..fce15ad
+--- /dev/null
++++ b/.pytest_cache/CACHEDIR.TAG
+@@ -0,0 +1,4 @@
++Signature: 8a477f597d28d172789f06886806bc55
++# This file is a cache directory tag created by pytest.
++# For information about cache directory tags, see:
++#	https://bford.info/cachedir/spec.html
+diff --git a/work/.pytest_cache/README.md b/.pytest_cache/README.md
+new file mode 100644
+index 0000000..b89018c
+--- /dev/null
++++ b/.pytest_cache/README.md
+@@ -0,0 +1,8 @@
++# pytest cache directory #
++
++This directory contains data from the pytest's cache plugin,
++which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
++
++**Do not** commit this to version control.
++
++See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+diff --git a/work/.pytest_cache/v/cache/lastfailed b/.pytest_cache/v/cache/lastfailed
+new file mode 100644
+index 0000000..c89e3f5
+--- /dev/null
++++ b/.pytest_cache/v/cache/lastfailed
+@@ -0,0 +1,11 @@
++{
++  "react_test.py::ReactTest::test_callbacks_should_only_be_called_once_even_if_multiple_dependencies_change": true,
++  "react_test.py::ReactTest::test_compute_cells_can_depend_on_other_compute_cells": true,
++  "react_test.py::ReactTest::test_callback_cells_only_fire_on_change": true,
++  "react_test.py::ReactTest::test_callbacks_can_be_added_and_removed": true,
++  "react_test.py::ReactTest::test_callbacks_can_fire_from_multiple_cells": true,
++  "react_test.py::ReactTest::test_callbacks_do_not_report_already_reported_values": true,
++  "react_test.py::ReactTest::test_compute_cells_fire_callbacks": true,
++  "react_test.py::ReactTest::test_compute_cells_update_value_when_dependencies_are_changed": true,
++  "react_test.py::ReactTest::test_removing_a_callback_multiple_times_doesn_t_interfere_with_other_callbacks": true
++}
+\ No newline at end of file
+diff --git a/work/.pytest_cache/v/cache/nodeids b/.pytest_cache/v/cache/nodeids
+new file mode 100644
+index 0000000..6871185
+--- /dev/null
++++ b/.pytest_cache/v/cache/nodeids
+@@ -0,0 +1,16 @@
++[
++  "react_test.py::ReactTest::test_an_input_cell_s_value_can_be_set",
++  "react_test.py::ReactTest::test_callback_cells_only_fire_on_change",
++  "react_test.py::ReactTest::test_callbacks_can_be_added_and_removed",
++  "react_test.py::ReactTest::test_callbacks_can_fire_from_multiple_cells",
++  "react_test.py::ReactTest::test_callbacks_do_not_report_already_reported_values",
++  "react_test.py::ReactTest::test_callbacks_should_not_be_called_if_dependencies_change_but_output_value_doesn_t_change",
++  "react_test.py::ReactTest::test_callbacks_should_only_be_called_once_even_if_multiple_dependencies_change",
++  "react_test.py::ReactTest::test_compute_cells_calculate_initial_value",
++  "react_test.py::ReactTest::test_compute_cells_can_depend_on_other_compute_cells",
++  "react_test.py::ReactTest::test_compute_cells_fire_callbacks",
++  "react_test.py::ReactTest::test_compute_cells_take_inputs_in_the_right_order",
++  "react_test.py::ReactTest::test_compute_cells_update_value_when_dependencies_are_changed",
++  "react_test.py::ReactTest::test_input_cells_have_a_value",
++  "react_test.py::ReactTest::test_removing_a_callback_multiple_times_doesn_t_interfere_with_other_callbacks"
++]
+\ No newline at end of file
+diff --git a/react.py b/react.py
+index ab6be31..77a7c90 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,76 @@
+ class InputCell:
+     def __init__(self, initial_value):
+-        self.value = None
++        self._value = initial_value
++        self.observers = []
+ 
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value != new_value:
++            self._value = new_value
++            self._update_all()
++
++    def _update_all(self):
++        # Build dependency graph
++        all_cells = []
++        def get_all(cell):
++            for obs in cell.observers:
++                if obs not in all_cells:
++                    all_cells.append(obs)
++                    get_all(obs)
++        get_all(self)
++        
++        # Topological sort might be needed if they are complex, 
++        # but for now let's just recompute in a way that respects dependencies.
++        # If we recompute everything in order of dependencies, it should work.
++        # Actually, if we just recompute everything repeatedly until stability, 
++        # or just sort them. Let's try simple topological sort.
++        
++        sorted_cells = []
++        def sort_cells(cell):
++            for obs in cell.observers:
++                if obs not in sorted_cells:
++                    sort_cells(obs)
++                    sorted_cells.append(obs)
++        
++        # Reset current values
++        for cell in sorted_cells:
++            cell.old_value = cell.value
++            
++        # Recompute
++        for cell in sorted_cells:
++            cell._value = cell._compute()
++            
++        # Call callbacks
++        for cell in sorted_cells:
++            if cell.value != cell.old_value:
++                for cb in cell.callbacks:
++                    cb(cell.value)
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.callbacks = []
++        self._value = self._compute()
++        self.old_value = self._value
++        self.observers = []
++        for inp in inputs:
++            inp.observers.append(self)
++
++    def _compute(self):
++        return self.compute_function([inp.value for inp in self.inputs])
++
++    @property
++    def value(self):
++        return self._value
+ 
+     def add_callback(self, callback):
+-        pass
++        self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)

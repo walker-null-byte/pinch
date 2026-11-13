@@ -1,0 +1,214 @@
+diff --git a/work/.pytest_cache/.gitignore b/.pytest_cache/.gitignore
+new file mode 100644
+index 0000000..bc1a1f6
+--- /dev/null
++++ b/.pytest_cache/.gitignore
+@@ -0,0 +1,2 @@
++# Created by pytest automatically.
++*
+diff --git a/work/.pytest_cache/CACHEDIR.TAG b/.pytest_cache/CACHEDIR.TAG
+new file mode 100644
+index 0000000..fce15ad
+--- /dev/null
++++ b/.pytest_cache/CACHEDIR.TAG
+@@ -0,0 +1,4 @@
++Signature: 8a477f597d28d172789f06886806bc55
++# This file is a cache directory tag created by pytest.
++# For information about cache directory tags, see:
++#	https://bford.info/cachedir/spec.html
+diff --git a/work/.pytest_cache/README.md b/.pytest_cache/README.md
+new file mode 100644
+index 0000000..b89018c
+--- /dev/null
++++ b/.pytest_cache/README.md
+@@ -0,0 +1,8 @@
++# pytest cache directory #
++
++This directory contains data from the pytest's cache plugin,
++which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
++
++**Do not** commit this to version control.
++
++See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+diff --git a/work/.pytest_cache/v/cache/nodeids b/.pytest_cache/v/cache/nodeids
+new file mode 100644
+index 0000000..c251b2d
+--- /dev/null
++++ b/.pytest_cache/v/cache/nodeids
+@@ -0,0 +1,56 @@
++[
++  "forth_test.py::ForthTest::test_addition_can_add_two_numbers",
++  "forth_test.py::ForthTest::test_addition_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_addition_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_addition_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_case_insensitivity_definitions_are_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_drop_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_dup_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_over_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_swap_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_user_defined_words_are_case_insensitive",
++  "forth_test.py::ForthTest::test_combined_arithmetic_addition_and_multiplication",
++  "forth_test.py::ForthTest::test_combined_arithmetic_addition_and_subtraction",
++  "forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_addition",
++  "forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_division",
++  "forth_test.py::ForthTest::test_division_can_divide_two_numbers",
++  "forth_test.py::ForthTest::test_division_errors_if_dividing_by_zero",
++  "forth_test.py::ForthTest::test_division_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_division_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_division_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_division_performs_integer_division",
++  "forth_test.py::ForthTest::test_drop_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_not_the_only_one",
++  "forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_the_only_one",
++  "forth_test.py::ForthTest::test_dup_copies_a_value_on_the_stack",
++  "forth_test.py::ForthTest::test_dup_copies_the_top_value_on_the_stack",
++  "forth_test.py::ForthTest::test_dup_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_multiplication_can_multiply_two_numbers",
++  "forth_test.py::ForthTest::test_multiplication_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_multiplication_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_multiplication_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_more_than_two",
++  "forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_only_two",
++  "forth_test.py::ForthTest::test_over_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_over_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_parsing_and_numbers_numbers_just_get_pushed_onto_the_stack",
++  "forth_test.py::ForthTest::test_parsing_and_numbers_pushes_negative_numbers_onto_the_stack",
++  "forth_test.py::ForthTest::test_subtraction_can_subtract_two_numbers",
++  "forth_test.py::ForthTest::test_subtraction_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_subtraction_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_subtraction_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_swap_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_swap_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_not_the_only_ones",
++  "forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_the_only_ones",
++  "forth_test.py::ForthTest::test_user_defined_words_can_consist_of_built_in_words",
++  "forth_test.py::ForthTest::test_user_defined_words_can_define_word_that_uses_word_with_the_same_name",
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_operators",
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_words",
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_other_user_defined_words",
++  "forth_test.py::ForthTest::test_user_defined_words_can_use_different_words_with_the_same_name",
++  "forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_negative_numbers",
++  "forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_non_negative_numbers",
++  "forth_test.py::ForthTest::test_user_defined_words_errors_if_executing_a_non_existent_word",
++  "forth_test.py::ForthTest::test_user_defined_words_execute_in_the_right_order"
++]
+\ No newline at end of file
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..c4c060a 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,103 @@
+ class StackUnderflowError(Exception):
+-    pass
+-
++    def __init__(self, message="Insufficient number of items in stack"):
++        self.message = message
++        super().__init__(self.message)
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    custom_words = {}
++
++    def is_number(word):
++        try:
++            int(word)
++            return True
++        except ValueError:
++            return False
++
++    all_tokens = []
++    for line in input_data:
++        all_tokens.extend(line.split())
++    
++    # We will use a more robust token expansion
++    # For user-defined words, we'll store their expanded definitions.
++    # When defining, we check if a word in the definition is already a custom word
++    # and expand it at definition time.
++    
++    i = 0
++    while i < len(all_tokens):
++        token = all_tokens[i].lower()
++        
++        if token == ':':
++            i += 1
++            word_name = all_tokens[i].lower()
++            if is_number(word_name):
++                raise ValueError("illegal operation")
++            
++            i += 1
++            definition = []
++            while all_tokens[i].lower() != ';':
++                t = all_tokens[i].lower()
++                if t in custom_words:
++                    definition.extend(custom_words[t])
++                else:
++                    definition.append(t)
++                i += 1
++            custom_words[word_name] = definition
++        elif token in custom_words:
++            # We already expanded the definition at definition time.
++            # So just add it to the tokens list.
++            new_tokens = custom_words[token]
++            all_tokens[i+1:i+1] = new_tokens
++        elif is_number(token):
++            stack.append(int(token))
++        elif token == '+':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            a = stack.pop()
++            stack.append(a + b)
++        elif token == '-':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            a = stack.pop()
++            stack.append(a - b)
++        elif token == '*':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            a = stack.pop()
++            stack.append(a * b)
++        elif token == '/':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            a = stack.pop()
++            if b == 0:
++                raise ZeroDivisionError("divide by zero")
++            stack.append(int(a / b))
++        elif token == 'dup':
++            if len(stack) < 1:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            stack.append(stack[-1])
++        elif token == 'drop':
++            if len(stack) < 1:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            stack.pop()
++        elif token == 'swap':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            a = stack.pop()
++            b = stack.pop()
++            stack.append(a)
++            stack.append(b)
++        elif token == 'over':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            stack.append(stack[-2])
++        else:
++            raise ValueError("undefined operation")
++        
++        i += 1
++    
++    return stack
+diff --git a/work/test_recursion.py b/test_recursion.py
+new file mode 100644
+index 0000000..5f96097
+--- /dev/null
++++ b/test_recursion.py
+@@ -0,0 +1,2 @@
++from forth import evaluate
++print(evaluate([": foo 10 ;", ": foo foo 1 + ;", "foo"]))

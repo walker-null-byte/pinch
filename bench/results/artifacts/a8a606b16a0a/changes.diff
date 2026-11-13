@@ -1,0 +1,81 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..94de9db 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,75 @@
+ def answer(question):
+-    pass
++    if not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    # Remove the '?' at the end
++    question = question[:-1]
++    
++    if not question.startswith("What is"):
++        raise ValueError("unknown operation")
++    
++    # Remove "What is"
++    expr = question[len("What is"):].strip()
++    
++    if not expr:
++        raise ValueError("syntax error")
++        
++    # Replace verbose operations
++    expr = expr.replace("plus", " + ")
++    expr = expr.replace("minus", " - ")
++    expr = expr.replace("multiplied by", " * ")
++    expr = expr.replace("divided by", " / ")
++    
++    tokens = expr.split()
++    valid_ops = {"+", "-", "*", "/"}
++    
++    # Check for unknown operations
++    # If the expression contains "cubed", "squared" etc, it should raise unknown operation.
++    for token in tokens:
++        if token in valid_ops:
++            continue
++        try:
++            int(token)
++        except ValueError:
++            # If it's a word like "cubed", it should be "unknown operation"
++            raise ValueError("unknown operation")
++            
++    # Check structure
++    # Must be number, op, number, op, ...
++    if not tokens:
++        raise ValueError("syntax error")
++        
++    # The first token MUST be a number.
++    # The last token MUST be a number.
++    # Let's check token by token.
++    for i in range(len(tokens)):
++        if i % 2 == 0:
++            # Must be a number
++            try:
++                int(tokens[i])
++            except ValueError:
++                # Should not happen if we already checked it's not a word, 
++                # but let's be safe.
++                raise ValueError("syntax error")
++        else:
++            # Must be an operator
++            if tokens[i] not in valid_ops:
++                raise ValueError("syntax error")
++                
++    if len(tokens) % 2 == 0:
++        raise ValueError("syntax error")
++        
++    # Evaluate
++    result = int(tokens[0])
++    for i in range(1, len(tokens), 2):
++        op = tokens[i]
++        next_num = int(tokens[i+1])
++        if op == "+":
++            result += next_num
++        elif op == "-":
++            result -= next_num
++        elif op == "*":
++            result *= next_num
++        elif op == "/":
++            result //= next_num
++    return result

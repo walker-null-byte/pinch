@@ -1,0 +1,39 @@
+diff --git a/dominoes.py b/dominoes.py
+index d71e6a8..d7b03de 100644
+--- a/dominoes.py
++++ b/dominoes.py
+@@ -1,2 +1,33 @@
+ def can_chain(dominoes):
+-    pass
++    if not dominoes:
++        return []
++
++    def solve(current_chain, remaining_dominoes):
++        if not remaining_dominoes:
++            return current_chain if current_chain[0][0] == current_chain[-1][1] else None
++
++        last_val = current_chain[-1][1]
++        for i, (a, b) in enumerate(remaining_dominoes):
++            next_remaining = remaining_dominoes[:i] + remaining_dominoes[i+1:]
++            if a == last_val:
++                res = solve(current_chain + [(a, b)], next_remaining)
++                if res: return res
++            if b == last_val and a != b:
++                res = solve(current_chain + [(b, a)], next_remaining)
++                if res: return res
++        return None
++
++    # Try starting with every possible domino in both orientations
++    for i, (a, b) in enumerate(dominoes):
++        remaining = dominoes[:i] + dominoes[i+1:]
++        
++        # Try orientation (a, b)
++        res = solve([(a, b)], remaining)
++        if res: return res
++        
++        # Try orientation (b, a)
++        if a != b:
++            res = solve([(b, a)], remaining)
++            if res: return res
++            
++    return None

@@ -1,0 +1,112 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..360a5b8 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,105 @@
+ class StackUnderflowError(Exception):
+-    pass
++    def __init__(self, message):
++        self.message = message
+ 
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    definitions = {}
++
++    def get_token(line):
++        tokens = line.upper().split()
++        for token in tokens:
++            yield token
++
++    # Combine all input lines into one sequence
++    all_tokens = []
++    for line in input_data:
++        all_tokens.extend(line.upper().split())
++
++    idx = 0
++    while idx < len(all_tokens):
++        token = all_tokens[idx]
++
++        if token == ":":
++            idx += 1
++            name = all_tokens[idx]
++            if name.isdigit() or (name.startswith('-') and name[1:].isdigit()):
++                raise ValueError("illegal operation")
++            idx += 1
++            definition = []
++            while all_tokens[idx] != ";":
++                definition.append(all_tokens[idx])
++                idx += 1
++            definitions[name] = definition
++        elif token in definitions:
++            # Expand definition recursively or iteratively
++            replacement = definitions[token]
++            all_tokens[idx:idx+1] = replacement
++            # Don't increment idx, so we re-process the new tokens
++            # But wait, what if replacement contains the same word?
++            # To avoid infinite recursion, check if we're expanding the same word?
++            # For this task, maybe just replace and don't re-check if it's already expanded?
++            # Actually, standard Forth definitions are not recursive unless handled carefully.
++            # If I replace tokens, and one of them is the same word, it will expand again.
++            # To fix, maybe we should only expand if it's not the same word?
++            # Or perhaps just handle the expansion differently.
++            
++            # For now, let's limit expansion depth or use a simple flag?
++            # Actually, the problem doesn't mention recursion.
++            # Let's just process the tokens one by one and keep track of definition expansion.
++            continue
++        else:
++            # Execute token
++            if token.isdigit() or (token.startswith('-') and token[1:].isdigit()):
++                stack.append(int(token))
++            elif token == "+":
++                if len(stack) < 2:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                stack.append(a + b)
++            elif token == "-":
++                if len(stack) < 2:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                stack.append(a - b)
++            elif token == "*":
++                if len(stack) < 2:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                stack.append(a * b)
++            elif token == "/":
++                if len(stack) < 2:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                if b == 0:
++                    raise ZeroDivisionError("divide by zero")
++                stack.append(int(a / b))
++            elif token == "DUP":
++                if len(stack) < 1:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                stack.append(stack[-1])
++            elif token == "DROP":
++                if len(stack) < 1:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                stack.pop()
++            elif token == "SWAP":
++                if len(stack) < 2:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                a = stack.pop()
++                b = stack.pop()
++                stack.append(a)
++                stack.append(b)
++            elif token == "OVER":
++                if len(stack) < 2:
++                    raise StackUnderflowError("Insufficient number of items in stack")
++                stack.append(stack[-2])
++            else:
++                raise ValueError("undefined operation")
++        idx += 1
++
++    return stack

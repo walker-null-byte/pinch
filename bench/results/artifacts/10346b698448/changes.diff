@@ -1,0 +1,97 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..5360d69 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,90 @@
+ class StackUnderflowError(Exception):
+-    pass
++    def __init__(self, message):
++        self.message = message
+ 
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    custom_words = {}
++
++    def get_token_value(token):
++        if token in custom_words:
++            return custom_words[token]
++        return [token]
++
++    def process_line(line):
++        tokens = line.upper().split()
++        idx = 0
++        while idx < len(tokens):
++            token = tokens[idx]
++            if token == ':':
++                idx += 1
++                word_name = tokens[idx]
++                if word_name.isdigit() or (word_name.startswith('-') and word_name[1:].isdigit()):
++                    raise ValueError("illegal operation")
++                idx += 1
++                definition = []
++                while tokens[idx] != ';':
++                    definition.extend(get_token_value(tokens[idx]))
++                    idx += 1
++                custom_words[word_name] = definition
++                idx += 1
++            elif token in custom_words:
++                tokens[idx : idx + 1] = custom_words[token]
++            else:
++                try:
++                    val = int(token)
++                    stack.append(val)
++                except ValueError:
++                    if token == '+':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        a = stack.pop()
++                        stack.append(a + b)
++                    elif token == '-':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        a = stack.pop()
++                        stack.append(a - b)
++                    elif token == '*':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        a = stack.pop()
++                        stack.append(a * b)
++                    elif token == '/':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        if b == 0:
++                            raise ZeroDivisionError("divide by zero")
++                        a = stack.pop()
++                        stack.append(int(a / b))
++                    elif token == 'DUP':
++                        if len(stack) < 1:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        stack.append(stack[-1])
++                    elif token == 'DROP':
++                        if len(stack) < 1:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        stack.pop()
++                    elif token == 'SWAP':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        a = stack.pop()
++                        b = stack.pop()
++                        stack.append(a)
++                        stack.append(b)
++                    elif token == 'OVER':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        stack.append(stack[-2])
++                    else:
++                        raise ValueError("undefined operation")
++                idx += 1
++
++    for line in input_data:
++        process_line(line)
++    return stack

@@ -1,0 +1,89 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..63b82c4 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,82 @@
+ class StackUnderflowError(Exception):
+-    pass
++    def __init__(self, message):
++        self.message = message
+ 
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    definitions = {}
++
++    def parse_and_execute(tokens):
++        i = 0
++        while i < len(tokens):
++            token = tokens[i]
++            if token in definitions:
++                tokens[i+1:i+1] = definitions[token]
++            elif token == '+':
++                if len(stack) < 2: raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                stack.append(a + b)
++            elif token == '-':
++                if len(stack) < 2: raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                stack.append(a - b)
++            elif token == '*':
++                if len(stack) < 2: raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                stack.append(a * b)
++            elif token == '/':
++                if len(stack) < 2: raise StackUnderflowError("Insufficient number of items in stack")
++                b = stack.pop()
++                a = stack.pop()
++                if b == 0: raise ZeroDivisionError("divide by zero")
++                stack.append(int(a / b))
++            elif token == 'dup':
++                if len(stack) < 1: raise StackUnderflowError("Insufficient number of items in stack")
++                stack.append(stack[-1])
++            elif token == 'drop':
++                if len(stack) < 1: raise StackUnderflowError("Insufficient number of items in stack")
++                stack.pop()
++            elif token == 'swap':
++                if len(stack) < 2: raise StackUnderflowError("Insufficient number of items in stack")
++                a = stack.pop()
++                b = stack.pop()
++                stack.append(a)
++                stack.append(b)
++            elif token == 'over':
++                if len(stack) < 2: raise StackUnderflowError("Insufficient number of items in stack")
++                stack.append(stack[-2])
++            else:
++                try:
++                    stack.append(int(token))
++                except ValueError:
++                    raise ValueError("undefined operation")
++            i += 1
++
++    for line in input_data:
++        parts = line.lower().split()
++        if not parts: continue
++        if parts[0] == ':':
++            word = parts[1]
++            
++            # Recheck: Maybe it's not the word that is checked?
++            # The test case: evaluate([": 1 2 ;"])
++            # The word is '1'. The definition is '2'.
++            # Oh, the word IS '1'.
++            
++            if word.lstrip('-').isdigit():
++                raise ValueError("illegal operation")
++            
++            body = []
++            for token in parts[2:-1]:
++                if token in definitions:
++                    body.extend(definitions[token])
++                else:
++                    body.append(token)
++            definitions[word] = body
++        else:
++            parse_and_execute(parts)
++    return stack

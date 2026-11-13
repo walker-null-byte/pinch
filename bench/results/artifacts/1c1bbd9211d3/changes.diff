@@ -1,0 +1,82 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..ac7ce5c 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,75 @@
+ class StackUnderflowError(Exception):
+-    pass
++    """Exception raised when Stack is not full."""
++    def __init__(self, message):
++        self.message = message
+ 
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    custom_words = {}
++
++    def is_number(s):
++        try:
++            int(s)
++            return True
++        except ValueError:
++            return False
++
++    def pop():
++        if not stack:
++            raise StackUnderflowError("Insufficient number of items in stack")
++        return stack.pop()
++
++    tokens = []
++    for line in input_data:
++        tokens.extend(line.split())
++
++    i = 0
++    while i < len(tokens):
++        token = tokens[i].upper()
++        if token == ":":
++            i += 1
++            word_name = tokens[i].upper()
++            if is_number(word_name):
++                raise ValueError("illegal operation")
++            i += 1
++            definition = []
++            while tokens[i] != ";":
++                definition.append(tokens[i].upper())
++                i += 1
++            custom_words[word_name] = definition
++        elif token in custom_words:
++            tokens[i + 1:i + 1] = custom_words[token]
++        elif token == "+":
++            b, a = pop(), pop()
++            stack.append(a + b)
++        elif token == "-":
++            b, a = pop(), pop()
++            stack.append(a - b)
++        elif token == "*":
++            b, a = pop(), pop()
++            stack.append(a * b)
++        elif token == "/":
++            b, a = pop(), pop()
++            if b == 0:
++                raise ZeroDivisionError("divide by zero")
++            stack.append(int(a / b))
++        elif token == "DUP":
++            stack.append(stack[-1])
++        elif token == "DROP":
++            pop()
++        elif token == "SWAP":
++            b, a = pop(), pop()
++            stack.append(b)
++            stack.append(a)
++        elif token == "OVER":
++            b, a = pop(), pop()
++            stack.append(a)
++            stack.append(b)
++            stack.append(a)
++        elif is_number(token):
++            stack.append(int(token))
++        else:
++            raise ValueError("undefined operation")
++        i += 1
++    return stack

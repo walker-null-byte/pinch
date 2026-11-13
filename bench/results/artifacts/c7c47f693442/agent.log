@@ -1,0 +1,27 @@
+The model endpoint answered HTTP 429: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 500, model: gemini-3.1-flash-lite, description: Generate content requests per day limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.
+Please retry in 15h24m6.531443874s. The session is saved. Resume it with: pinch --resume 20261113-163334-9046ac
+
+--- stderr ---
+pinch session 20261113-163334-9046ac  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+[read] list_directory
+[read] read_file
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py"}
+[shell] run_command
+Auto-approved (write): write_file {"file_path": "/work/react.py", "content": "class InputCell:\n    def __init__(self, initial_value):\n        self._value = initial_value\n        self.observers = []\n\n    @property\n    def value(self):\n        return self._value\n\n    @value.setter\n    def value(self, new_value):\n        if ...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py"}
+[shell] run_command
+Auto-approved (write): write_file {"file_path": "/work/react.py", "content": "class InputCell:\n    def __init__(self, initial_value):\n        self._value = initial_value\n        self.observers = []\n\n    @property\n    def value(self):\n        return self._value\n\n    @value.setter\n    def value(self, new_value):\n        if ...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py"}
+[shell] run_command
+Auto-approved (write): write_file {"file_path": "/work/react.py", "content": "class InputCell:\n    def __init__(self, initial_value):\n        self._value = initial_value\n        self.observers = []\n\n    @property\n    def value(self):\n        return self._value\n\n    @value.setter\n    def value(self, new_value):\n        if ...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py"}
+[shell] run_command
+Auto-approved (write): write_file {"file_path": "/work/react.py", "content": "class InputCell:\n    def __init__(self, initial_value):\n        self._value = initial_value\n        self.observers = []\n\n    @property\n    def value(self):\n        return self._value\n\n    @value.setter\n    def value(self, new_value):\n        if ...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py"}
+[shell] run_command

@@ -1,0 +1,19 @@
+diff --git a/proverb.py b/proverb.py
+index d1be410..a4b104b 100644
+--- a/proverb.py
++++ b/proverb.py
+@@ -1,2 +1,12 @@
+-def proverb():
+-    pass
++def proverb(*args, qualifier=None):
++    if not args:
++        return []
++
++    lines = []
++    for i in range(len(args) - 1):
++        lines.append(f"For want of a {args[i]} the {args[i+1]} was lost.")
++    
++    qualifier_str = f"{qualifier} " if qualifier else ""
++    lines.append(f"And all for the want of a {qualifier_str}{args[0]}.")
++    
++    return lines

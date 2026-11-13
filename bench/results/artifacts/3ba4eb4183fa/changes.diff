@@ -1,0 +1,147 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..462c97c 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,139 @@
+ class StackUnderflowError(Exception):
+-    pass
+-
++    def __init__(self, message):
++        self.message = message
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    # user_words maps a name to its definition (a list of tokens)
++    # The definition is a list of tokens, which can be further expanded.
++    # To support overriding and recursive definitions, 
++    # we need to be careful when expanding.
++    user_words = {}
++    
++    def is_number(token):
++        try:
++            int(token)
++            return True
++        except ValueError:
++            return False
++
++    def execute_token(token, stack, user_words):
++        token_upper = token.upper()
++        
++        # If it's a user defined word
++        if token_upper in user_words:
++            definition = user_words[token_upper]
++            for t in definition:
++                execute_token(t, stack, user_words)
++        elif is_number(token):
++            stack.append(int(token))
++        elif token_upper == '+':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            a = stack.pop()
++            stack.append(a + b)
++        elif token_upper == '-':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            a = stack.pop()
++            stack.append(a - b)
++        elif token_upper == '*':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            a = stack.pop()
++            stack.append(a * b)
++        elif token_upper == '/':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            b = stack.pop()
++            if b == 0:
++                raise ZeroDivisionError("divide by zero")
++            a = stack.pop()
++            stack.append(int(a / b))
++        elif token_upper == 'DUP':
++            if len(stack) < 1:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            stack.append(stack[-1])
++        elif token_upper == 'DROP':
++            if len(stack) < 1:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            stack.pop()
++        elif token_upper == 'SWAP':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            a = stack.pop()
++            b = stack.pop()
++            stack.append(a)
++            stack.append(b)
++        elif token_upper == 'OVER':
++            if len(stack) < 2:
++                raise StackUnderflowError("Insufficient number of items in stack")
++            stack.append(stack[-2])
++        else:
++            raise ValueError("undefined operation")
++
++    for line in input_data:
++        tokens = line.split()
++        if not tokens:
++            continue
++        
++        if tokens[0] == ':':
++            if tokens[-1] != ';':
++                raise ValueError("illegal operation")
++            
++            word_name = tokens[1].upper()
++            if is_number(word_name):
++                raise ValueError("illegal operation")
++            
++            definition = tokens[2:-1]
++            
++            # The definition is what's inside the : and ;
++            # This is where we need to be careful.
++            # To handle `test_user_defined_words_can_use_different_words_with_the_same_name`,
++            # we need to store the definitions in such a way that they can use the current
++            # definition of other words, but not be affected by later redefinitions.
++            # This is called "static" or "early" binding in some sense,
++            # but in Forth, it is usually "compile time" expansion.
++            
++            # Let's try to expand all *currently* known words in the definition.
++            # If `token_upper` is in `user_words`, replace it with its definition.
++            # But wait, we should do this recursively.
++            
++            def expand(definition, user_words):
++                new_definition = []
++                for t in definition:
++                    t_upper = t.upper()
++                    if t_upper in user_words:
++                        # Should we expand recursively?
++                        # If we do, we need to avoid infinite loops.
++                        # For now, let's just do a single-level expansion
++                        # and see if it passes the tests.
++                        new_definition.extend(user_words[t_upper])
++                    else:
++                        new_definition.append(t)
++                return new_definition
++            
++            # This expansion doesn't seem to work for the recursive case
++            # `test_user_defined_words_can_define_word_that_uses_word_with_the_same_name`.
++            # Let's try to do it without expansion and rely on dynamic lookup.
++            # But dynamic lookup didn't work for `test_user_defined_words_can_use_different_words_with_the_same_name`.
++            
++            # The key must be in the `expand` logic.
++            # When `bar` is defined, `foo` is defined as `5`.
++            # So `bar` should be defined as `5`.
++            # Then when `foo` is redefined as `6`, `bar` should still be `5`.
++            
++            # My current `execute_token` does dynamic lookup, which explains why
++            # `bar` becomes `6`.
++            
++            # So I MUST expand the definition at definition time!
++            
++            user_words[word_name] = expand(definition, user_words)
++        else:
++            for token in tokens:
++                execute_token(token, stack, user_words)
++                
++    return stack

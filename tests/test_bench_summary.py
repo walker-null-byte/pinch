@@ -73,6 +73,20 @@ def test_ablation_share_of_savings_uses_paired_tasks(tmp_path):
     assert abl["no-trim"]["n"] == 2
 
 
+def test_ablation_on_tasks_every_mode_solved_leaves_out_pass_fail_flips(tmp_path):
+    """Task b: `all` fails after spending a lot, `no-trim` passes. Per solved task that makes no-trim look better; on the one task every
+    mode solved (a), no-trim costs more."""
+    rows = [row("none", "a", True, 1000), row("all", "a", True, 400), row("no-trim", "a", True, 800),
+            row("none", "b", True, 1000), row("all", "b", False, 9000), row("no-trim", "b", True, 900)]
+    f = tmp_path / "r.jsonl"
+    write(f, rows)
+    text, csv_rows = build(f)
+    solved = {r["mode"]: r for r in csv_rows if r["table"] == "ablation_solved_by_all"}
+    assert solved["all"]["n"] == 1 and solved["all"]["tokens_total"] == 400
+    assert solved["no-trim"]["tokens_total"] == 800 and solved["none"]["tokens_total"] == 1000
+    assert "only the 1 task every mode above solved" in text and "| no-trim | 800 | 4.0 | +100% |" in text
+
+
 def test_style_and_docs_and_cache_twice_tables(tmp_path):
     rows = [row("all", "a", True, 500, output_tokens=100), row("style-tiny", "a", True, 450, output_tokens=40),
             row("docs-on", "x", True, 800, set_="C", tavily_calls=2, tavily_credits=2), row("docs-off", "x", False, 900, set_="C"),

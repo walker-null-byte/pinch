@@ -117,6 +117,35 @@ def paired(rows: list[dict], modes: list[str]) -> dict[str, list[dict]]:
     return {m: [by_mode[m][k] for k in sorted(common)] for m in present}
 
 
+def solved_by_all(groups: dict[str, list[dict]]) -> list[tuple]:
+    """The (task, repeat) keys that every mode in `groups` (already paired) solved, with complete token counts."""
+    by_key = {m: {(r["task"], r["repeat"]): r for r in g} for m, g in groups.items()}
+    keys = set.intersection(*(set(d) for d in by_key.values())) if by_key else set()
+    return sorted(k for k in keys if all(d[k].get("passed") and d[k].get("usage_complete", True) for d in by_key.values()))
+
+
+def both_solved_table(set_: str, groups: dict[str, list[dict]], keys: list[tuple], csv_rows: list[dict], tag: str) -> str:
+    """Ablation on only the tasks every mode solved: a run that fails at the step limit no longer swamps the comparison, so this shows
+    what each technique saves or costs when the task gets done."""
+    by_key = {m: {(r["task"], r["repeat"]): r for r in g} for m, g in groups.items()}
+    total = {m: sum(by_key[m][k]["total_tokens"] for k in keys) for m in groups}
+    calls = {m: sum(by_key[m][k]["calls"] for k in keys) / len(keys) for m in groups}
+    ref = total.get("all")
+    lines = []
+    for m in ["none", "all"] + [x for x in groups if x not in ("none", "all")]:
+        if m not in total:
+            continue
+        lines.append([m, fmt(total[m]), fmt(calls[m], "f1"), rel(total[m], ref) if m != "all" else "-"])
+        csv_rows.append({"table": "ablation_solved_by_all", "set": set_, "mode": m, "n": len(keys), "tokens_total": total[m],
+                         "calls_mean": calls[m]})
+    n = len(keys)
+    return (f"**Set {set_}, only the {n} task{'s' if n != 1 else ''} every mode above solved{tag}.** One failed run can spend 30 calls and "
+            "decide the table above on its own; here pass/fail is the same for every mode, so the difference is what the technique "
+            "saves (or costs) when the task gets done. *vs all*: how many more tokens the same tasks took with that technique off "
+            "(negative = fewer).\n\n"
+            + table(["mode", "total tokens", "avg calls", "vs all"], lines) + "\n")
+
+
 def mode_order(modes: set[str]) -> list[str]:
     fixed = [m for m in MAIN_ORDER if m in modes]
     abl = [f"no-{t}" for t in ABLATABLE if f"no-{t}" in modes]
@@ -228,6 +257,9 @@ def build(path: Path) -> tuple[str, list[dict]]:
             md.append(f"### Set {s} ({st['all']['n']} paired runs per mode){tag}\n")
             md.append(table(["mode", "runs", "pass rate", "tokens / solved", "extra tokens without it", "share of savings",
                              "cached input share"], lines) + "\n")
+            both = solved_by_all(groups)
+            if both:
+                md.append(both_solved_table(s, groups, both, csv_rows, tag))
             if "no-trim" in st:
                 md.append(trim_vs_cache(s, st))
 
