@@ -1,6 +1,6 @@
 # Benchmark report: run1.jsonl
 
-Model: `gemini/gemini-3.5-flash-lite` · counted runs: 72 · excluded (infrastructure): 2 · sets: A, B, C
+Model: `gemini/gemini-3.5-flash-lite` · counted runs: 82 · excluded (infrastructure): 2 · sets: A, B, C
 
 ## Results per set and mode
 
@@ -27,6 +27,15 @@ Tokens are provider-reported `usage` (input + output) through Bifrost. *Tokens p
 | baseline | 5 | 4 (80%) | 204,347 | 241,969 | 255,434 | - | $0.0470 | 24.2 | 168s |
 | all | 5 | 3 (60%) | 52,806 | 23,835 | 88,011 | -66% | $0.0273 | 16.8 | 67s |
 
+## Tavily docs lookup on and off (set C)
+
+| mode | runs | pass rate | avg tokens | tokens / solved | avg model calls | Tavily use |
+|---|---|---|---|---|---|---|
+| docs-on | 5 | 60% | 79,386 | 132,311 | 21.2 | 7 calls / 7 credits |
+| docs-off | 5 | 40% | 87,666 | 219,166 | 21.4 | 0 calls / 0 credits |
+
+The Tavily tool is only offered on set C. These tasks use library features released in 2026; see `bench/tasks/C/SOURCE.md`.
+
 ## Excluded runs
 
 These runs failed on infrastructure, not on the task. They stay in the results file, marked `infra_error`, and are in no average. A later retry of the same run, if it finished, is counted instead.
@@ -39,12 +48,12 @@ These runs failed on infrastructure, not on the task. They stay in the results f
 
 - **Models.** Both agents use the same model through the same Bifrost gateway: `gemini/gemini-3.5-flash-lite`. Gateway: `http://127.0.0.1:8180/v1`; virtual-key header `x-bf-vk`. Cascade tiers: off / off.
 - **Who answered.** Models the gateway reported as serving the calls: `gemini-3.5-flash-lite`. Calls answered by a fallback provider (recorded per call for pinch; for mini-swe-agent only when its response carries it): 0. The benchmark key has no fallback chain, so a different model should never answer silently.
-- **Pacing and rate limits.** Both agents are paced the same way: at least 4.5 s between model requests inside each agent process (1 earlier session(s) in this file ran before pacing was recorded) (`--min-call-interval`; pinch through `PINCH_MIN_CALL_INTERVAL`, mini-swe-agent through a wrapper around its model call that changes nothing else), and both wait out a per-minute HTTP 429 (the provider's "retry in N s", at most 120 s, up to 8 times) instead of failing. Only a per-day limit stops a run. This report: 2 rate-limit waits, 1,121 s spent waiting in total. **Times in the tables exclude those waits.** Pacing is per process, so with `--jobs` above 1 the runs share one limit and the pacing no longer keeps each agent under it.
+- **Pacing and rate limits.** Both agents are paced the same way: at least 4.5 s between model requests inside each agent process (1 earlier session(s) in this file ran before pacing was recorded) (`--min-call-interval`; pinch through `PINCH_MIN_CALL_INTERVAL`, mini-swe-agent through a wrapper around its model call that changes nothing else), and both wait out a per-minute HTTP 429 (the provider's "retry in N s", at most 120 s, up to 8 times) instead of failing. Only a per-day limit stops a run. This report: 2 rate-limit waits, 1,460 s spent waiting in total. **Times in the tables exclude those waits.** Pacing is per process, so with `--jobs` above 1 the runs share one limit and the pacing no longer keeps each agent under it.
 - **Agents.** pinch (this repository, `--auto-approve`) versus mini-swe-agent `2.4.6` (MIT, SWE-agent team) with litellm `1.108.3`, its default tool-calling config (`mini.yaml`), no changes except the connection. Each run: at most 30 model calls, 4096 output tokens per call, 900 s wall time, for both agents. pinch tool mode: `lazy`.
 - **Tasks.** Set A: Python exercises from Aider's polyglot benchmark (34 used in this run; Exercism, MIT; pinned commit 7e0611e, `bench/tasks/A/SOURCE.md`). Set B: real upstream bug fixes (8 used in this run; repository, fix commit and licence per task in `bench/tasks/B/SOURCE.md`; the starting tree is the commit before the fix, the fix's tests are the hidden check). Set C: docs tasks **written by us** (5 used in this run; `bench/tasks/C/SOURCE.md`).
 - **How pass is checked.** Not by the agent. After an agent stops, the harness restores the exercise's tests (A), or adds the upstream fix's tests the agent never saw (B), or adds our check script (C), deletes cached bytecode, and runs the check in a fresh container. Pass = exit code 0.
 - **Sandbox.** Every agent run and every check happens in a throwaway container of the pinned image `python:3.12.15-slim-bookworm` with the task folder mounted and host networking (needed to reach the gateway). Model-generated commands never run on the host. Limitation: the container has internet access, so an agent could in principle fetch information from the web.
-- **Auto-approval.** pinch ran with `--auto-approve`, so writes, shell commands and git operations were approved without a person. Every one is logged in the run's session file (`auto_approved` events): 266 in the 36 pinch runs in this report. mini-swe-agent has no approval gate in this configuration. This is a benchmark-only setting; pinch's normal mode asks first.
+- **Auto-approval.** pinch ran with `--auto-approve`, so writes, shell commands and git operations were approved without a person. Every one is logged in the run's session file (`auto_approved` events): 478 in the 46 pinch runs in this report. mini-swe-agent has no approval gate in this configuration. This is a benchmark-only setting; pinch's normal mode asks first.
 - **Tokens and cost.** Token counts are the `usage` the provider reported, relayed by Bifrost; nothing is estimated from text length. Cost = those tokens times `src/pinch/prices.toml`, the same table for both agents. A model without a price shows `n/a`.
 - **Cache.** Real runs use a fresh Bifrost cache namespace each, so there are no cross-run cache hits. The 'same task twice' table is a separate demonstration.
 - **Docs tool.** The Tavily `docs_lookup` tool is offered only on set C; on sets A and B `all` means every other technique (and `cascade` only when --small-model and --big-model are given). The techniques actually on for each run are recorded in its row (`techniques_on`).

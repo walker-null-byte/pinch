@@ -42,6 +42,17 @@ One run per task. Pass or fail comes from hidden tests run after the agent stops
 
 Counted per solved task over all 5 finished tasks, the picture is different: two tasks flipped between pass and fail from mode to mode, and a failed run spends up to 30 calls. With one run each, that table is noise. Both tables are in the report.
 
+**Tavily on and off, set C docs tasks, `gemini-3.5-flash-lite`** ([report](bench/results/run1.md#tavily-docs-lookup-on-and-off-set-c)):
+
+| pinch with… | Solved | Tokens per solved task | Tavily use |
+|---|---|---|---|
+| Tavily on | 3 of 5 | 132,311 | 7 calls, 7 credits |
+| Tavily off | 2 of 5 | 219,166 | — |
+
+Read this carefully. The one task that differs (anyio) made no Tavily call in the run that solved it, so that difference is run-to-run noise, not Tavily's doing. The model looked things up on 2 of the 5 tasks. On pytest-max-warnings, one lookup solved it on 12,563 tokens against 21,187 without. On pytest-long-string-ids, 6 lookups didn't help. What this shows: the tool is used sparingly (7 credits for 5 tasks) and sometimes shortens the path. Five tasks with one run each can't show more than that.
+
+These runs use commit f38091f. In the first set C run the model never called the tool at all: lazy mode listed it only behind `search_tools`, and the model never searched for it. It is now shown up front whenever it is on. That change affects set C only; the set C row of the main comparison is still from the frozen agent.
+
 What this shows so far:
 - **Exercises:** pinch solves everything mini-swe-agent solves, on about a fifth of the tokens.
 - **Real bugs and docs tasks:** pinch is cheaper per solved task but solves fewer on `gemini-3.5-flash-lite` (5 vs 7 bugs, 3 vs 4 docs tasks). On `gemini-3.1-flash-lite` it ties on bugs. With one run per task, a difference of one or two tasks is within run-to-run noise. The token gaps are much larger than that.
@@ -170,7 +181,7 @@ Trimming and the provider's prompt cache pull in opposite directions: trimming s
 
 A READ tool (it changes nothing locally, so no approval) that calls Tavily's search API over plain `httpx`: basic depth, at most 3 results, each snippet cut to about 300 characters, with source URLs. The base URL is configurable (`PINCH_TAVILY_URL`) and the key is `TAVILY_API_KEY`.
 Queries are one line, at most 300 characters; code fences and key-like tokens are removed, and the tool description tells the model to send error text and library names only. That last rule is guidance plus clean-up, not proof: pinch cannot tell if a model pastes code in prose. Results are cached for the session, and every call's credits are written to the session ledger.
-It is not offered when the `docs` technique is off, when there is no key, or for a confidential repo, and a call to it is refused there.
+It is not offered when the `docs` technique is off, when there is no key, or for a confidential repo, and a call to it is refused there. When it is on, lazy mode shows it up front next to the six core tools: behind `search_tools`, the model never found it.
 
 ### Bifrost Code Mode, and why tasks do not run through it
 
