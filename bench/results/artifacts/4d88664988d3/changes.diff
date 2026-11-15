@@ -1,0 +1,41 @@
+diff --git a/variable_length_quantity.py b/variable_length_quantity.py
+index 41bdcdc..2b5d719 100644
+--- a/variable_length_quantity.py
++++ b/variable_length_quantity.py
+@@ -1,6 +1,34 @@
+ def encode(numbers):
+-    pass
++    res = []
++    for n in numbers:
++        if n == 0:
++            res.append(0)
++            continue
++        n_res = []
++        first = True
++        while n > 0:
++            byte = n & 0x7F
++            if not first:
++                byte |= 0x80
++            n_res.append(byte)
++            n >>= 7
++            first = False
++        res.extend(n_res[::-1])
++    return res
+ 
+ 
+ def decode(bytes_):
+-    pass
++    res = []
++    current = 0
++    in_progress = False
++    for b in bytes_:
++        current = (current << 7) | (b & 0x7F)
++        if (b & 0x80) == 0:
++            res.append(current)
++            current = 0
++            in_progress = False
++        else:
++            in_progress = True
++    if in_progress:
++        raise ValueError("incomplete sequence")
++    return res

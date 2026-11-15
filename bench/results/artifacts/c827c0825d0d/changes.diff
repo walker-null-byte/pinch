@@ -1,0 +1,29 @@
+diff --git a/robot_name.py b/robot_name.py
+index 7c7246e..decb0cf 100644
+--- a/robot_name.py
++++ b/robot_name.py
+@@ -1,3 +1,23 @@
++import random
++
+ class Robot:
++    _used_names = set()
++
+     def __init__(self):
+-        pass
++        self._name = None
++
++    @property
++    def name(self):
++        if self._name is None:
++            while True:
++                letters = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ", k=2))
++                digits = f"{random.randint(0, 999):03d}"
++                candidate = letters + digits
++                if candidate not in Robot._used_names:
++                    Robot._used_names.add(candidate)
++                    self._name = candidate
++                    break
++        return self._name
++
++    def reset(self):
++        self._name = None

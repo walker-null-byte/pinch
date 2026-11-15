@@ -1,0 +1,77 @@
+diff --git a/simple_linked_list.py b/simple_linked_list.py
+index dfb9e6c..9ad47a6 100644
+--- a/simple_linked_list.py
++++ b/simple_linked_list.py
+@@ -1,36 +1,60 @@
+ class EmptyListException(Exception):
+-    pass
++    """Exception raised when the linked list is empty."""
++    def __init__(self, message="The list is empty."):
++        super().__init__(message)
+ 
+ 
+ class Node:
+-    def __init__(self, value):
+-        pass
++    def __init__(self, value, next_node=None):
++        self._value = value
++        self._next = next_node
+ 
+     def value(self):
+-        pass
++        return self._value
+ 
+     def next(self):
+-        pass
++        return self._next
+ 
+ 
+ class LinkedList:
+     def __init__(self, values=None):
+-        pass
++        self._head = None
++        self._length = 0
++        if values is not None:
++            for val in values:
++                self.push(val)
+ 
+     def __iter__(self):
+-        pass
++        current = self._head
++        while current is not None:
++            yield current.value()
++            current = current.next()
+ 
+     def __len__(self):
+-        pass
++        return self._length
+ 
+     def head(self):
+-        pass
++        if self._head is None:
++            raise EmptyListException("The list is empty.")
++        return self._head
+ 
+     def push(self, value):
+-        pass
++        new_node = Node(value, self._head)
++        self._head = new_node
++        self._length += 1
+ 
+     def pop(self):
+-        pass
++        if self._head is None:
++            raise EmptyListException("The list is empty.")
++        val = self._head.value()
++        self._head = self._head.next()
++        self._length -= 1
++        return val
+ 
+     def reversed(self):
+-        pass
++        rev_list = LinkedList()
++        current = self._head
++        while current is not None:
++            rev_list.push(current.value())
++            current = current.next()
++        return rev_list

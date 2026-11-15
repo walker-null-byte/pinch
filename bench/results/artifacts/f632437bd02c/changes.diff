@@ -1,0 +1,30 @@
+diff --git a/transpose.py b/transpose.py
+index 24b60af..4de0b71 100644
+--- a/transpose.py
++++ b/transpose.py
+@@ -1,2 +1,24 @@
+ def transpose(text):
+-    pass
++    if not text:
++        return ""
++    lines = text.splitlines()
++    max_len = max(len(line) for line in lines)
++    
++    transposed = []
++    for col in range(max_len):
++        # Find the maximum row index that has a character at this column
++        max_r = -1
++        for r, line in enumerate(lines):
++            if col < len(line):
++                max_r = r
++        
++        transposed_line = []
++        for r in range(max_r + 1):
++            line = lines[r]
++            if col < len(line):
++                transposed_line.append(line[col])
++            else:
++                transposed_line.append(' ')
++        transposed.append("".join(transposed_line))
++        
++    return "\n".join(transposed)

@@ -1,0 +1,57 @@
+diff --git a/scale_generator.py b/scale_generator.py
+index eddc130..d085088 100644
+--- a/scale_generator.py
++++ b/scale_generator.py
+@@ -1,9 +1,49 @@
+ class Scale:
++    SHARPS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
++    FLATS = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
++
+     def __init__(self, tonic):
+-        pass
++        self.tonic = tonic
++
++    def _get_base_scale(self):
++        flat_set = {"F", "Bb", "Eb", "Ab", "Db", "Gb", "d", "g", "c", "f", "bb", "eb"}
++        if self.tonic in flat_set:
++            return self.FLATS
++        return self.SHARPS
+ 
+     def chromatic(self):
+-        pass
++        base = self._get_base_scale()
++        norm_tonic = self.tonic[0].upper() + self.tonic[1:] if len(self.tonic) > 1 else self.tonic.upper()
++        if len(norm_tonic) > 1 and norm_tonic[1] == 'b':
++            norm_tonic = norm_tonic[0] + 'b'
++        elif len(norm_tonic) > 1 and norm_tonic[1] in ('#', '♯'):
++            norm_tonic = norm_tonic[0] + '#'
++
++        try:
++            idx = base.index(norm_tonic)
++        except ValueError:
++            enharmonics = {"Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#",
++                           "C#": "Db", "D#": "Eb", "F#": "Gb", "G#": "Ab", "A#": "Bb"}
++            if norm_tonic in enharmonics:
++                norm_tonic = enharmonics[norm_tonic]
++            idx = base.index(norm_tonic)
++
++        return base[idx:] + base[:idx]
+ 
+     def interval(self, intervals):
+-        pass
++        chrom = self.chromatic()
++        # intervals is a string like "MMmMMMm", where:
++        # 'm' = half step (1 semitone / 1 position in chromatic scale)
++        # 'M' = whole step (2 semitones / 2 positions in chromatic scale)
++        # 'A' = augmented second (3 semitones / 3 positions in chromatic scale)
++        
++        step_map = {'m': 1, 'M': 2, 'A': 3}
++        
++        scale = [chrom[0]]
++        current_idx = 0
++        for i in intervals:
++            shift = step_map[i]
++            current_idx = (current_idx + shift) % 12
++            scale.append(chrom[current_idx])
++            
++        return scale

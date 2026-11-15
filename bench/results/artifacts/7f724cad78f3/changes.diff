@@ -1,0 +1,104 @@
+diff --git a/two_bucket.py b/two_bucket.py
+index 7029bcb..74d23cc 100644
+--- a/two_bucket.py
++++ b/two_bucket.py
+@@ -1,2 +1,98 @@
++from collections import deque
++import math
++
+ def measure(bucket_one, bucket_two, goal, start_bucket):
+-    pass
++    if goal > max(bucket_one, bucket_two):
++        raise ValueError("Goal cannot be larger than both buckets.")
++    if goal % math.gcd(bucket_one, bucket_two) != 0:
++        raise ValueError("Goal cannot be reached with the given bucket sizes.")
++
++    # State: (b1, b2, steps, path) or similar.
++    # Let's perform BFS or simulation.
++    # Rules:
++    # 1. Pouring one bucket into the other until empty or full.
++    # 2. Emptying a bucket (and doing nothing to the other).
++    # 3. Filling a bucket (and doing nothing to the other).
++    # Rule 3 restriction: After an action, you may not arrive at a state where the initial starting bucket is empty and the other bucket is full.
++    # Wait, initial starting bucket being empty and the other bucket full? Or "initial starting bucket is empty and the other bucket is full"? Wait, let's re-read carefully:
++    # "After an action, you may not arrive at a state where the initial starting bucket is empty and the other bucket is full."
++    # Wait, does that mean if start_bucket is 'one', we cannot have b1 == 0 and b2 == bucket_two? Or does it mean starting state / forbidden state?
++    # Let's check Exercism two-bucket rules or test cases.
++    
++    if start_bucket == "one":
++        initial = (bucket_one, 0)
++        forbidden = (0, bucket_two)
++    else:
++        initial = (0, bucket_two)
++        forbidden = (bucket_one, 0)
++
++    # Initial state (step 1: fill the starting bucket)
++    # Wait! The first fill counts as 1 action!
++    # Let's verify what actions are possible from state.
++    
++    queue = deque()
++    # queue stores (b1, b2, steps, history)
++    # But wait, we can also use BFS.
++    visited = set()
++    
++    # Starting action: fill start bucket
++    if start_bucket == "one":
++        curr = (bucket_one, 0)
++    else:
++        curr = (0, bucket_two)
++        
++    if curr == forbidden:
++        raise ValueError("Invalid starting state / forbidden state.")
++        
++    if curr[0] == goal:
++        return (1, "one", curr[1])
++    if curr[1] == goal:
++        return (1, "two", curr[0])
++        
++    queue.append((curr[0], curr[1], 1))
++    visited.add(curr)
++    # Also add the initial empty state (0,0) before filling?
++    # Wait, the rule says: "including the first fill of the starting bucket".
++    # So step 1 is filling the starting bucket.
++    visited.add((0, 0))
++    if start_bucket == "one":
++        visited.add((0, bucket_two)) # if forbidden is here
++    else:
++        visited.add((bucket_one, 0))
++
++    while queue:
++        b1, b2, steps = queue.popleft()
++        
++        if b1 == goal:
++            return (steps, "one", b2)
++        if b2 == goal:
++            return (steps, "two", b1)
++            
++        # Generate next possible actions
++        # 1. Fill bucket one
++        next_states = []
++        
++        # Fill bucket one: (bucket_one, b2)
++        next_states.append((bucket_one, b2))
++        # Fill bucket two: (b1, bucket_two)
++        next_states.append((b1, bucket_two))
++        # Empty bucket one: (0, b2)
++        next_states.append((0, b2))
++        # Empty bucket two: (b1, 0)
++        next_states.append((b1, 0))
++        # Pour bucket one to bucket two
++        pour_1_to_2 = min(b1, bucket_two - b2)
++        next_states.append((b1 - pour_1_to_2, b2 + pour_1_to_2))
++        # Pour bucket two to bucket one
++        pour_2_to_1 = min(b2, bucket_one - b1)
++        next_states.append((b1 + pour_2_to_1, b2 - pour_2_to_1))
++        
++        for ns in next_states:
++            if ns == forbidden:
++                continue
++            if ns not in visited:
++                visited.add(ns)
++                queue.append((ns[0], ns[1], steps + 1))
++                
++    raise ValueError("Goal cannot be reached.")
++

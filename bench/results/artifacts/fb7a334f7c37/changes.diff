@@ -1,0 +1,68 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..418aa0d 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,62 @@
++from operator import add, mul, sub
++from operator import floordiv as div
++
++OPERATIONS = {"plus": add, "minus": sub, "multiplied": mul, "divided": div}
++
+ def answer(question):
+-    pass
++    if not question.startswith("What is") or not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    # Check for non-math questions or unknown operations explicitly or via vocabulary check
++    # If question contains words that are not valid operators, numbers, or question boilerplate ("What", "is", "by")
++    raw_words = question.removesuffix("?").split()
++    for w in raw_words:
++        # Check if w is non-numeric, not in OPERATIONS, not "What", "is", "by"
++        if w not in ("What", "is", "by") and w not in OPERATIONS:
++            # Check if w can be parsed as an int
++            try:
++                int(w)
++            except ValueError:
++                raise ValueError("unknown operation")
++
++    question_core = question.removeprefix("What is").removesuffix("?").strip()
++    if not question_core:
++        raise ValueError("syntax error")
++
++    words = question_core.split()
++    tokens = []
++    i = 0
++    while i < len(words):
++        word = words[i]
++        if word in ("multiplied", "divided"):
++            if i + 1 < len(words) and words[i+1] == "by":
++                tokens.append(word)
++                i += 2
++                continue
++            else:
++                raise ValueError("syntax error")
++        tokens.append(word)
++        i += 1
++
++    if not tokens or len(tokens) % 2 == 0:
++        raise ValueError("syntax error")
++
++    for idx, token in enumerate(tokens):
++        if idx % 2 == 0:
++            try:
++                int(token)
++            except ValueError:
++                raise ValueError("syntax error")
++        else:
++            if token not in OPERATIONS:
++                raise ValueError("syntax error")
++
++    result = int(tokens[0])
++    idx = 1
++    while idx < len(tokens):
++        op_word = tokens[idx]
++        next_val = int(tokens[idx+1])
++        result = OPERATIONS[op_word](result, next_val)
++        idx += 2
++
++    return result

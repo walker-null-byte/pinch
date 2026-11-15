@@ -1,0 +1,70 @@
+diff --git a/scale_generator.py b/scale_generator.py
+index eddc130..de29076 100644
+--- a/scale_generator.py
++++ b/scale_generator.py
+@@ -1,9 +1,62 @@
+ class Scale:
++    SHARPS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
++    FLATS = ["F", "Gb", "G", "Ab", "A", "Bb", "B", "C", "Db", "D", "Eb", "E"]
++    SHARP_KEYS = {"G", "D", "A", "E", "B", "F#", "E", "B", "F#", "C#", "G#", "D#"}
++    FLAT_KEYS = {"F", "Bb", "Eb", "Ab", "Db", "Gb", "D", "G", "C", "F", "Bb", "Eb"}
++    FLAT_MINORS = {"d", "g", "c", "f", "bb", "eb"}
++
+     def __init__(self, tonic):
+-        pass
++        self.tonic = tonic
+ 
+     def chromatic(self):
+-        pass
++        # Format tonic: capitalize first letter, keep 'b' lowercase if flat
++        # But wait, input tonic could be 'f#', 'bb', 'C', 'g', etc.
++        # Let's check how tonic is cased or normalized.
++        # In test_chromatic_scale_with_sharps: "C"
++        # In test_minor_scale_with_sharps: "f#" -> "F#"
++        # Let's normalize tonic to standard note name with correct case:
++        # e.g., 'f#' -> 'F#', 'bb' -> 'Bb', 'c' -> 'C', etc.
++        norm_tonic = self._normalize_tonic(self.tonic)
++
++        if self.tonic in {"d", "g", "c", "f", "bb", "eb"}:
++            scale = self.FLATS
++        elif norm_tonic in {"C", "a"}:
++            scale = self.SHARPS
++        elif norm_tonic in self.SHARP_KEYS:
++            scale = self.SHARPS
++        elif norm_tonic in self.FLAT_KEYS:
++            scale = self.FLATS
++        else:
++            # Fallback based on presence of b or #
++            if 'b' in self.tonic.lower() and not self.tonic.endswith('#'):
++                scale = self.FLATS
++            else:
++                scale = self.SHARPS
++
++        # Find index of norm_tonic in scale
++        try:
++            idx = scale.index(norm_tonic)
++        except ValueError:
++            # maybe flat/sharp equivalent
++            pass
++        return scale[idx:] + scale[:idx]
+ 
+     def interval(self, intervals):
+-        pass
++        chrom = self.chromatic()
++        scale = [chrom[0]]
++        curr_idx = 0
++        step_map = {'m': 1, 'M': 2, 'A': 3}
++        for interval in intervals:
++            curr_idx = (curr_idx + step_map[interval]) % 12
++            scale.append(chrom[curr_idx])
++        return scale
++
++    def _normalize_tonic(self, tonic):
++        if len(tonic) == 1:
++            return tonic.upper()
++        if tonic[1] == '#':
++            return tonic[0].upper() + '#'
++        if tonic[1] == 'b':
++            return tonic[0].upper() + 'b'
++        return tonic.upper()
++

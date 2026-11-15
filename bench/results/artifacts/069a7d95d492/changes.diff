@@ -1,0 +1,241 @@
+diff --git a/sgf_parsing.py b/sgf_parsing.py
+index fa30f3f..51bd9a1 100644
+--- a/sgf_parsing.py
++++ b/sgf_parsing.py
+@@ -26,4 +26,235 @@ class SgfTree:
+ 
+ 
+ def parse(input_string):
+-    pass
++    if not input_string:
++        raise ValueError("tree missing")
++    if not input_string.startswith("("):
++        raise ValueError("tree missing")
++    if not input_string.endswith(")"):
++        raise ValueError("tree missing") # Wait, what error message for general structure? Let's check tests and requirements.
++
++    # Let's write a robust recursive descent or scanner parser for SGF strings.
++    # Requirements & exception messages:
++    # 1. "tree missing" - if input does not form a tree, or is empty.
++    # 2. "tree with no nodes" - if input is a tree without any nodes (e.g. "()").
++    # 3. "properties without delimiter" - if tree properties as given do not have proper delimiters (e.g. (;A)).
++    # 4. "property must be in uppercase" - if tree properties as given are not all in uppercase (e.g. (;a[b])).
++
++    # Let's trace and parse properly.
++    i = 0
++    n = len(input_string)
++
++    def parse_value(s):
++        # Text value processing:
++        # - Newlines are removed if they come immediately after a \, otherwise they remain as newlines.
++        # - All whitespace characters other than newline are converted to spaces.
++        # - \ is the escape character. Any non-whitespace character after \ is inserted as-is.
++        #   Any whitespace character after \ follows the above rules.
++        res = []
++        j = 0
++        l = len(s)
++        while j < l:
++            ch = s[j]
++            if ch == '\\':
++                if j + 1 < l:
++                    next_ch = s[j+1]
++                    if next_ch == '\n':
++                        # escaped newline: removed
++                        j += 2
++                    elif next_ch in ' \t\r\v\f': # whitespace other than newline or is newline?
++                        # Wait, what if escaped tab or space?
++                        # "All whitespace characters other than newline are converted to spaces."
++                        # "Any whitespace character after \ follows the above rules."
++                        # Wait, if escaped newline is removed, what about escaped tab/space?
++                        # Let's check test:
++                        # test_escaped_tab_in_property_value_is_converted_to_space: (;A[hello\\\tworld]) -> hello world
++                        # test_escaped_backslash_in_property_value_becomes_just_a_backslash: (;A[\\\\]) -> \
++                        # "Any non-whitespace character after \ is inserted as-is."
++                        # "Any whitespace character after \ follows the above rules."
++                        if next_ch == '\n':
++                            j += 2
++                        else:
++                            res.append(' ')
++                            j += 2
++                    else:
++                        res.append(next_ch)
++                        j += 2
++                else:
++                    j += 1
++            else:
++                if ch == '\n':
++                    res.append('\n')
++                elif ch in ' \t\r\v\f':
++                    res.append(' ')
++                else:
++                    res.append(ch)
++                j += 1
++        return "".join(res)
++
++    def parse_tree():
++        nonlocal i
++        if i >= n or input_string[i] != '(':
++            raise ValueError("tree missing")
++        i += 1 # consume '('
++
++        if i < n and input_string[i] == ')':
++            # tree with no nodes
++            raise ValueError("tree with no nodes")
++
++        nodes = []
++        while i < n and input_string[i] == ';':
++            i += 1 # consume ';'
++            # Parse properties
++            properties = {}
++            while i < n and input_string[i].isalpha() and input_string[i].isupper():
++                # Read key
++                key_start = i
++                while i < n and input_string[i].isalpha():
++                    i += 1
++                key = input_string[key_start:i]
++                if not key.isupper():
++                    raise ValueError("property must be in uppercase")
++
++                values = []
++                while i < n and input_string[i] == '[':
++                    i += 1 # consume '['
++                    val_start = i
++                    # find closing ']' taking escapes into account
++                    while i < n:
++                        if input_string[i] == '\\':
++                            i += 2
++                        elif input_string[i] == ']':
++                            break
++                        else:
++                            i += 1
++                    if i >= n or input_string[i] != ']':
++                        raise ValueError("properties without delimiter")
++                    val_str = input_string[val_start:i]
++                    i += 1 # consume ']'
++                    values.append(parse_value(val_str))
++                
++                if not values:
++                    raise ValueError("properties without delimiter")
++                
++                properties[key] = values
++
++            # Check if there are non-uppercase properties or unparsed property tokens before '[' or ';' or ')'
++            # E.g., (;A) or (;a[b]) or (;Aa[b])
++            if i < n and input_string[i].isalpha():
++                # encountered letters without '[' or not uppercase
++                key_start = i
++                while i < n and input_string[i].isalnum():
++                    i += 1
++                bad_key = input_string[key_start:i]
++                if not bad_key.isupper():
++                    raise ValueError("property must be in uppercase")
++                raise ValueError("properties without delimiter")
++
++            nodes.append(properties)
++
++        if not nodes:
++            raise ValueError("tree with no nodes")
++
++        # Now build trees for the sequence of nodes
++        # In SGF, (;A[B];B[C]) is root with property A[B], and a child containing B[C].
++        # Also variations: (;A[B](;B[C])(;C[D])) means root A[B], with two children.
++        # Wait, what about subtrees/variations following nodes?
++        # A node can be followed by 0 or more child trees `(...)`.
++        
++        # Let's parse child trees for each node or specifically after the node sequence?
++        # Actually, in SGF, variations `(...)` can follow a node.
++        # Can multiple child trees follow any node or just nodes?
++        # Let's check how variations work in SGF.
++        # In `(;A[B](;B[C])(;C[D]))`, child trees follow the node `;A[B]`.
++        # What about `(;A[B];B[C](;C[D]))`? Child tree follows the node `;B[C]`.
++
++        root_tree = None
++        current_tree = None
++
++        # Let's restructure node and child parsing.
++        # A tree consists of one or more nodes in sequence, plus optional child trees after any node.
++        # Wait, let's trace carefully.
++        pass
++
++    # Let's write a clean parser structure.
++    def parse_entire_tree():
++        nonlocal i
++        if i >= n or input_string[i] != '(':
++            raise ValueError("tree missing")
++        i += 1 # '('
++
++        if i < n and input_string[i] == ')':
++            raise ValueError("tree with no nodes")
++
++        nodes = []
++        children_list = [] # list of lists of child trees for each node
++
++        while i < n and input_string[i] == ';':
++            i += 1 # ';'
++            properties = {}
++            while i < n and input_string[i].isalpha():
++                key_start = i
++                while i < n and input_string[i].isalpha():
++                    i += 1
++                key = input_string[key_start:i]
++                if not key.isupper():
++                    raise ValueError("property must be in uppercase")
++                
++                if i >= n or input_string[i] != '[':
++                    raise ValueError("properties without delimiter")
++                
++                values = []
++                while i < n and input_string[i] == '[':
++                    i += 1
++                    val_start = i
++                    while i < n:
++                        if input_string[i] == '\\':
++                            i += 2
++                        elif input_string[i] == ']':
++                            break
++                        else:
++                            i += 1
++                    if i >= n or input_string[i] != ']':
++                        raise ValueError("properties without delimiter")
++                    val_str = input_string[val_start:i]
++                    i += 1
++                    values.append(parse_value(val_str))
++                properties[key] = values
++
++            # Now, after node properties, there can be 0 or more child trees `(...)`
++            node_children = []
++            while i < n and input_string[i] == '(':
++                node_children.append(parse_entire_tree())
++            
++            nodes.append((properties, node_children))
++
++        if not nodes:
++            raise ValueError("tree with no nodes")
++
++        if i >= n or input_string[i] != ')':
++            raise ValueError("tree missing")
++        i += 1 # ')'
++
++        # Build SgfTree chain from nodes
++        # Each node in `nodes` becomes an SgfTree.
++        # If there are multiple nodes `n1, n2, n3`, `n1` has child `n2`, `n2` has child `n3`.
++        # The last node in the chain also takes `node_children` of that node.
++        # Wait, what about `node_children` of earlier nodes? They are children of that specific node.
++        
++        # Let's build from right to left:
++        last_tree = None
++        for idx in range(len(nodes) - 1, -1, -1):
++            props, node_chrs = nodes[idx]
++            if idx == len(nodes) - 1:
++                children = node_chrs
++            else:
++                children = [last_tree] + node_chrs
++            last_tree = SgfTree(properties=props, children=children)
++
++        return last_tree
++
++    tree = parse_entire_tree()
++    if i < n:
++        raise ValueError("tree missing")
++    return tree
++

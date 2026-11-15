@@ -1,0 +1,28 @@
+diff --git a/transpose.py b/transpose.py
+index 24b60af..4874ea0 100644
+--- a/transpose.py
++++ b/transpose.py
+@@ -1,2 +1,22 @@
+ def transpose(text):
+-    pass
++    if not text:
++        return ""
++    lines = text.split("\n")
++    n_lines = len(lines)
++    
++    # max length from current line to the end
++    max_lens = [0] * n_lines
++    curr_max = 0
++    for i in range(n_lines - 1, -1, -1):
++        curr_max = max(curr_max, len(lines[i]))
++        max_lens[i] = curr_max
++        
++    padded = [line.ljust(max_lens[i]) for i, line in enumerate(lines)]
++    max_len = max(max_lens) if max_lens else 0
++    
++    transposed_lines = []
++    for col in range(max_len):
++        transposed_line = "".join(padded[row][col] if col < len(padded[row]) else "" for row in range(n_lines))
++        transposed_lines.append(transposed_line)
++    
++    return "\n".join(transposed_lines)

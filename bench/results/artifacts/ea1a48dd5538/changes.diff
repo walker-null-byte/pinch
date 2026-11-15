@@ -1,0 +1,84 @@
+diff --git a/work/test_extra.py b/test_extra.py
+new file mode 100644
+index 0000000..256f922
+--- /dev/null
++++ b/test_extra.py
+@@ -0,0 +1,5 @@
++from wordy import answer
++try:
++    answer("What is?")
++except ValueError as e:
++    print("Caught:", e)
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..c08f297 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,67 @@
+ def answer(question):
+-    pass
++    if not question.startswith("What is ") or not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    core = question[len("What is "):-1].strip()
++    if not core:
++        raise ValueError("syntax error")
++    
++    core = core.replace("multiplied by", "MULTIPLIED_BY")
++    core = core.replace("divided by", "DIVIDED_BY")
++    
++    tokens = core.split()
++    if not tokens:
++        raise ValueError("syntax error")
++    
++    parsed_tokens = []
++    i = 0
++    while i < len(tokens):
++        token = tokens[i]
++        if token in ("plus", "minus", "MULTIPLIED_BY", "DIVIDED_BY"):
++            parsed_tokens.append(token)
++            i += 1
++        else:
++            if token in ("multiplied", "divided", "cubed", "plusminus", "times", "by"):
++                raise ValueError("unknown operation")
++            try:
++                num = int(token)
++                parsed_tokens.append(num)
++                i += 1
++            except ValueError:
++                if any(c.isalpha() for c in token):
++                    raise ValueError("unknown operation")
++                else:
++                    raise ValueError("syntax error")
++
++    if not parsed_tokens:
++        raise ValueError("syntax error")
++
++    if len(parsed_tokens) % 2 == 0:
++        raise ValueError("syntax error")
++    
++    for idx, t in enumerate(parsed_tokens):
++        if idx % 2 == 0:
++            if not isinstance(t, int):
++                raise ValueError("syntax error")
++        else:
++            if isinstance(t, int):
++                raise ValueError("syntax error")
++
++    result = parsed_tokens[0]
++    i = 1
++    while i < len(parsed_tokens):
++        op = parsed_tokens[i]
++        next_num = parsed_tokens[i+1]
++        if op == "plus":
++            result += next_num
++        elif op == "minus":
++            result -= next_num
++        elif op == "MULTIPLIED_BY":
++            result *= next_num
++        elif op == "DIVIDED_BY":
++            result //= next_num
++        else:
++            raise ValueError("unknown operation")
++        i += 2
++
++    return result

@@ -1,0 +1,66 @@
+diff --git a/two_bucket.py b/two_bucket.py
+index 7029bcb..2c6364f 100644
+--- a/two_bucket.py
++++ b/two_bucket.py
+@@ -1,2 +1,60 @@
++from collections import deque
++
+ def measure(bucket_one, bucket_two, goal, start_bucket):
+-    pass
++    if goal > max(bucket_one, bucket_two) or goal <= 0:
++        raise ValueError("Goal must be greater than 0 and not greater than both buckets.")
++
++    if start_bucket == "one":
++        initial_state = (bucket_one, 0)
++        forbidden = (0, bucket_two)
++    elif start_bucket == "two":
++        initial_state = (0, bucket_two)
++        forbidden = (bucket_one, 0)
++    else:
++        raise ValueError("Invalid start bucket name.")
++
++    if initial_state[0] == goal:
++        return (1, "one", initial_state[1])
++    if initial_state[1] == goal:
++        return (1, "two", initial_state[0])
++
++    queue = deque([(initial_state, 1)])
++    visited = {initial_state, forbidden}
++
++    while queue:
++        (b1, b2), steps = queue.popleft()
++
++        candidates = []
++        # 1. Fill b1
++        if b1 < bucket_one:
++            candidates.append((bucket_one, b2))
++        # 2. Fill b2
++        if b2 < bucket_two:
++            candidates.append((b1, bucket_two))
++        # 3. Empty b1
++        if b1 > 0:
++            candidates.append((0, b2))
++        # 4. Empty b2
++        if b2 > 0:
++            candidates.append((b1, 0))
++        # 5. Pour b1 -> b2
++        if b1 > 0 and b2 < bucket_two:
++            transfer = min(b1, bucket_two - b2)
++            candidates.append((b1 - transfer, b2 + transfer))
++        # 6. Pour b2 -> b1
++        if b2 > 0 and b1 < bucket_one:
++            transfer = min(b2, bucket_one - b1)
++            candidates.append((b1 + transfer, b2 - transfer))
++
++        for state in candidates:
++            if state not in visited:
++                visited.add(state)
++                new_steps = steps + 1
++                nb1, nb2 = state
++                if nb1 == goal:
++                    return (new_steps, "one", nb2)
++                if nb2 == goal:
++                    return (new_steps, "two", nb1)
++                queue.append((state, new_steps))
++
++    raise ValueError("No solution possible.")

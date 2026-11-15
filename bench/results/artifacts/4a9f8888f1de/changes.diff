@@ -1,0 +1,129 @@
+diff --git a/work/.pytest_cache/.gitignore b/.pytest_cache/.gitignore
+new file mode 100644
+index 0000000..bc1a1f6
+--- /dev/null
++++ b/.pytest_cache/.gitignore
+@@ -0,0 +1,2 @@
++# Created by pytest automatically.
++*
+diff --git a/work/.pytest_cache/CACHEDIR.TAG b/.pytest_cache/CACHEDIR.TAG
+new file mode 100644
+index 0000000..fce15ad
+--- /dev/null
++++ b/.pytest_cache/CACHEDIR.TAG
+@@ -0,0 +1,4 @@
++Signature: 8a477f597d28d172789f06886806bc55
++# This file is a cache directory tag created by pytest.
++# For information about cache directory tags, see:
++#	https://bford.info/cachedir/spec.html
+diff --git a/work/.pytest_cache/README.md b/.pytest_cache/README.md
+new file mode 100644
+index 0000000..b89018c
+--- /dev/null
++++ b/.pytest_cache/README.md
+@@ -0,0 +1,8 @@
++# pytest cache directory #
++
++This directory contains data from the pytest's cache plugin,
++which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
++
++**Do not** commit this to version control.
++
++See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+diff --git a/work/.pytest_cache/v/cache/lastfailed b/.pytest_cache/v/cache/lastfailed
+new file mode 100644
+index 0000000..451a3d6
+--- /dev/null
++++ b/.pytest_cache/v/cache/lastfailed
+@@ -0,0 +1,19 @@
++{
++  "scale_generator_test.py::ScaleGeneratorTest::test_chromatic_scale_with_flats": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_chromatic_scale_with_sharps": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_dorian_mode": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_enigmatic": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_harmonic_minor": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_hexatonic": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_locrian_mode": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_lydian_mode": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_major_scale_with_flats": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_major_scale_with_sharps": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_minor_scale_with_flats": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_minor_scale_with_sharps": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_mixolydian_mode": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_octatonic": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_pentatonic": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_phrygian_mode": true,
++  "scale_generator_test.py::ScaleGeneratorTest::test_simple_major_scale": true
++}
+\ No newline at end of file
+diff --git a/work/.pytest_cache/v/cache/nodeids b/.pytest_cache/v/cache/nodeids
+new file mode 100644
+index 0000000..29c5e18
+--- /dev/null
++++ b/.pytest_cache/v/cache/nodeids
+@@ -0,0 +1,19 @@
++[
++  "scale_generator_test.py::ScaleGeneratorTest::test_chromatic_scale_with_flats",
++  "scale_generator_test.py::ScaleGeneratorTest::test_chromatic_scale_with_sharps",
++  "scale_generator_test.py::ScaleGeneratorTest::test_dorian_mode",
++  "scale_generator_test.py::ScaleGeneratorTest::test_enigmatic",
++  "scale_generator_test.py::ScaleGeneratorTest::test_harmonic_minor",
++  "scale_generator_test.py::ScaleGeneratorTest::test_hexatonic",
++  "scale_generator_test.py::ScaleGeneratorTest::test_locrian_mode",
++  "scale_generator_test.py::ScaleGeneratorTest::test_lydian_mode",
++  "scale_generator_test.py::ScaleGeneratorTest::test_major_scale_with_flats",
++  "scale_generator_test.py::ScaleGeneratorTest::test_major_scale_with_sharps",
++  "scale_generator_test.py::ScaleGeneratorTest::test_minor_scale_with_flats",
++  "scale_generator_test.py::ScaleGeneratorTest::test_minor_scale_with_sharps",
++  "scale_generator_test.py::ScaleGeneratorTest::test_mixolydian_mode",
++  "scale_generator_test.py::ScaleGeneratorTest::test_octatonic",
++  "scale_generator_test.py::ScaleGeneratorTest::test_pentatonic",
++  "scale_generator_test.py::ScaleGeneratorTest::test_phrygian_mode",
++  "scale_generator_test.py::ScaleGeneratorTest::test_simple_major_scale"
++]
+\ No newline at end of file
+diff --git a/scale_generator.py b/scale_generator.py
+index eddc130..46ec861 100644
+--- a/scale_generator.py
++++ b/scale_generator.py
+@@ -1,9 +1,38 @@
+ class Scale:
++    SHARPS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
++    FLATS = ["F", "Gb", "G", "Ab", "A", "Bb", "B", "C", "Db", "D", "Eb", "E"]
++    SHARP_KEYS = {"C", "G", "D", "A", "E", "B", "F#", "e", "b", "f#", "c#", "g#", "d#"}
++    FLAT_KEYS = {"F", "Bb", "Eb", "Ab", "Db", "Gb", "d", "g", "c", "f", "bb", "eb"}
++
+     def __init__(self, tonic):
+-        pass
++        self.tonic = tonic
+ 
+     def chromatic(self):
+-        pass
++        tonic = self.tonic
++        # Determine sharps or flats scale
++        # Table:
++        # Sharp: G, D, A, E, B, F#, e, b, f#, c#, g#, d#
++        # Flat: F, Bb, Eb, Ab, Db, Gb, d, g, c, f, bb, eb
++        # Natural: C, a (C uses sharps ascending, a uses sharps ascending? Wait, note: "natural notes 'C' and 'a' follow the sharps scale when ascending")
++        # So C and a use sharps.
++        
++        # Format tonic for lookup or use canonical representation
++        # Tonic can be lowercase/uppercase with # or b.
++        # Let's capitalize first letter and preserve case or handle sharp/flat formatting.
++        # Wait, test uses tonic strings like "C", "F", "f#", "bb", "d", "Eb", etc.
++        
++        # Let's normalize tonic for matching:
++        # e.g. "f#" -> "F#", "bb" -> "Bb", "c#" -> "C#", etc., or match directly against table.
++        # Let's write helper or check table.
++        
++        if tonic in self.FLAT_KEYS or tonic.lower() in {"bb", "eb", "ab", "db", "gb", "d", "g", "c", "f"} and tonic not in {"C", "c"}: # wait, c and f:
++            # Let's check the table carefully:
++            # Major: C (Natural -> Sharp), G, D, A, E, B, F# (Sharp), F, Bb, Eb, Ab, Db, Gb (Flat)
++            # Minor: a (Natural -> Sharp), e, b, f#, c#, g#, d# (Sharp), d, g, c, f, bb, eb (Flat)
++            # Notice 'c' is in Flat minor (Key Signature Flat: d, g, c, f, bb, eb). 'C' is Natural major (Sharp).
++            # 'f' is in Flat minor (f), 'F' is Flat major (F).
++            # Let's check exact tonic strings.
++            pass
+ 
+     def interval(self, intervals):
+         pass

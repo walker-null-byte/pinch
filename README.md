@@ -3,17 +3,17 @@
 A command-line coding agent that finishes real coding tasks on the fewest tokens.
 Built for Bifrost Problem Statement 01 (HackCulture global AI hackathon).
 
-**Status:** works end to end with real providers through Bifrost v2.5.0: Gemini on the free tier, Groq as failover, and Gemma 4 on LM Studio for confidential repos. `uv run pinch prove` checks the four mandatory requirements (4 of 4), and [docs/DEMO.md](docs/DEMO.md) shows each one live. Ten token-saving techniques are built, each switchable on its own; one of them is the Tavily docs tool. The benchmark against mini-swe-agent is running on Gemini's free tier (500 requests per model per day). Results so far are below; the rest goes in as it finishes.
+**Status:** works end to end with real providers through Bifrost v2.5.0: Gemini on the free tier, Groq as failover, and Gemma 4 on LM Studio for confidential repos. `uv run pinch prove` checks the four mandatory requirements (4 of 4), and [docs/DEMO.md](docs/DEMO.md) shows each one live. Ten token-saving techniques are built, each switchable on its own; one of them is the Tavily docs tool. The benchmark against mini-swe-agent ran on Gemini's free tier (500 requests per model per day). The results are below, with what the quota did not reach: pinch with every technique off, and the rest of the per-technique runs.
 
 ## Results so far
 
-One run per task. Pass or fail comes from hidden tests run after the agent stops, and tokens are what the provider reported. Each table compares only tasks both agents have finished. The run is still going on Gemini's free daily quota: 23 of the 34 set A tasks are done.
+One run per task. Pass or fail comes from hidden tests run after the agent stops, and tokens are what the provider reported. Each table compares only tasks both agents have finished. Gemini's free daily quota ran out before the last 2 of the 34 set A tasks, so set A shows 32.
 
 **Main comparison, `gemini-3.5-flash-lite`** ([report](bench/results/run1.md)):
 
 | Set | Solved: mini-swe-agent / pinch | Tokens per solved task | Cost per solved task | Model calls per task (avg) |
 |---|---|---|---|---|
-| A · 23 exercises | 23 / 23 | 112,537 → 23,217 (**−79%**) | $0.0220 → $0.0076 (−65%) | 10.3 → 4.0 |
+| A · 32 exercises | 31 / 32 | 113,000 → 24,806 (**−78%**) | $0.0232 → $0.0082 (−65%) | 10.9 → 4.3 |
 | B · 8 real bugs | 7 / 5 | 231,849 → 201,447 (−13%) | $0.0490 → $0.0328 (−33%) | 20.8 → 15.1 |
 | C · 5 docs tasks | 4 / 3 | 255,434 → 88,011 (−66%) | $0.0470 → $0.0273 (−42%) | 24.2 → 16.8 |
 
@@ -54,13 +54,13 @@ Read this carefully. The one task that differs (anyio) made no Tavily call in th
 These runs use commit f38091f. In the first set C run the model never called the tool at all: lazy mode listed it only behind `search_tools`, and the model never searched for it. It is now shown up front whenever it is on. That change affects set C only; the set C row of the main comparison is still from the frozen agent.
 
 What this shows so far:
-- **Exercises:** pinch solves everything mini-swe-agent solves, on about a fifth of the tokens.
+- **Exercises:** pinch solved all 32 (mini-swe-agent 31), on about a fifth of the tokens and 4 model calls per task instead of 11.
 - **Real bugs and docs tasks:** pinch is cheaper per solved task but solves fewer on `gemini-3.5-flash-lite` (5 vs 7 bugs, 3 vs 4 docs tasks). On `gemini-3.1-flash-lite` it ties on bugs. With one run per task, a difference of one or two tasks is within run-to-run noise. The token gaps are much larger than that.
 - **First run:** our first set B run lost badly; [what we fixed](#what-the-first-set-b-runs-changed) explains why.
 
 All charts, light and dark, are in [docs/charts](docs/charts/).
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/charts/core-A-dark.svg"><img alt="Tokens per solved task, set A (lower is better). mini-swe-agent (baseline) 113K (23/23 solved); pinch, all techniques 23.2K (23/23 solved). gemini/gemini-3.5-flash-lite, 23 tasks, 1 run each." src="docs/charts/core-A-light.svg" width="720"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/charts/core-A-dark.svg"><img alt="Tokens per solved task, set A (lower is better). mini-swe-agent (baseline) 113K (31/32 solved); pinch, all techniques 24.8K (32/32 solved). gemini/gemini-3.5-flash-lite, 32 tasks, 1 run each." src="docs/charts/core-A-light.svg" width="720"></picture>
 
 ## Libraries that existed before the hackathon
 

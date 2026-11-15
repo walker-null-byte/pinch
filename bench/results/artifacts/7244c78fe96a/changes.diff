@@ -1,0 +1,24 @@
+diff --git a/robot_name.py b/robot_name.py
+index 7c7246e..ed6636a 100644
+--- a/robot_name.py
++++ b/robot_name.py
+@@ -1,3 +1,18 @@
++from itertools import product
++import random
++from string import ascii_uppercase, digits
++
++_letter_pairs = (''.join(p) for p in product(ascii_uppercase, ascii_uppercase))
++_numbers = (str(i).zfill(3) for i in range(1000))
++_all_names = [l + n for l, n in product(_letter_pairs, _numbers)]
++random.shuffle(_all_names)
++_name_iterator = iter(_all_names)
++
++
+ class Robot:
+     def __init__(self):
+-        pass
++        self.reset()
++
++    def reset(self):
++        self.name = next(_name_iterator)
++

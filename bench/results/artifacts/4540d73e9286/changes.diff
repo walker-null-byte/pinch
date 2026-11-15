@@ -1,0 +1,135 @@
+diff --git a/sgf_parsing.py b/sgf_parsing.py
+index fa30f3f..2c91075 100644
+--- a/sgf_parsing.py
++++ b/sgf_parsing.py
+@@ -26,4 +26,129 @@ class SgfTree:
+ 
+ 
+ def parse(input_string):
+-    pass
++    if not input_string:
++        raise ValueError("tree missing")
++    if not input_string.startswith("(") or not input_string.endswith(")"):
++        raise ValueError("tree missing")
++
++    # Let's write a recursive or iterative descent parser for SGF trees.
++    # An SGF tree starts with '(' and ends with ')' containing nodes or sub-trees (variations).
++    # Nodes start with ';'.
++    
++    i = 0
++    n = len(input_string)
++
++    def parse_tree():
++        nonlocal i
++        if i >= n or input_string[i] != '(':
++            raise ValueError("tree missing")
++        i += 1 # consume '('
++        
++        if i < n and input_string[i] == ')':
++            raise ValueError("tree with no nodes")
++
++        nodes = []
++        # A tree consists of one or more nodes, or subtrees (variations).
++        # Wait, an SGF tree can be a sequence of nodes: (;A[B];B[C])
++        # Or a node followed by variations or child trees.
++        # According to SGF spec / tests:
++        # Each node is prefixed by ';'.
++        # Let's parse nodes and child trees.
++        
++        while i < n and input_string[i] != ')':
++            if input_string[i] == ';':
++                i += 1 # consume ';'
++                properties = {}
++                # Parse properties: Key[Value]...
++                while i < n and input_string[i] != ';' and input_string[i] != '(' and input_string[i] != ')':
++                    # Read property key (uppercase letters)
++                    key_start = i
++                    while i < n and input_string[i].isalpha():
++                        i += 1
++                    key = input_string[key_start:i]
++                    if not key:
++                        raise ValueError("properties without delimiter")
++                    if not key.isupper():
++                        raise ValueError("property must be in uppercase")
++                    
++                    if i >= n or input_string[i] != '[':
++                        raise ValueError("properties without delimiter")
++                    
++                    values = []
++                    while i < n and input_string[i] == '[':
++                        i += 1 # consume '['
++                        # Parse value string until unescaped ']'
++                        val_chars = []
++                        escaped = False
++                        while i < n:
++                            c = input_string[i]
++                            if escaped:
++                                if c == '\n':
++                                    # escaped newline is converted to nothing at all
++                                    pass
++                                else:
++                                    if c in ('\t', '\r', '\f', '\v'):
++                                        val_chars.append(' ')
++                                    else:
++                                        val_chars.append(c)
++                                escaped = False
++                            else:
++                                if c == '\\':
++                                    escaped = True
++                                elif c == ']':
++                                    i += 1 # consume ']'
++                                    break
++                                else:
++                                    if c == '\n':
++                                        val_chars.append('\n')
++                                    elif c in ('\t', '\r', '\f', '\v'):
++                                        val_chars.append(' ')
++                                    else:
++                                        val_chars.append(c)
++                            i += 1
++                        values.append("".join(val_chars))
++                    
++                    if key in properties:
++                        properties[key].extend(values)
++                    else:
++                        properties[key] = values
++                nodes.append((properties, []))
++            elif input_string[i] == '(':
++                # Child tree (variation)
++                if not nodes:
++                    raise ValueError("tree missing")
++                child_tree = parse_tree()
++                nodes[-1][1].append(child_tree)
++            else:
++                # Unexpected character or structure
++                raise ValueError("tree missing")
++
++        if i >= n or input_string[i] != ')':
++            raise ValueError("tree missing")
++        i += 1 # consume ')'
++
++        if not nodes:
++            raise ValueError("tree with no nodes")
++
++        # Construct SgfTree hierarchy from the list of nodes in this branch
++        # In SgfTree, a node has properties and children. If there are multiple nodes in a sequence,
++        # e.g., node1 ; node2, node2 is a child of node1.
++        # Plus any explicit child trees attached to node1.
++        
++        root_tree = None
++        current_tree = None
++        for idx, (props, children) in enumerate(nodes):
++            t = SgfTree(properties=props, children=children)
++            if idx == 0:
++                root_tree = t
++                current_tree = t
++            else:
++                current_tree.children.append(t)
++                current_tree = t
++        return root_tree
++
++    tree = parse_tree()
++    if i != n:
++        raise ValueError("tree missing")
++    return tree
++
