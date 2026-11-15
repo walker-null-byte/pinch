@@ -1,0 +1,73 @@
+diff --git a/react.py b/react.py
+index ab6be31..05c7ef7 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,63 @@
+ class InputCell:
+     def __init__(self, initial_value):
+-        self.value = None
++        self._value = initial_value
++        self._dependents = []
++
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value != new_value:
++            self._value = new_value
++            self._notify()
++
++    def _notify(self):
++        # Gather all affected compute cells
++        changed_cells = []
++        
++        def update_and_collect(cell):
++            old_val = cell._value
++            cell._value = cell._compute()
++            if old_val != cell._value:
++                changed_cells.append(cell)
++                for dep in cell._dependents:
++                    update_and_collect(dep)
++        
++        for dep in self._dependents:
++            update_and_collect(dep)
++        
++        # Fire callbacks for all cells that changed
++        for cell in changed_cells:
++            if cell._value != cell._last_reported_value:
++                for cb in cell._callbacks:
++                    cb(cell._value)
++                cell._last_reported_value = cell._value
+ 
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        self._inputs = inputs
++        self._compute_function = compute_function
++        self._callbacks = []
++        self._dependents = []
++        self._value = self._compute()
++        self._last_reported_value = self._value
++        for input_cell in self._inputs:
++            input_cell._dependents.append(self)
++
++    def _compute(self):
++        return self._compute_function([i.value for i in self._inputs])
++
++    @property
++    def value(self):
++        return self._value
+ 
+     def add_callback(self, callback):
+-        pass
++        self._callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
++        if callback in self._callbacks:
++            self._callbacks.remove(callback)
+     
+\ No newline at end of file

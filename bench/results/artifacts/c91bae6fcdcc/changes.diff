@@ -1,0 +1,73 @@
+diff --git a/react.py b/react.py
+index ab6be31..fd5eb9d 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,60 @@
+-class InputCell:
++class Cell:
++    def __init__(self):
++        self.observers = []
++
++    def notify_observers(self):
++        for observer in self.observers:
++            observer.update()
++
++
++class InputCell(Cell):
+     def __init__(self, initial_value):
+-        self.value = None
++        super().__init__()
++        self._value = initial_value
++
++    @property
++    def value(self):
++        return self._value
+ 
++    @value.setter
++    def value(self, new_value):
++        if self._value != new_value:
++            self._value = new_value
++            self.notify_observers()
+ 
+-class ComputeCell:
++
++class ComputeCell(Cell):
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        super().__init__()
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.callbacks = []
++        self._value = self._compute()
++        for input_cell in self.inputs:
++            input_cell.observers.append(self)
++
++    def _compute(self):
++        return self.compute_function([c.value for c in self.inputs])
++
++    @property
++    def value(self):
++        return self._value
++
++    def update(self):
++        old_value = self._value
++        self._value = self._compute()
++        if self._value != old_value:
++            for observer in self.observers:
++                observer.update()
++            for callback in self.callbacks:
++                callback(self._value)
++        else:
++            for observer in self.observers:
++                observer.update()
+ 
+     def add_callback(self, callback):
+-        pass
++        self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)

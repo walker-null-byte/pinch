@@ -40,7 +40,9 @@ One run per task. Pass or fail comes from hidden tests run after the agent stops
 | smalledits off | 12,862 | −1% |
 | everything off | 91,122 | +600% |
 
-Counted per solved task over all 5 finished tasks, the picture is different: two tasks flipped between pass and fail from mode to mode, and a failed run spends up to 30 calls. With one run each, that table is noise. Both tables are in the report.
+Counted per solved task over all 7 set A tasks, the picture is different: four tasks flipped between pass and fail from mode to mode, and a failed run spends up to 30 calls. With one run each, that table is noise. Both tables are in the report.
+
+Set B got only 2 of its 8 bugs through every mode before the quota ran out, and only one of them was solved in every mode. On that bug, stopongreen off cost 52% more tokens than everything on (126,539). Every other one-technique-off run used fewer tokens than everything on, and everything off used 23% fewer. One run on one task can't rank techniques, but it is in the report.
 
 **Tavily on and off, set C docs tasks, `gemini-3.5-flash-lite`** ([report](bench/results/run1.md#tavily-docs-lookup-on-and-off-set-c)):
 

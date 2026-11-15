@@ -1,0 +1,70 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..b11ed4d 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,64 @@
++from operator import add, sub, mul, floordiv
++
+ def answer(question):
+-    pass
++    if not question.startswith("What is") or not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    content = question.removeprefix("What is").removesuffix("?").strip()
++    
++    if not content:
++        raise ValueError("syntax error")
++        
++    content = content.replace("multiplied by", "multiplied").replace("divided by", "divided")
++    
++    parts = content.split()
++    
++    if not parts:
++        raise ValueError("syntax error")
++    
++    allowed_ops = ["plus", "minus", "multiplied", "divided"]
++    
++    # Try to parse all parts
++    # If a part is not a number and not a known op, it's an "unknown operation"
++    # If the structure is wrong, it's a "syntax error"
++    
++    # A valid expression is NUMBER (OP NUMBER)*
++    
++    # Check for invalid characters first (unknown operations)
++    for part in parts:
++        if part.isalpha() and part not in allowed_ops and part != "by":
++            raise ValueError("unknown operation")
++    
++    # Now check structure
++    try:
++        current_val = int(parts[0])
++    except ValueError:
++        raise ValueError("syntax error")
++        
++    i = 1
++    while i < len(parts):
++        op = parts[i]
++        if op not in allowed_ops:
++            raise ValueError("syntax error")
++        
++        i += 1
++        if i >= len(parts):
++            raise ValueError("syntax error")
++            
++        try:
++            next_val = int(parts[i])
++        except ValueError:
++            raise ValueError("syntax error")
++            
++        if op == "plus":
++            current_val += next_val
++        elif op == "minus":
++            current_val -= next_val
++        elif op == "multiplied":
++            current_val *= next_val
++        elif op == "divided":
++            current_val //= next_val
++            
++        i += 1
++        
++    return current_val

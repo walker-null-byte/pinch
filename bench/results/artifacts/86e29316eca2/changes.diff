@@ -1,0 +1,1272 @@
+diff --git a/work/.pinch/outputs/20261108-203017-8481fc-proposed-step10.txt b/.pinch/outputs/20261108-203017-8481fc-proposed-step10.txt
+new file mode 100644
+index 0000000..e7e5ecc
+--- /dev/null
++++ b/.pinch/outputs/20261108-203017-8481fc-proposed-step10.txt
+@@ -0,0 +1,157 @@
++..F..F.......F................F                                          [100%]
++=================================== FAILURES ===================================
++_ BowlingTest.test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once _
++
++self = <bowling_test.BowlingTest testMethod=test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once>
++
++    def test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 7]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:46: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f3e2016b950>, pins = 7
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++_ BowlingTest.test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus _
++
++self = <bowling_test.BowlingTest testMethod=test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus>
++
++    def test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus(
++        self,
++    ):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 10]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:92: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f3e202e3fe0>, pins = 10
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++___________ BowlingTest.test_cannot_roll_after_bonus_roll_for_spare ____________
++
++self = <bowling_test.BowlingTest testMethod=test_cannot_roll_after_bonus_roll_for_spare>
++
++    def test_cannot_roll_after_bonus_roll_for_spare(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 2]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:201: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f3e202e3350>, pins = 2
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++____ BowlingTest.test_two_rolls_in_a_frame_cannot_score_more_than_10_points ____
++
++self = <bowling_test.BowlingTest testMethod=test_two_rolls_in_a_frame_cannot_score_more_than_10_points>
++
++    def test_two_rolls_in_a_frame_cannot_score_more_than_10_points(self):
++        rolls = [5]
++        game = self.roll_new_game(rolls)
++>       with self.assertRaisesWithMessage(Exception):
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: Exception not raised
++
++bowling_test.py:115: AssertionError
++=========================== short test summary info ============================
++FAILED bowling_test.py::BowlingTest::test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once
++FAILED bowling_test.py::BowlingTest::test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus
++FAILED bowling_test.py::BowlingTest::test_cannot_roll_after_bonus_roll_for_spare
++FAILED bowling_test.py::BowlingTest::test_two_rolls_in_a_frame_cannot_score_more_than_10_points
++4 failed, 27 passed in 0.05s
+diff --git a/work/.pinch/outputs/20261108-203017-8481fc-proposed-step11.txt b/.pinch/outputs/20261108-203017-8481fc-proposed-step11.txt
+new file mode 100644
+index 0000000..abf92a5
+--- /dev/null
++++ b/.pinch/outputs/20261108-203017-8481fc-proposed-step11.txt
+@@ -0,0 +1,690 @@
++.FFF.F.......F.FFF.FF...FF....F                                          [100%]
++=================================== FAILURES ===================================
++________ BowlingTest.test_a_spare_followed_by_zeros_is_worth_ten_points ________
++
++self = <bowling_test.BowlingTest testMethod=test_a_spare_followed_by_zeros_is_worth_ten_points>
++
++    def test_a_spare_followed_by_zeros_is_worth_ten_points(self):
++        rolls = [6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:31: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df7630e0>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++_ BowlingTest.test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once _
++
++self = <bowling_test.BowlingTest testMethod=test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once>
++
++    def test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 7]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:46: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df763920>, pins = 7
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++___ BowlingTest.test_a_strike_earns_ten_points_in_a_frame_with_a_single_roll ___
++
++self = <bowling_test.BowlingTest testMethod=test_a_strike_earns_ten_points_in_a_frame_with_a_single_roll>
++
++    def test_a_strike_earns_ten_points_in_a_frame_with_a_single_roll(self):
++        rolls = [10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:51: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df75c7d0>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++_ BowlingTest.test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus _
++
++self = <bowling_test.BowlingTest testMethod=test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus>
++
++    def test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus(
++        self,
++    ):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 10]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:92: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df75c500>, pins = 10
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++___________ BowlingTest.test_cannot_roll_after_bonus_roll_for_spare ____________
++
++self = <bowling_test.BowlingTest testMethod=test_cannot_roll_after_bonus_roll_for_spare>
++
++    def test_cannot_roll_after_bonus_roll_for_spare(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 2]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:201: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df75c080>, pins = 2
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++_________ BowlingTest.test_cannot_roll_if_game_already_has_ten_frames __________
++
++self = <bowling_test.BowlingTest testMethod=test_cannot_roll_if_game_already_has_ten_frames>
++
++    def test_cannot_roll_if_game_already_has_ten_frames(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:171: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df75f3b0>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++________ BowlingTest.test_consecutive_spares_each_get_a_one_roll_bonus _________
++
++self = <bowling_test.BowlingTest testMethod=test_consecutive_spares_each_get_a_one_roll_bonus>
++
++    def test_consecutive_spares_each_get_a_one_roll_bonus(self):
++        rolls = [5, 5, 3, 7, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:41: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df763d70>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++_______ BowlingTest.test_consecutive_strikes_each_get_the_two_roll_bonus _______
++
++self = <bowling_test.BowlingTest testMethod=test_consecutive_strikes_each_get_the_two_roll_bonus>
++
++    def test_consecutive_strikes_each_get_the_two_roll_bonus(self):
++        rolls = [10, 10, 10, 5, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:63: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df75f560>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++__ BowlingTest.test_points_scored_in_the_roll_after_a_spare_are_counted_twice __
++
++self = <bowling_test.BowlingTest testMethod=test_points_scored_in_the_roll_after_a_spare_are_counted_twice>
++
++    def test_points_scored_in_the_roll_after_a_spare_are_counted_twice(self):
++        rolls = [6, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:36: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df75db80>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++_ BowlingTest.test_points_scored_in_the_two_rolls_after_a_strike_are_counted_twice_as_a_bonus _
++
++self = <bowling_test.BowlingTest testMethod=test_points_scored_in_the_two_rolls_after_a_strike_are_counted_twice_as_a_bonus>
++
++    def test_points_scored_in_the_two_rolls_after_a_strike_are_counted_twice_as_a_bonus(
++        self,
++    ):
++        rolls = [10, 5, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:58: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df74d0d0>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++________ BowlingTest.test_should_be_able_to_score_a_game_with_all_zeros ________
++
++self = <bowling_test.BowlingTest testMethod=test_should_be_able_to_score_a_game_with_all_zeros>
++
++    def test_should_be_able_to_score_a_game_with_all_zeros(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:21: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df74c440>, pins = 0
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++__ BowlingTest.test_should_be_able_to_score_a_game_with_no_strikes_or_spares ___
++
++self = <bowling_test.BowlingTest testMethod=test_should_be_able_to_score_a_game_with_no_strikes_or_spares>
++
++    def test_should_be_able_to_score_a_game_with_no_strikes_or_spares(self):
++        rolls = [3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:26: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f12df74e780>, pins = 6
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++                    raise IndexError("cannot roll after spare/open bonus")
++            elif len(tenth_rolls) >= 3:
++                raise IndexError("cannot roll after game complete")
++    
++        self.rolls.append(pins)
++        if current_frame < 9:
++            frame_rolls = self._rolls_in_frame(current_frame)
++            if len(frame_rolls) == 2 and sum(frame_rolls) > 10:
++                raise ValueError("frame score cannot exceed 10")
++        elif current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 2:
++                if tenth_rolls[0] + tenth_rolls[1] < 10:
++>                   raise ValueError("cannot throw bonus with an open tenth frame")
++E                   ValueError: cannot throw bonus with an open tenth frame
++
++bowling.py:42: ValueError
++____ BowlingTest.test_two_rolls_in_a_frame_cannot_score_more_than_10_points ____
++
++self = <bowling_test.BowlingTest testMethod=test_two_rolls_in_a_frame_cannot_score_more_than_10_points>
++
++    def test_two_rolls_in_a_frame_cannot_score_more_than_10_points(self):
++        rolls = [5]
++        game = self.roll_new_game(rolls)
++>       with self.assertRaisesWithMessage(Exception):
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: Exception not raised
++
++bowling_test.py:115: AssertionError
++=========================== short test summary info ============================
++FAILED bowling_test.py::BowlingTest::test_a_spare_followed_by_zeros_is_worth_ten_points
++FAILED bowling_test.py::BowlingTest::test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once
++FAILED bowling_test.py::BowlingTest::test_a_strike_earns_ten_points_in_a_frame_with_a_single_roll
++FAILED bowling_test.py::BowlingTest::test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus
++FAILED bowling_test.py::BowlingTest::test_cannot_roll_after_bonus_roll_for_spare
++FAILED bowling_test.py::BowlingTest::test_cannot_roll_if_game_already_has_ten_frames
++FAILED bowling_test.py::BowlingTest::test_consecutive_spares_each_get_a_one_roll_bonus
++FAILED bowling_test.py::BowlingTest::test_consecutive_strikes_each_get_the_two_roll_bonus
++FAILED bowling_test.py::BowlingTest::test_points_scored_in_the_roll_after_a_spare_are_counted_twice
++FAILED bowling_test.py::BowlingTest::test_points_scored_in_the_two_rolls_after_a_strike_are_counted_twice_as_a_bonus
++FAILED bowling_test.py::BowlingTest::test_should_be_able_to_score_a_game_with_all_zeros
++FAILED bowling_test.py::BowlingTest::test_should_be_able_to_score_a_game_with_no_strikes_or_spares
++FAILED bowling_test.py::BowlingTest::test_two_rolls_in_a_frame_cannot_score_more_than_10_points
++13 failed, 18 passed in 0.12s
+diff --git a/work/.pinch/outputs/20261108-203017-8481fc-proposed-step12.txt b/.pinch/outputs/20261108-203017-8481fc-proposed-step12.txt
+new file mode 100644
+index 0000000..428c321
+--- /dev/null
++++ b/.pinch/outputs/20261108-203017-8481fc-proposed-step12.txt
+@@ -0,0 +1,157 @@
++..F..F.......F................F                                          [100%]
++=================================== FAILURES ===================================
++_ BowlingTest.test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once _
++
++self = <bowling_test.BowlingTest testMethod=test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once>
++
++    def test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 7]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:46: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7fe0e3acbc20>, pins = 7
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++_ BowlingTest.test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus _
++
++self = <bowling_test.BowlingTest testMethod=test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus>
++
++    def test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus(
++        self,
++    ):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 10]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:92: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7fe0e3bf6d50>, pins = 10
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++___________ BowlingTest.test_cannot_roll_after_bonus_roll_for_spare ____________
++
++self = <bowling_test.BowlingTest testMethod=test_cannot_roll_after_bonus_roll_for_spare>
++
++    def test_cannot_roll_after_bonus_roll_for_spare(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 2]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:201: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7fe0e3c8cc20>, pins = 2
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                else:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++____ BowlingTest.test_two_rolls_in_a_frame_cannot_score_more_than_10_points ____
++
++self = <bowling_test.BowlingTest testMethod=test_two_rolls_in_a_frame_cannot_score_more_than_10_points>
++
++    def test_two_rolls_in_a_frame_cannot_score_more_than_10_points(self):
++        rolls = [5]
++        game = self.roll_new_game(rolls)
++>       with self.assertRaisesWithMessage(Exception):
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: Exception not raised
++
++bowling_test.py:115: AssertionError
++=========================== short test summary info ============================
++FAILED bowling_test.py::BowlingTest::test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once
++FAILED bowling_test.py::BowlingTest::test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus
++FAILED bowling_test.py::BowlingTest::test_cannot_roll_after_bonus_roll_for_spare
++FAILED bowling_test.py::BowlingTest::test_two_rolls_in_a_frame_cannot_score_more_than_10_points
++4 failed, 27 passed in 0.05s
+diff --git a/work/.pinch/outputs/20261108-203017-8481fc-proposed-step13.txt b/.pinch/outputs/20261108-203017-8481fc-proposed-step13.txt
+new file mode 100644
+index 0000000..f1c6c93
+--- /dev/null
++++ b/.pinch/outputs/20261108-203017-8481fc-proposed-step13.txt
+@@ -0,0 +1,157 @@
++..F..F.......F................F                                          [100%]
++=================================== FAILURES ===================================
++_ BowlingTest.test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once _
++
++self = <bowling_test.BowlingTest testMethod=test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once>
++
++    def test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 7]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:46: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f671c494c80>, pins = 7
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                elif tenth_rolls[0] + tenth_rolls[1] == 10:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++_ BowlingTest.test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus _
++
++self = <bowling_test.BowlingTest testMethod=test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus>
++
++    def test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus(
++        self,
++    ):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 10]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:92: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f671c495610>, pins = 10
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                elif tenth_rolls[0] + tenth_rolls[1] == 10:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++___________ BowlingTest.test_cannot_roll_after_bonus_roll_for_spare ____________
++
++self = <bowling_test.BowlingTest testMethod=test_cannot_roll_after_bonus_roll_for_spare>
++
++    def test_cannot_roll_after_bonus_roll_for_spare(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 2]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:201: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f671c495f40>, pins = 2
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                elif tenth_rolls[0] + tenth_rolls[1] == 10:
++>                   raise IndexError("cannot roll after spare/open bonus")
++E                   IndexError: cannot roll after spare/open bonus
++
++bowling.py:29: IndexError
++____ BowlingTest.test_two_rolls_in_a_frame_cannot_score_more_than_10_points ____
++
++self = <bowling_test.BowlingTest testMethod=test_two_rolls_in_a_frame_cannot_score_more_than_10_points>
++
++    def test_two_rolls_in_a_frame_cannot_score_more_than_10_points(self):
++        rolls = [5]
++        game = self.roll_new_game(rolls)
++>       with self.assertRaisesWithMessage(Exception):
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: Exception not raised
++
++bowling_test.py:115: AssertionError
++=========================== short test summary info ============================
++FAILED bowling_test.py::BowlingTest::test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once
++FAILED bowling_test.py::BowlingTest::test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus
++FAILED bowling_test.py::BowlingTest::test_cannot_roll_after_bonus_roll_for_spare
++FAILED bowling_test.py::BowlingTest::test_two_rolls_in_a_frame_cannot_score_more_than_10_points
++4 failed, 27 passed in 0.06s
+diff --git a/work/.pinch/outputs/20261108-203017-8481fc-proposed-step14.txt b/.pinch/outputs/20261108-203017-8481fc-proposed-step14.txt
+new file mode 100644
+index 0000000..4a10840
+--- /dev/null
++++ b/.pinch/outputs/20261108-203017-8481fc-proposed-step14.txt
+@@ -0,0 +1,157 @@
++..F..F.......F................F                                          [100%]
++=================================== FAILURES ===================================
++_ BowlingTest.test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once _
++
++self = <bowling_test.BowlingTest testMethod=test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once>
++
++    def test_a_spare_in_the_last_frame_gets_a_one_roll_bonus_that_is_counted_once(self):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 7]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:46: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f95d9d48ce0>, pins = 7
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++                    raise ValueError("frame score cannot exceed 10")
++                if tenth_rolls[0] == 10 and pins > 10:
++                    raise ValueError("bonus roll cannot exceed 10")
++            elif len(tenth_rolls) == 2:
++                if tenth_rolls[0] == 10:
++                    if tenth_rolls[1] < 10 and tenth_rolls[1] + pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                    elif tenth_rolls[1] == 10 and pins > 10:
++                        raise ValueError("second bonus roll cannot exceed 10")
++                elif tenth_rolls[0] + tenth_rolls[1] == 10:
++>                   raise IndexError("cannot roll after spare bonus")
++E                   IndexError: cannot roll after spare bonus
++
++bowling.py:29: IndexError
++_ BowlingTest.test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus _
++
++self = <bowling_test.BowlingTest testMethod=test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus>
++
++    def test_a_strike_with_the_one_roll_bonus_after_a_spare_in_the_last_frame_does_not_get_a_bonus(
++        self,
++    ):
++        rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3, 10]
++>       game = self.roll_new_game(rolls)
++               ^^^^^^^^^^^^^^^^^^^^^^^^^
++
++bowling_test.py:92: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++bowling_test.py:16: in roll_new_game
++    game.roll(roll)
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++self = <bowling.BowlingGame object at 0x7f95d9d49490>, pins = 10
++
++    def roll(self, pins):
++        if pins < 0:
++            raise ValueError("negative pins")
++        if pins > 10:
++            raise ValueError("too many pins")
++    
++        if self.is_game_over():
++            raise IndexError("game is over")
++    
++        current_frame = self._get_current_frame()
++        if current_frame == 9:
++            tenth_rolls = self.rolls[self._start_of_frame(9):]
++            if len(tenth_rolls) == 1:
++                if tenth_rolls[0] < 10 and tenth_rolls[0] + pins > 10:
++       

@@ -1,0 +1,598 @@
+diff --git a/work/.pinch/outputs/20261111-134617-bf9e46-step2-s_HgG4.txt b/.pinch/outputs/20261111-134617-bf9e46-step2-s_HgG4.txt
+new file mode 100644
+index 0000000..cd6278f
+--- /dev/null
++++ b/.pinch/outputs/20261111-134617-bf9e46-step2-s_HgG4.txt
+@@ -0,0 +1,254 @@
++FFFFFFFFFFFFFFFFFFFFFFFF                                                 [100%]
++=================================== FAILURES ===================================
++__________________ ListOpsTest.test_append_empty_list_to_list __________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_empty_list_to_list>
++
++    def test_append_empty_list_to_list(self):
++>       self.assertEqual(append([1, 2, 3, 4], []), [1, 2, 3, 4])
++E       AssertionError: None != [1, 2, 3, 4]
++
++list_ops_test.py:27: AssertionError
++_____________________ ListOpsTest.test_append_empty_lists ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_empty_lists>
++
++    def test_append_empty_lists(self):
++>       self.assertEqual(append([], []), [])
++E       AssertionError: None != []
++
++list_ops_test.py:21: AssertionError
++__________________ ListOpsTest.test_append_list_to_empty_list __________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_list_to_empty_list>
++
++    def test_append_list_to_empty_list(self):
++>       self.assertEqual(append([], [1, 2, 3, 4]), [1, 2, 3, 4])
++E       AssertionError: None != [1, 2, 3, 4]
++
++list_ops_test.py:24: AssertionError
++___________________ ListOpsTest.test_append_non_empty_lists ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_non_empty_lists>
++
++    def test_append_non_empty_lists(self):
++>       self.assertEqual(append([1, 2], [2, 3, 4, 5]), [1, 2, 2, 3, 4, 5])
++E       AssertionError: None != [1, 2, 2, 3, 4, 5]
++
++list_ops_test.py:30: AssertionError
++______________________ ListOpsTest.test_concat_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_concat_empty_list>
++
++    def test_concat_empty_list(self):
++>       self.assertEqual(concat([]), [])
++E       AssertionError: None != []
++
++list_ops_test.py:33: AssertionError
++____________________ ListOpsTest.test_concat_list_of_lists _____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_concat_list_of_lists>
++
++    def test_concat_list_of_lists(self):
++>       self.assertEqual(concat([[1, 2], [3], [], [4, 5, 6]]), [1, 2, 3, 4, 5, 6])
++E       AssertionError: None != [1, 2, 3, 4, 5, 6]
++
++list_ops_test.py:36: AssertionError
++_________________ ListOpsTest.test_concat_list_of_nested_lists _________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_concat_list_of_nested_lists>
++
++    def test_concat_list_of_nested_lists(self):
++>       self.assertEqual(
++            concat([[[1], [2]], [[3]], [[]], [[4, 5, 6]]]),
++            [[1], [2], [3], [], [4, 5, 6]],
++        )
++E       AssertionError: None != [[1], [2], [3], [], [4, 5, 6]]
++
++list_ops_test.py:39: AssertionError
++______________________ ListOpsTest.test_filter_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_filter_empty_list>
++
++    def test_filter_empty_list(self):
++>       self.assertEqual(list_ops_filter(lambda x: x % 2 == 1, []), [])
++E       AssertionError: None != []
++
++list_ops_test.py:45: AssertionError
++____________________ ListOpsTest.test_filter_non_empty_list ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_filter_non_empty_list>
++
++    def test_filter_non_empty_list(self):
++>       self.assertEqual(list_ops_filter(lambda x: x % 2 == 1, [1, 2, 3, 5]), [1, 3, 5])
++E       AssertionError: None != [1, 3, 5]
++
++list_ops_test.py:48: AssertionError
++_ ListOpsTest.test_foldl_direction_dependent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldl_direction_dependent_function_applied_to_non_empty_list>
++
++    def test_foldl_direction_dependent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldl(lambda acc, el: el / acc, [1, 2, 3, 4], 24), 64)
++E       AssertionError: None != 64
++
++list_ops_test.py:69: AssertionError
++_ ListOpsTest.test_foldl_direction_independent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldl_direction_independent_function_applied_to_non_empty_list>
++
++    def test_foldl_direction_independent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldl(lambda acc, el: el + acc, [1, 2, 3, 4], 5), 15)
++E       AssertionError: None != 15
++
++list_ops_test.py:66: AssertionError
++______________________ ListOpsTest.test_foldl_empty_list _______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldl_empty_list>
++
++    def test_foldl_empty_list(self):
++>       self.assertEqual(foldl(lambda acc, el: el * acc, [], 2), 2)
++E       AssertionError: None != 2
++
++list_ops_test.py:63: AssertionError
++_ ListOpsTest.test_foldr_direction_dependent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_direction_dependent_function_applied_to_non_empty_list>
++
++    def test_foldr_direction_dependent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldr(lambda acc, el: el / acc, [1, 2, 3, 4], 24), 9)
++E       AssertionError: None != 9
++
++list_ops_test.py:78: AssertionError
++_ ListOpsTest.test_foldr_direction_independent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_direction_independent_function_applied_to_non_empty_list>
++
++    def test_foldr_direction_independent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldr(lambda acc, el: el + acc, [1, 2, 3, 4], 5), 15)
++E       AssertionError: None != 15
++
++list_ops_test.py:75: AssertionError
++______________________ ListOpsTest.test_foldr_empty_list _______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_empty_list>
++
++    def test_foldr_empty_list(self):
++>       self.assertEqual(foldr(lambda acc, el: el * acc, [], 2), 2)
++E       AssertionError: None != 2
++
++list_ops_test.py:72: AssertionError
++___________________ ListOpsTest.test_foldr_foldr_add_string ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_foldr_add_string>
++
++    def test_foldr_foldr_add_string(self):
++>       self.assertEqual(
++            foldr(
++                lambda acc, el: el + acc, ["e", "x", "e", "r", "c", "i", "s", "m"], "!"
++            ),
++            "exercism!",
++        )
++E       AssertionError: None != 'exercism!'
++
++list_ops_test.py:94: AssertionError
++______________________ ListOpsTest.test_length_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_length_empty_list>
++
++    def test_length_empty_list(self):
++>       self.assertEqual(length([]), 0)
++E       AssertionError: None != 0
++
++list_ops_test.py:51: AssertionError
++____________________ ListOpsTest.test_length_non_empty_list ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_length_non_empty_list>
++
++    def test_length_non_empty_list(self):
++>       self.assertEqual(length([1, 2, 3, 4]), 4)
++E       AssertionError: None != 4
++
++list_ops_test.py:54: AssertionError
++_______________________ ListOpsTest.test_map_empty_list ________________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_map_empty_list>
++
++    def test_map_empty_list(self):
++>       self.assertEqual(list_ops_map(lambda x: x + 1, []), [])
++E       AssertionError: None != []
++
++list_ops_test.py:57: AssertionError
++_____________________ ListOpsTest.test_map_non_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_map_non_empty_list>
++
++    def test_map_non_empty_list(self):
++>       self.assertEqual(list_ops_map(lambda x: x + 1, [1, 3, 5, 7]), [2, 4, 6, 8])
++E       AssertionError: None != [2, 4, 6, 8]
++
++list_ops_test.py:60: AssertionError
++_____________________ ListOpsTest.test_reverse_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_empty_list>
++
++    def test_reverse_empty_list(self):
++>       self.assertEqual(reverse([]), [])
++E       AssertionError: None != []
++
++list_ops_test.py:81: AssertionError
++___________ ListOpsTest.test_reverse_list_of_lists_is_not_flattened ____________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_list_of_lists_is_not_flattened>
++
++    def test_reverse_list_of_lists_is_not_flattened(self):
++>       self.assertEqual(
++            reverse([[1, 2], [3], [], [4, 5, 6]]), [[4, 5, 6], [], [3], [1, 2]]
++        )
++E       AssertionError: None != [[4, 5, 6], [], [3], [1, 2]]
++
++list_ops_test.py:87: AssertionError
++___________________ ListOpsTest.test_reverse_non_empty_list ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_non_empty_list>
++
++    def test_reverse_non_empty_list(self):
++>       self.assertEqual(reverse([1, 3, 5, 7]), [7, 5, 3, 1])
++E       AssertionError: None != [7, 5, 3, 1]
++
++list_ops_test.py:84: AssertionError
++_________________ ListOpsTest.test_reverse_reverse_mixed_types _________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_reverse_mixed_types>
++
++    def test_reverse_reverse_mixed_types(self):
++>       self.assertEqual(reverse(["xyz", 4.0, "cat", 1]), [1, "cat", 4.0, "xyz"])
++E       AssertionError: None != [1, 'cat', 4.0, 'xyz']
++
++list_ops_test.py:102: AssertionError
++=========================== short test summary info ============================
++FAILED list_ops_test.py::ListOpsTest::test_append_empty_list_to_list - Assert...
++FAILED list_ops_test.py::ListOpsTest::test_append_empty_lists - AssertionErro...
++FAILED list_ops_test.py::ListOpsTest::test_append_list_to_empty_list - Assert...
++FAILED list_ops_test.py::ListOpsTest::test_append_non_empty_lists - Assertion...
++FAILED list_ops_test.py::ListOpsTest::test_concat_empty_list - AssertionError...
++FAILED list_ops_test.py::ListOpsTest::test_concat_list_of_lists - AssertionEr...
++FAILED list_ops_test.py::ListOpsTest::test_concat_list_of_nested_lists - Asse...
++FAILED list_ops_test.py::ListOpsTest::test_filter_empty_list - AssertionError...
++FAILED list_ops_test.py::ListOpsTest::test_filter_non_empty_list - AssertionE...
++FAILED list_ops_test.py::ListOpsTest::test_foldl_direction_dependent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldl_direction_independent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldl_empty_list - AssertionError:...
++FAILED list_ops_test.py::ListOpsTest::test_foldr_direction_dependent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldr_direction_independent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldr_empty_list - AssertionError:...
++FAILED list_ops_test.py::ListOpsTest::test_foldr_foldr_add_string - Assertion...
++FAILED list_ops_test.py::ListOpsTest::test_length_empty_list - AssertionError...
++FAILED list_ops_test.py::ListOpsTest::test_length_non_empty_list - AssertionE...
++FAILED list_ops_test.py::ListOpsTest::test_map_empty_list - AssertionError: N...
++FAILED list_ops_test.py::ListOpsTest::test_map_non_empty_list - AssertionErro...
++FAILED list_ops_test.py::ListOpsTest::test_reverse_empty_list - AssertionErro...
++FAILED list_ops_test.py::ListOpsTest::test_reverse_list_of_lists_is_not_flattened
++FAILED list_ops_test.py::ListOpsTest::test_reverse_non_empty_list - Assertion...
++FAILED list_ops_test.py::ListOpsTest::test_reverse_reverse_mixed_types - Asse...
++24 failed in 0.18s
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..2ff5d63
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,254 @@
++FFFFFFFFFFFFFFFFFFFFFFFF                                                 [100%]
++=================================== FAILURES ===================================
++__________________ ListOpsTest.test_append_empty_list_to_list __________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_empty_list_to_list>
++
++    def test_append_empty_list_to_list(self):
++>       self.assertEqual(append([1, 2, 3, 4], []), [1, 2, 3, 4])
++E       AssertionError: None != [1, 2, 3, 4]
++
++list_ops_test.py:27: AssertionError
++_____________________ ListOpsTest.test_append_empty_lists ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_empty_lists>
++
++    def test_append_empty_lists(self):
++>       self.assertEqual(append([], []), [])
++E       AssertionError: None != []
++
++list_ops_test.py:21: AssertionError
++__________________ ListOpsTest.test_append_list_to_empty_list __________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_list_to_empty_list>
++
++    def test_append_list_to_empty_list(self):
++>       self.assertEqual(append([], [1, 2, 3, 4]), [1, 2, 3, 4])
++E       AssertionError: None != [1, 2, 3, 4]
++
++list_ops_test.py:24: AssertionError
++___________________ ListOpsTest.test_append_non_empty_lists ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_append_non_empty_lists>
++
++    def test_append_non_empty_lists(self):
++>       self.assertEqual(append([1, 2], [2, 3, 4, 5]), [1, 2, 2, 3, 4, 5])
++E       AssertionError: None != [1, 2, 2, 3, 4, 5]
++
++list_ops_test.py:30: AssertionError
++______________________ ListOpsTest.test_concat_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_concat_empty_list>
++
++    def test_concat_empty_list(self):
++>       self.assertEqual(concat([]), [])
++E       AssertionError: None != []
++
++list_ops_test.py:33: AssertionError
++____________________ ListOpsTest.test_concat_list_of_lists _____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_concat_list_of_lists>
++
++    def test_concat_list_of_lists(self):
++>       self.assertEqual(concat([[1, 2], [3], [], [4, 5, 6]]), [1, 2, 3, 4, 5, 6])
++E       AssertionError: None != [1, 2, 3, 4, 5, 6]
++
++list_ops_test.py:36: AssertionError
++_________________ ListOpsTest.test_concat_list_of_nested_lists _________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_concat_list_of_nested_lists>
++
++    def test_concat_list_of_nested_lists(self):
++>       self.assertEqual(
++            concat([[[1], [2]], [[3]], [[]], [[4, 5, 6]]]),
++            [[1], [2], [3], [], [4, 5, 6]],
++        )
++E       AssertionError: None != [[1], [2], [3], [], [4, 5, 6]]
++
++list_ops_test.py:39: AssertionError
++______________________ ListOpsTest.test_filter_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_filter_empty_list>
++
++    def test_filter_empty_list(self):
++>       self.assertEqual(list_ops_filter(lambda x: x % 2 == 1, []), [])
++E       AssertionError: None != []
++
++list_ops_test.py:45: AssertionError
++____________________ ListOpsTest.test_filter_non_empty_list ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_filter_non_empty_list>
++
++    def test_filter_non_empty_list(self):
++>       self.assertEqual(list_ops_filter(lambda x: x % 2 == 1, [1, 2, 3, 5]), [1, 3, 5])
++E       AssertionError: None != [1, 3, 5]
++
++list_ops_test.py:48: AssertionError
++_ ListOpsTest.test_foldl_direction_dependent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldl_direction_dependent_function_applied_to_non_empty_list>
++
++    def test_foldl_direction_dependent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldl(lambda acc, el: el / acc, [1, 2, 3, 4], 24), 64)
++E       AssertionError: None != 64
++
++list_ops_test.py:69: AssertionError
++_ ListOpsTest.test_foldl_direction_independent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldl_direction_independent_function_applied_to_non_empty_list>
++
++    def test_foldl_direction_independent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldl(lambda acc, el: el + acc, [1, 2, 3, 4], 5), 15)
++E       AssertionError: None != 15
++
++list_ops_test.py:66: AssertionError
++______________________ ListOpsTest.test_foldl_empty_list _______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldl_empty_list>
++
++    def test_foldl_empty_list(self):
++>       self.assertEqual(foldl(lambda acc, el: el * acc, [], 2), 2)
++E       AssertionError: None != 2
++
++list_ops_test.py:63: AssertionError
++_ ListOpsTest.test_foldr_direction_dependent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_direction_dependent_function_applied_to_non_empty_list>
++
++    def test_foldr_direction_dependent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldr(lambda acc, el: el / acc, [1, 2, 3, 4], 24), 9)
++E       AssertionError: None != 9
++
++list_ops_test.py:78: AssertionError
++_ ListOpsTest.test_foldr_direction_independent_function_applied_to_non_empty_list _
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_direction_independent_function_applied_to_non_empty_list>
++
++    def test_foldr_direction_independent_function_applied_to_non_empty_list(self):
++>       self.assertEqual(foldr(lambda acc, el: el + acc, [1, 2, 3, 4], 5), 15)
++E       AssertionError: None != 15
++
++list_ops_test.py:75: AssertionError
++______________________ ListOpsTest.test_foldr_empty_list _______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_empty_list>
++
++    def test_foldr_empty_list(self):
++>       self.assertEqual(foldr(lambda acc, el: el * acc, [], 2), 2)
++E       AssertionError: None != 2
++
++list_ops_test.py:72: AssertionError
++___________________ ListOpsTest.test_foldr_foldr_add_string ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_foldr_foldr_add_string>
++
++    def test_foldr_foldr_add_string(self):
++>       self.assertEqual(
++            foldr(
++                lambda acc, el: el + acc, ["e", "x", "e", "r", "c", "i", "s", "m"], "!"
++            ),
++            "exercism!",
++        )
++E       AssertionError: None != 'exercism!'
++
++list_ops_test.py:94: AssertionError
++______________________ ListOpsTest.test_length_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_length_empty_list>
++
++    def test_length_empty_list(self):
++>       self.assertEqual(length([]), 0)
++E       AssertionError: None != 0
++
++list_ops_test.py:51: AssertionError
++____________________ ListOpsTest.test_length_non_empty_list ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_length_non_empty_list>
++
++    def test_length_non_empty_list(self):
++>       self.assertEqual(length([1, 2, 3, 4]), 4)
++E       AssertionError: None != 4
++
++list_ops_test.py:54: AssertionError
++_______________________ ListOpsTest.test_map_empty_list ________________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_map_empty_list>
++
++    def test_map_empty_list(self):
++>       self.assertEqual(list_ops_map(lambda x: x + 1, []), [])
++E       AssertionError: None != []
++
++list_ops_test.py:57: AssertionError
++_____________________ ListOpsTest.test_map_non_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_map_non_empty_list>
++
++    def test_map_non_empty_list(self):
++>       self.assertEqual(list_ops_map(lambda x: x + 1, [1, 3, 5, 7]), [2, 4, 6, 8])
++E       AssertionError: None != [2, 4, 6, 8]
++
++list_ops_test.py:60: AssertionError
++_____________________ ListOpsTest.test_reverse_empty_list ______________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_empty_list>
++
++    def test_reverse_empty_list(self):
++>       self.assertEqual(reverse([]), [])
++E       AssertionError: None != []
++
++list_ops_test.py:81: AssertionError
++___________ ListOpsTest.test_reverse_list_of_lists_is_not_flattened ____________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_list_of_lists_is_not_flattened>
++
++    def test_reverse_list_of_lists_is_not_flattened(self):
++>       self.assertEqual(
++            reverse([[1, 2], [3], [], [4, 5, 6]]), [[4, 5, 6], [], [3], [1, 2]]
++        )
++E       AssertionError: None != [[4, 5, 6], [], [3], [1, 2]]
++
++list_ops_test.py:87: AssertionError
++___________________ ListOpsTest.test_reverse_non_empty_list ____________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_non_empty_list>
++
++    def test_reverse_non_empty_list(self):
++>       self.assertEqual(reverse([1, 3, 5, 7]), [7, 5, 3, 1])
++E       AssertionError: None != [7, 5, 3, 1]
++
++list_ops_test.py:84: AssertionError
++_________________ ListOpsTest.test_reverse_reverse_mixed_types _________________
++
++self = <list_ops_test.ListOpsTest testMethod=test_reverse_reverse_mixed_types>
++
++    def test_reverse_reverse_mixed_types(self):
++>       self.assertEqual(reverse(["xyz", 4.0, "cat", 1]), [1, "cat", 4.0, "xyz"])
++E       AssertionError: None != [1, 'cat', 4.0, 'xyz']
++
++list_ops_test.py:102: AssertionError
++=========================== short test summary info ============================
++FAILED list_ops_test.py::ListOpsTest::test_append_empty_list_to_list - Assert...
++FAILED list_ops_test.py::ListOpsTest::test_append_empty_lists - AssertionErro...
++FAILED list_ops_test.py::ListOpsTest::test_append_list_to_empty_list - Assert...
++FAILED list_ops_test.py::ListOpsTest::test_append_non_empty_lists - Assertion...
++FAILED list_ops_test.py::ListOpsTest::test_concat_empty_list - AssertionError...
++FAILED list_ops_test.py::ListOpsTest::test_concat_list_of_lists - AssertionEr...
++FAILED list_ops_test.py::ListOpsTest::test_concat_list_of_nested_lists - Asse...
++FAILED list_ops_test.py::ListOpsTest::test_filter_empty_list - AssertionError...
++FAILED list_ops_test.py::ListOpsTest::test_filter_non_empty_list - AssertionE...
++FAILED list_ops_test.py::ListOpsTest::test_foldl_direction_dependent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldl_direction_independent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldl_empty_list - AssertionError:...
++FAILED list_ops_test.py::ListOpsTest::test_foldr_direction_dependent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldr_direction_independent_function_applied_to_non_empty_list
++FAILED list_ops_test.py::ListOpsTest::test_foldr_empty_list - AssertionError:...
++FAILED list_ops_test.py::ListOpsTest::test_foldr_foldr_add_string - Assertion...
++FAILED list_ops_test.py::ListOpsTest::test_length_empty_list - AssertionError...
++FAILED list_ops_test.py::ListOpsTest::test_length_non_empty_list - AssertionE...
++FAILED list_ops_test.py::ListOpsTest::test_map_empty_list - AssertionError: N...
++FAILED list_ops_test.py::ListOpsTest::test_map_non_empty_list - AssertionErro...
++FAILED list_ops_test.py::ListOpsTest::test_reverse_empty_list - AssertionErro...
++FAILED list_ops_test.py::ListOpsTest::test_reverse_list_of_lists_is_not_flattened
++FAILED list_ops_test.py::ListOpsTest::test_reverse_non_empty_list - Assertion...
++FAILED list_ops_test.py::ListOpsTest::test_reverse_reverse_mixed_types - Asse...
++24 failed in 0.19s
+diff --git a/list_ops.py b/list_ops.py
+index 6497809..47a8c1d 100644
+--- a/list_ops.py
++++ b/list_ops.py
+@@ -1,30 +1,65 @@
+ def append(list1, list2):
+-    pass
++    res = []
++    for item in list1:
++        res = res + [item]
++    for item in list2:
++        res = res + [item]
++    return res
+ 
+ 
+ def concat(lists):
+-    pass
++    res = []
++    for lst in lists:
++        for item in lst:
++            res = res + [item]
++    return res
+ 
+ 
+ def filter(function, list):
+-    pass
++    res = []
++    for item in list:
++        if function(item):
++            res = res + [item]
++    return res
+ 
+ 
+ def length(list):
+-    pass
++    count = 0
++    for _ in list:
++        count = count + 1
++    return count
+ 
+ 
+ def map(function, list):
+-    pass
++    res = []
++    for item in list:
++        res = res + [function(item)]
++    return res
+ 
+ 
+ def foldl(function, list, initial):
+-    pass
++    acc = initial
++    for item in list:
++        acc = function(acc, item)
++    return acc
+ 
+ 
+ def foldr(function, list, initial):
+-    pass
++    acc = initial
++    rev = reverse(list)
++    for item in rev:
++        acc = function(acc, item)
++    return acc
+ 
+ 
+ def reverse(list):
+-    pass
++    res = []
++    # Can we find length or iterate backwards? Or use foldl
++    # Without built-in reverse or slice [::-1]
++    # Let's collect elements or iterate using indices without range(len(...)) if range or len is considered existing functions?
++    # Wait, instructions say "without using existing functions" - does that mean built-ins like len, reverse?
++    # We implemented length(list), we can iterate or build reverse.
++    # Let's implement reverse using foldl or loop.
++    for item in list:
++        res = [item] + res
++    return res

@@ -1,0 +1,129 @@
+diff --git a/pov.py b/pov.py
+index 21dbe4b..7882988 100644
+--- a/pov.py
++++ b/pov.py
+@@ -1,4 +1,5 @@
+ from json import dumps
++import copy
+ 
+ 
+ class Tree:
+@@ -18,8 +19,116 @@ class Tree:
+     def __eq__(self, other):
+         return self.__dict__() == other.__dict__()
+ 
++    def _find_path_to(self, target):
++        if self.label == target:
++            return [self.label]
++        for child in self.children:
++            try:
++                subpath = child._find_path_to(target)
++                if subpath:
++                    return [self.label] + subpath
++            except ValueError:
++                pass
++        raise ValueError("No path found")
++
+     def from_pov(self, from_node):
+-        pass
++        # find path from current root to from_node
++        try:
++            path = self._find_path_to(from_node)
++        except ValueError:
++            raise ValueError("Tree could not be reoriented")
++
++        # path gives the chain from old root to new root (from_node)
++        # We can build the reoriented tree.
++        # Let's find the nodes along the path and invert their relationship.
++        # Or construct a new tree bottom-up from from_node up to old root.
++        
++        # Let's collect all nodes and their parent-child relationships in the original tree.
++        # Parent mapping: child_label -> (parent_tree, list_of_other_children)
++        
++        parents = {} # label -> (parent_label, parent_tree_reference, original_children_except_this)
++        
++        def build_parent_map(node, parent=None):
++            for child in node.children:
++                others = [c for c in node.children if c.label != child.label]
++                parents[child.label] = (node.label, node, others)
++                build_parent_map(child, node)
++                
++        build_parent_map(self)
++        
++        # Now we can rebuild the tree rooted at from_node.
++        # For any node, its children in the new tree will be:
++        # 1. Its original children.
++        # 2. Its former parent (if it was on the path or connected).
++        
++        # Actually, a cleaner way: clone the whole tree structure or build new Tree objects.
++        # Let's write a recursive or iterative builder for from_pov:
++        # A helper function that takes node and its new parent (or additional child to add).
++        
++        # Let's make deep copies or new trees.
++        def clone_subtree(node):
++            return Tree(node.label, [clone_subtree(c) for c in node.children])
++        
++        # Let's map every label in the original tree to its node object or build a fresh tree.
++        # Even simpler: we can construct the new tree by starting at from_node.
++        # From from_node, children are:
++        # - its original children (cloned)
++        # - plus its parent, reoriented upward.
++        
++        # Let's trace path: e.g. parent -> ... -> x
++        # If we reverse the path: x -> parent -> grandparent ...
++        # For each step from `curr` to `next_ancestor` along reversed path:
++        # We want `next_ancestor` to become a child of `curr`, and `curr`'s children remain its children except the one leading to `next_ancestor`.
++        
++        # Let's build a dictionary of all original nodes by label, and their original children.
++        node_map = {}
++        def map_nodes(node):
++            node_map[node.label] = node
++            for c in node.children:
++                map_nodes(c)
++        map_nodes(self)
++        
++        if from_node not in node_map:
++            raise ValueError("Tree could not be reoriented")
++            
++        # We can construct the new tree bottom-up (or rather, from from_node outwards).
++        # Let's define a function `make_tree(node_label, parent_tree_node)` where parent_tree_node is already reoriented or can be built.
++        # Or simpler:
++        # For every node in the graph, we know its original children and its original parent.
++        # In the new tree rooted at `from_node`:
++        # For any node `v`, its neighbors in the undirected tree are its original children + its original parent (if any).
++        # To root the tree at `from_node`, we can do a DFS/BFS from `from_node` treating the tree as undirected.
++        
++        adj = {}
++        def build_adj(node, parent_label=None):
++            if node.label not in adj:
++                adj[node.label] = []
++            for c in node.children:
++                adj[node.label].append(c.label)
++                if c.label not in adj:
++                    adj[c.label] = []
++                adj[c.label].append(node.label)
++                build_adj(c, node.label)
++        build_adj(self)
++        
++        def build_rooted(label, parent_label=None):
++            children = []
++            for neighbor in adj.get(label, []):
++                if neighbor != parent_label:
++                    children.append(build_rooted(neighbor, label))
++            return Tree(label, children)
++            
++        return build_rooted(from_node)
+ 
+     def path_to(self, from_node, to_node):
+-        pass
++        # First check if from_node and to_node exist by re-rooting at from_node (or checking path)
++        try:
++            rerooted = self.from_pov(from_node)
++        except ValueError:
++            raise ValueError("Tree could not be reoriented")
++            
++        try:
++            path = rerooted._find_path_to(to_node)
++            return path
++        except ValueError:
++            raise ValueError("No path found")

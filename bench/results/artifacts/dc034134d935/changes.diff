@@ -1,0 +1,22 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..82caa34 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,16 @@
+ def answer(question):
+-    pass
++    print(f"question: {question!r}")
++    print(f"slice: {question[:8]!r}")
++    print(f"equals: {'What is ' == question[:8]}")
++    if not question.endswith("?"):
++        raise ValueError("syntax error")
++    
++    if not question.startswith("What is "):
++        raise ValueError("unknown operation")
++        
++    expression = question[len("What is "):-1].strip()
++    
++    if not expression:
++        raise ValueError("syntax error")
++        
++    return 1

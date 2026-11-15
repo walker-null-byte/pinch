@@ -1,0 +1,63 @@
+diff --git a/list_ops.py b/list_ops.py
+index 6497809..2040116 100644
+--- a/list_ops.py
++++ b/list_ops.py
+@@ -1,30 +1,50 @@
+ def append(list1, list2):
+-    pass
++    res = list1[:]
++    for item in list2:
++        res += [item]
++    return res
+ 
+ 
+ def concat(lists):
+-    pass
++    res = []
++    for sublist in lists:
++        res = append(res, sublist)
++    return res
+ 
+ 
+ def filter(function, list):
+-    pass
++    res = []
++    for item in list:
++        if function(item):
++            res += [item]
++    return res
+ 
+ 
+ def length(list):
+-    pass
++    count = 0
++    for _ in list:
++        count += 1
++    return count
+ 
+ 
+ def map(function, list):
+-    pass
++    res = []
++    for item in list:
++        res += [function(item)]
++    return res
+ 
+ 
+ def foldl(function, list, initial):
+-    pass
++    acc = initial
++    for item in list:
++        acc = function(acc, item)
++    return acc
+ 
+ 
+ def foldr(function, list, initial):
+-    pass
++    # Process from right to left using foldl on the reversed list
++    return foldl(function, reverse(list), initial)
+ 
+ 
+ def reverse(list):
+-    pass
++    return foldl(lambda acc, el: [el] + acc, list, [])

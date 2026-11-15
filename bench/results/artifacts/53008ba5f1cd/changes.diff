@@ -1,0 +1,327 @@
+diff --git a/work/.pytest_cache/.gitignore b/.pytest_cache/.gitignore
+new file mode 100644
+index 0000000..bc1a1f6
+--- /dev/null
++++ b/.pytest_cache/.gitignore
+@@ -0,0 +1,2 @@
++# Created by pytest automatically.
++*
+diff --git a/work/.pytest_cache/CACHEDIR.TAG b/.pytest_cache/CACHEDIR.TAG
+new file mode 100644
+index 0000000..fce15ad
+--- /dev/null
++++ b/.pytest_cache/CACHEDIR.TAG
+@@ -0,0 +1,4 @@
++Signature: 8a477f597d28d172789f06886806bc55
++# This file is a cache directory tag created by pytest.
++# For information about cache directory tags, see:
++#	https://bford.info/cachedir/spec.html
+diff --git a/work/.pytest_cache/README.md b/.pytest_cache/README.md
+new file mode 100644
+index 0000000..b89018c
+--- /dev/null
++++ b/.pytest_cache/README.md
+@@ -0,0 +1,8 @@
++# pytest cache directory #
++
++This directory contains data from the pytest's cache plugin,
++which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
++
++**Do not** commit this to version control.
++
++See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+diff --git a/work/.pytest_cache/v/cache/lastfailed b/.pytest_cache/v/cache/lastfailed
+new file mode 100644
+index 0000000..80176ec
+--- /dev/null
++++ b/.pytest_cache/v/cache/lastfailed
+@@ -0,0 +1,6 @@
++{
++  "tests/test_issue_repro.py::test_intword_rounding_issue": true,
++  "tests/test_number.py::test_intword[test_args25-1000.0 decillion]": true,
++  "tests/test_number.py::test_intword[test_args26-1100.0 decillion]": true,
++  "tests/test_number.py::test_intword[test_args27-2100.0 decillion]": true
++}
+\ No newline at end of file
+diff --git a/work/.pytest_cache/v/cache/nodeids b/.pytest_cache/v/cache/nodeids
+new file mode 100644
+index 0000000..4ccf281
+--- /dev/null
++++ b/.pytest_cache/v/cache/nodeids
+@@ -0,0 +1,243 @@
++[
++  "tests/test_issue_repro.py::test_intword_rounding_issue",
++  "tests/test_number.py::test_apnumber[-inf--Inf0]",
++  "tests/test_number.py::test_apnumber[-inf--Inf1]",
++  "tests/test_number.py::test_apnumber[0-zero]",
++  "tests/test_number.py::test_apnumber[1-one]",
++  "tests/test_number.py::test_apnumber[10-10]",
++  "tests/test_number.py::test_apnumber[2-two]",
++  "tests/test_number.py::test_apnumber[4-four]",
++  "tests/test_number.py::test_apnumber[5-five]",
++  "tests/test_number.py::test_apnumber[7-seven]",
++  "tests/test_number.py::test_apnumber[9-nine]",
++  "tests/test_number.py::test_apnumber[None-None]",
++  "tests/test_number.py::test_apnumber[inf-+Inf]",
++  "tests/test_number.py::test_apnumber[nan-NaN0]",
++  "tests/test_number.py::test_apnumber[nan-NaN1]",
++  "tests/test_number.py::test_clamp[test_args0-1]",
++  "tests/test_number.py::test_clamp[test_args1-None]",
++  "tests/test_number.py::test_clamp[test_args10--Inf]",
++  "tests/test_number.py::test_clamp[test_args2-0%]",
++  "tests/test_number.py::test_clamp[test_args3-<1%]",
++  "tests/test_number.py::test_clamp[test_args4->99%]",
++  "tests/test_number.py::test_clamp[test_args5-under 1%]",
++  "tests/test_number.py::test_clamp[test_args6-above 99%]",
++  "tests/test_number.py::test_clamp[test_args7-under 1.0 million]",
++  "tests/test_number.py::test_clamp[test_args8-NaN]",
++  "tests/test_number.py::test_clamp[test_args9-+Inf]",
++  "tests/test_number.py::test_fractional[-0.5--1/2]",
++  "tests/test_number.py::test_fractional[-1.3--1 3/10]",
++  "tests/test_number.py::test_fractional[-2.5--2 1/2]",
++  "tests/test_number.py::test_fractional[-2.9999999--3]",
++  "tests/test_number.py::test_fractional[-inf--Inf0]",
++  "tests/test_number.py::test_fractional[-inf--Inf1]",
++  "tests/test_number.py::test_fractional[0-0]",
++  "tests/test_number.py::test_fractional[0.0-0]",
++  "tests/test_number.py::test_fractional[0.3-3/10]",
++  "tests/test_number.py::test_fractional[0.333-333/1000]",
++  "tests/test_number.py::test_fractional[0.3333333333333333-1/3]",
++  "tests/test_number.py::test_fractional[0.8333333333333334-5/6]",
++  "tests/test_number.py::test_fractional[0.9999999-1]",
++  "tests/test_number.py::test_fractional[1-1]",
++  "tests/test_number.py::test_fractional[1.3333333333333333-1 1/3]",
++  "tests/test_number.py::test_fractional[1.5-1 1/2]",
++  "tests/test_number.py::test_fractional[2.0-2]",
++  "tests/test_number.py::test_fractional[2.9999999-3]",
++  "tests/test_number.py::test_fractional[7-7]",
++  "tests/test_number.py::test_fractional[8.9-8 9/10]",
++  "tests/test_number.py::test_fractional[None-None]",
++  "tests/test_number.py::test_fractional[inf-+Inf]",
++  "tests/test_number.py::test_fractional[nan-NaN0]",
++  "tests/test_number.py::test_fractional[nan-NaN1]",
++  "tests/test_number.py::test_fractional[ten-ten]",
++  "tests/test_number.py::test_intcomma[test_args0-100]",
++  "tests/test_number.py::test_intcomma[test_args1-1,000]",
++  "tests/test_number.py::test_intcomma[test_args10-1,000,000]",
++  "tests/test_number.py::test_intcomma[test_args11-1,234,567.1234567]",
++  "tests/test_number.py::test_intcomma[test_args12-1,234,567]",
++  "tests/test_number.py::test_intcomma[test_args13-1,234,567.1]",
++  "tests/test_number.py::test_intcomma[test_args14-1,234,567.1234567000]",
++  "tests/test_number.py::test_intcomma[test_args15-1,234,567.0]",
++  "tests/test_number.py::test_intcomma[test_args16-None]",
++  "tests/test_number.py::test_intcomma[test_args17-14,308.4]",
++  "tests/test_number.py::test_intcomma[test_args18-14,308.4]",
++  "tests/test_number.py::test_intcomma[test_args19-14,308.4]",
++  "tests/test_number.py::test_intcomma[test_args2-10,123]",
++  "tests/test_number.py::test_intcomma[test_args20-14,308.40]",
++  "tests/test_number.py::test_intcomma[test_args21-14,308.400]",
++  "tests/test_number.py::test_intcomma[test_args22-1,234.5454545]",
++  "tests/test_number.py::test_intcomma[test_args23-1,234.5454545]",
++  "tests/test_number.py::test_intcomma[test_args24-1,235]",
++  "tests/test_number.py::test_intcomma[test_args25-1,234.5]",
++  "tests/test_number.py::test_intcomma[test_args26-1,234.55]",
++  "tests/test_number.py::test_intcomma[test_args27-1,234.545]",
++  "tests/test_number.py::test_intcomma[test_args28-1,234.5454545000]",
++  "tests/test_number.py::test_intcomma[test_args29-NaN]",
++  "tests/test_number.py::test_intcomma[test_args3-10,311]",
++  "tests/test_number.py::test_intcomma[test_args30-+Inf]",
++  "tests/test_number.py::test_intcomma[test_args31--Inf]",
++  "tests/test_number.py::test_intcomma[test_args32-NaN]",
++  "tests/test_number.py::test_intcomma[test_args33--Inf]",
++  "tests/test_number.py::test_intcomma[test_args4-1,000,000]",
++  "tests/test_number.py::test_intcomma[test_args5-1,234,567.25]",
++  "tests/test_number.py::test_intcomma[test_args6-100]",
++  "tests/test_number.py::test_intcomma[test_args7-1,000]",
++  "tests/test_number.py::test_intcomma[test_args8-10,123]",
++  "tests/test_number.py::test_intcomma[test_args9-10,311]",
++  "tests/test_number.py::test_intcomma_large_integer[-1]",
++  "tests/test_number.py::test_intcomma_large_integer[1]",
++  "tests/test_number.py::test_intword[test_args0-0]",
++  "tests/test_number.py::test_intword[test_args1-100]",
++  "tests/test_number.py::test_intword[test_args10-1.0 billion]",
++  "tests/test_number.py::test_intword[test_args11-1.0 billion]",
++  "tests/test_number.py::test_intword[test_args12--1.0 billion]",
++  "tests/test_number.py::test_intword[test_args13-2.0 billion]",
++  "tests/test_number.py::test_intword[test_args14-1.0 trillion]",
++  "tests/test_number.py::test_intword[test_args15-1.0 trillion]",
++  "tests/test_number.py::test_intword[test_args16-6.0 trillion]",
++  "tests/test_number.py::test_intword[test_args17--6.0 trillion]",
++  "tests/test_number.py::test_intword[test_args18-1.0 quadrillion]",
++  "tests/test_number.py::test_intword[test_args19-1.0 quadrillion]",
++  "tests/test_number.py::test_intword[test_args2--100]",
++  "tests/test_number.py::test_intword[test_args20-1.3 quadrillion]",
++  "tests/test_number.py::test_intword[test_args21--1.3 quadrillion]",
++  "tests/test_number.py::test_intword[test_args22-3.5 sextillion]",
++  "tests/test_number.py::test_intword[test_args23-8.1 decillion]",
++  "tests/test_number.py::test_intword[test_args24--8.1 decillion]",
++  "tests/test_number.py::test_intword[test_args25-1000.0 decillion]",
++  "tests/test_number.py::test_intword[test_args26-1100.0 decillion]",
++  "tests/test_number.py::test_intword[test_args27-2100.0 decillion]",
++  "tests/test_number.py::test_intword[test_args28-2.0 googol]",
++  "tests/test_number.py::test_intword[test_args29-None]",
++  "tests/test_number.py::test_intword[test_args3-1.0 thousand]",
++  "tests/test_number.py::test_intword[test_args30-1.23 million]",
++  "tests/test_number.py::test_intword[test_args31-1.0 googol]",
++  "tests/test_number.py::test_intword[test_args32-10.0 googol]",
++  "tests/test_number.py::test_intword[test_args33-NaN]",
++  "tests/test_number.py::test_intword[test_args34-+Inf]",
++  "tests/test_number.py::test_intword[test_args35--Inf]",
++  "tests/test_number.py::test_intword[test_args36-NaN]",
++  "tests/test_number.py::test_intword[test_args37--Inf]",
++  "tests/test_number.py::test_intword[test_args38-1 million]",
++  "tests/test_number.py::test_intword[test_args39-1.2 million]",
++  "tests/test_number.py::test_intword[test_args4-12.4 thousand]",
++  "tests/test_number.py::test_intword[test_args40-1.23 million]",
++  "tests/test_number.py::test_intword[test_args41-1.235 million]",
++  "tests/test_number.py::test_intword[test_args42-1 million]",
++  "tests/test_number.py::test_intword[test_args43-999 thousand]",
++  "tests/test_number.py::test_intword[test_args5-12.5 thousand]",
++  "tests/test_number.py::test_intword[test_args6-1.0 million]",
++  "tests/test_number.py::test_intword[test_args7--1.0 million]",
++  "tests/test_number.py::test_intword[test_args8-1.2 million]",
++  "tests/test_number.py::test_intword[test_args9-1.3 million]",
++  "tests/test_number.py::test_intword_powers",
++  "tests/test_number.py::test_metric[[-1500, 'V']--1.50 kV]",
++  "tests/test_number.py::test_metric[[-9999]--10.0 k]",
++  "tests/test_number.py::test_metric[[-inf]--Inf]",
++  "tests/test_number.py::test_metric[[0.00012]-120 \\u03bc]",
++  "tests/test_number.py::test_metric[[0.0009999, 'V']-1.00 mV]",
++  "tests/test_number.py::test_metric[[0.0012]-1.20 m]",
++  "tests/test_number.py::test_metric[[0.012]-12.0 m]",
++  "tests/test_number.py::test_metric[[0.1, '\\xb0']-100m\\xb0]",
++  "tests/test_number.py::test_metric[[0.12]-120 m]",
++  "tests/test_number.py::test_metric[[0.1]-100 m]",
++  "tests/test_number.py::test_metric[[0]-0.00]",
++  "tests/test_number.py::test_metric[[1, '', 0]-1]",
++  "tests/test_number.py::test_metric[[1, '', 1]-1]",
++  "tests/test_number.py::test_metric[[1, '', 2]-1.0]",
++  "tests/test_number.py::test_metric[[1, '', 3]-1.00]",
++  "tests/test_number.py::test_metric[[1, 'Hz']-1.00 Hz]",
++  "tests/test_number.py::test_metric[[1, '\\xb0']-1.00\\xb0]",
++  "tests/test_number.py::test_metric[[1.0, 'W']-1.00 W]",
++  "tests/test_number.py::test_metric[[1.23456]-1.23]",
++  "tests/test_number.py::test_metric[[1.234e+28, 'A']-12.3 RA]",
++  "tests/test_number.py::test_metric[[1.234e-28, 'A']-123 qA]",
++  "tests/test_number.py::test_metric[[1.235e+29, 'A']-124 RA]",
++  "tests/test_number.py::test_metric[[1.5123, '', 0]-2]",
++  "tests/test_number.py::test_metric[[10, '', 0]-10]",
++  "tests/test_number.py::test_metric[[10, '', 1]-10]",
++  "tests/test_number.py::test_metric[[10, '', 2]-10]",
++  "tests/test_number.py::test_metric[[10, '', 3]-10.0]",
++  "tests/test_number.py::test_metric[[10.5123, '', 0]-11]",
++  "tests/test_number.py::test_metric[[10.5123, '', 1]-11]",
++  "tests/test_number.py::test_metric[[10.5123, '', 2]-11]",
++  "tests/test_number.py::test_metric[[10.5123, '', 3]-10.5]",
++  "tests/test_number.py::test_metric[[100, '', 0]-100]",
++  "tests/test_number.py::test_metric[[100, '', 1]-100]",
++  "tests/test_number.py::test_metric[[100, '', 2]-100]",
++  "tests/test_number.py::test_metric[[100, '', 3]-100]",
++  "tests/test_number.py::test_metric[[1000, '', 0]-1 k]",
++  "tests/test_number.py::test_metric[[1000, '', 1]-1 k]",
++  "tests/test_number.py::test_metric[[1000, '', 2]-1.0 k]",
++  "tests/test_number.py::test_metric[[1000, '', 3]-1.00 k]",
++  "tests/test_number.py::test_metric[[100]-100]",
++  "tests/test_number.py::test_metric[[12.3456]-12.3]",
++  "tests/test_number.py::test_metric[[123.456]-123]",
++  "tests/test_number.py::test_metric[[1234.56]-1.23 k]",
++  "tests/test_number.py::test_metric[[12345, '', 6]-12.3450 k]",
++  "tests/test_number.py::test_metric[[1e+25, 'm']-10.0 Ym]",
++  "tests/test_number.py::test_metric[[1e+26, 'm']-100 Ym]",
++  "tests/test_number.py::test_metric[[1e+27, 'A']-1.00 RA]",
++  "tests/test_number.py::test_metric[[1e+50]-1.00 x 10\\u2075\\u2070]",
++  "tests/test_number.py::test_metric[[1e-23]-10.0 y]",
++  "tests/test_number.py::test_metric[[1e-24]-1.00 y]",
++  "tests/test_number.py::test_metric[[1e-25]-100 r]",
++  "tests/test_number.py::test_metric[[1e-26]-10.0 r]",
++  "tests/test_number.py::test_metric[[1e-50]-1.00 x 10\\u207b\\u2075\\u2070]",
++  "tests/test_number.py::test_metric[[2.56e-30, 'V']-2.56 qV]",
++  "tests/test_number.py::test_metric[[2.596e+32, 'F']-260 QF]",
++  "tests/test_number.py::test_metric[[200000]-200 k]",
++  "tests/test_number.py::test_metric[[3, 'C']-3.00 C]",
++  "tests/test_number.py::test_metric[[3, 'W', 5]-3.0000 W]",
++  "tests/test_number.py::test_metric[[9.999, '', 2]-10]",
++  "tests/test_number.py::test_metric[[9.99999]-10.0]",
++  "tests/test_number.py::test_metric[[999.4]-999]",
++  "tests/test_number.py::test_metric[[999.9, 'V']-1.00 kV]",
++  "tests/test_number.py::test_metric[[999.99, 'V']-1.00 kV]",
++  "tests/test_number.py::test_metric[[999999, 'V']-1.00 MV]",
++  "tests/test_number.py::test_metric[[99999]-100 k]",
++  "tests/test_number.py::test_metric[[9999]-10.0 k]",
++  "tests/test_number.py::test_metric[[inf]-+Inf]",
++  "tests/test_number.py::test_metric[[nan, 'm']-NaN]",
++  "tests/test_number.py::test_metric[[nan]-NaN]",
++  "tests/test_number.py::test_ordinal[-inf--Inf0]",
++  "tests/test_number.py::test_ordinal[-inf--Inf1]",
++  "tests/test_number.py::test_ordinal[1-1st]",
++  "tests/test_number.py::test_ordinal[101-101st]",
++  "tests/test_number.py::test_ordinal[102-102nd]",
++  "tests/test_number.py::test_ordinal[103-103rd]",
++  "tests/test_number.py::test_ordinal[11-11th]",
++  "tests/test_number.py::test_ordinal[111-111th]",
++  "tests/test_number.py::test_ordinal[12-12th]",
++  "tests/test_number.py::test_ordinal[13-13th]",
++  "tests/test_number.py::test_ordinal[2-2nd]",
++  "tests/test_number.py::test_ordinal[3-3rd]",
++  "tests/test_number.py::test_ordinal[4-4th]",
++  "tests/test_number.py::test_ordinal[None-None]",
++  "tests/test_number.py::test_ordinal[inf-+Inf]",
++  "tests/test_number.py::test_ordinal[nan-NaN0]",
++  "tests/test_number.py::test_ordinal[nan-NaN1]",
++  "tests/test_number.py::test_ordinal[something else-something else]",
++  "tests/test_number.py::test_scientific[test_args0-1.00 x 10\\xb3]",
++  "tests/test_number.py::test_scientific[test_args1--1.00 x 10\\xb3]",
++  "tests/test_number.py::test_scientific[test_args10-3.0 x 10\\u207b\\xb9]",
++  "tests/test_number.py::test_scientific[test_args11-1 x 10\\xb3]",
++  "tests/test_number.py::test_scientific[test_args12-3 x 10\\u207b\\xb9]",
++  "tests/test_number.py::test_scientific[test_args13-1.00 x 10\\xb2\\u2070]",
++  "tests/test_number.py::test_scientific[test_args14-2.00 x 10\\u207b\\xb2\\u2070]",
++  "tests/test_number.py::test_scientific[test_args15--3.00 x 10\\xb2\\u2070]",
++  "tests/test_number.py::test_scientific[test_args16--4.00 x 10\\u207b\\xb2\\u2070]",
++  "tests/test_number.py::test_scientific[test_args17-NaN]",
++  "tests/test_number.py::test_scientific[test_args18-+Inf]",
++  "tests/test_number.py::test_scientific[test_args19--Inf]",
++  "tests/test_number.py::test_scientific[test_args2-5.50 x 10\\u2070]",
++  "tests/test_number.py::test_scientific[test_args20-NaN]",
++  "tests/test_number.py::test_scientific[test_args21--Inf]",
++  "tests/test_number.py::test_scientific[test_args3-5.78 x 10\\u2079]",
++  "tests/test_number.py::test_scientific[test_args4-1.00 x 10\\xb3]",
++  "tests/test_number.py::test_scientific[test_args5-9.90 x 10\\xb9]",
++  "tests/test_number.py::test_scientific[test_args6-3.00 x 10\\u207b\\xb9]",
++  "tests/test_number.py::test_scientific[test_args7-foo]",
++  "tests/test_number.py::test_scientific[test_args8-None]",
++  "tests/test_number.py::test_scientific[test_args9-1.0 x 10\\xb3]"
++]
+\ No newline at end of file
+diff --git a/src/humanize/number.py b/src/humanize/number.py
+index ebccfb9..7bd791d 100644
+--- a/src/humanize/number.py
++++ b/src/humanize/number.py
+@@ -287,6 +287,13 @@ def intword(value: NumberOrString, format: str = "%.1f") -> str:
+         ordinal += 1
+         rounded_value = 1.0
+ 
++    if rounded_value >= 1000 and not largest_ordinal and ordinal < len(powers) - 1:
++        # After rounding, we end up just at the next power
++        ordinal += 1
++        rounded_value = 1.0
++        # Re-format because the exponent changed
++        rounded_value = float(format % rounded_value)
++
+     singular, plural = human_powers[ordinal]
+     unit = _ngettext(singular, plural, math.ceil(rounded_value))
+     decimal_sep = decimal_separator()
+diff --git a/work/tests/test_issue_repro.py b/tests/test_issue_repro.py
+new file mode 100644
+index 0000000..d4e5fe9
+--- /dev/null
++++ b/tests/test_issue_repro.py
+@@ -0,0 +1,8 @@
++import humanize
++import pytest
++
++def test_intword_rounding_issue():
++    assert humanize.intword(10**24 - 1) == '1.0 septillion'
++    assert humanize.intword(10**24 - 1, "%.0f") == "1 septillion"
++    assert humanize.intword(10**21 - 1) == '1.0 sextillion'
++    assert humanize.intword(10**18 - 1) == '1.0 quintillion'

@@ -1,0 +1,733 @@
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..ed7cbe1
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,569 @@
++FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                   [100%]
++=================================== FAILURES ===================================
++_________________ ForthTest.test_addition_can_add_two_numbers __________________
++
++self = <forth_test.ForthTest testMethod=test_addition_can_add_two_numbers>
++
++    def test_addition_can_add_two_numbers(self):
++>       self.assertEqual(evaluate(["1 2 +"]), [3])
++E       AssertionError: None != [3]
++
++forth_test.py:21: AssertionError
++_______ ForthTest.test_addition_errors_if_there_is_nothing_on_the_stack ________
++
++self = <forth_test.ForthTest testMethod=test_addition_errors_if_there_is_nothing_on_the_stack>
++
++    def test_addition_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:24: AssertionError
++____ ForthTest.test_addition_errors_if_there_is_only_one_value_on_the_stack ____
++
++self = <forth_test.ForthTest testMethod=test_addition_errors_if_there_is_only_one_value_on_the_stack>
++
++    def test_addition_errors_if_there_is_only_one_value_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:32: AssertionError
++__________ ForthTest.test_addition_more_than_two_values_on_the_stack ___________
++
++self = <forth_test.ForthTest testMethod=test_addition_more_than_two_values_on_the_stack>
++
++    def test_addition_more_than_two_values_on_the_stack(self):
++>       self.assertEqual(evaluate(["1 2 3 +"]), [1, 5])
++E       AssertionError: None != [1, 5]
++
++forth_test.py:40: AssertionError
++______ ForthTest.test_case_insensitivity_definitions_are_case_insensitive ______
++
++self = <forth_test.ForthTest testMethod=test_case_insensitivity_definitions_are_case_insensitive>
++
++    def test_case_insensitivity_definitions_are_case_insensitive(self):
++>       self.assertEqual(evaluate([": SWAP DUP Dup dup ;", "1 swap"]), [1, 1, 1, 1])
++E       AssertionError: None != [1, 1, 1, 1]
++
++forth_test.py:263: AssertionError
++__________ ForthTest.test_case_insensitivity_drop_is_case_insensitive __________
++
++self = <forth_test.ForthTest testMethod=test_case_insensitivity_drop_is_case_insensitive>
++
++    def test_case_insensitivity_drop_is_case_insensitive(self):
++>       self.assertEqual(evaluate(["1 2 3 4 DROP Drop drop"]), [1])
++E       AssertionError: None != [1]
++
++forth_test.py:251: AssertionError
++__________ ForthTest.test_case_insensitivity_dup_is_case_insensitive ___________
++
++self = <forth_test.ForthTest testMethod=test_case_insensitivity_dup_is_case_insensitive>
++
++    def test_case_insensitivity_dup_is_case_insensitive(self):
++>       self.assertEqual(evaluate(["1 DUP Dup dup"]), [1, 1, 1, 1])
++E       AssertionError: None != [1, 1, 1, 1]
++
++forth_test.py:248: AssertionError
++__________ ForthTest.test_case_insensitivity_over_is_case_insensitive __________
++
++self = <forth_test.ForthTest testMethod=test_case_insensitivity_over_is_case_insensitive>
++
++    def test_case_insensitivity_over_is_case_insensitive(self):
++>       self.assertEqual(evaluate(["1 2 OVER Over over"]), [1, 2, 1, 2, 1])
++E       AssertionError: None != [1, 2, 1, 2, 1]
++
++forth_test.py:257: AssertionError
++__________ ForthTest.test_case_insensitivity_swap_is_case_insensitive __________
++
++self = <forth_test.ForthTest testMethod=test_case_insensitivity_swap_is_case_insensitive>
++
++    def test_case_insensitivity_swap_is_case_insensitive(self):
++>       self.assertEqual(evaluate(["1 2 SWAP 3 Swap 4 swap"]), [2, 3, 4, 1])
++E       AssertionError: None != [2, 3, 4, 1]
++
++forth_test.py:254: AssertionError
++__ ForthTest.test_case_insensitivity_user_defined_words_are_case_insensitive ___
++
++self = <forth_test.ForthTest testMethod=test_case_insensitivity_user_defined_words_are_case_insensitive>
++
++    def test_case_insensitivity_user_defined_words_are_case_insensitive(self):
++>       self.assertEqual(evaluate([": foo dup ;", "1 FOO Foo foo"]), [1, 1, 1, 1])
++E       AssertionError: None != [1, 1, 1, 1]
++
++forth_test.py:260: AssertionError
++________ ForthTest.test_combined_arithmetic_addition_and_multiplication ________
++
++self = <forth_test.ForthTest testMethod=test_combined_arithmetic_addition_and_multiplication>
++
++    def test_combined_arithmetic_addition_and_multiplication(self):
++>       self.assertEqual(evaluate(["1 3 4 + *"]), [7])
++E       AssertionError: None != [7]
++
++forth_test.py:128: AssertionError
++_________ ForthTest.test_combined_arithmetic_addition_and_subtraction __________
++
++self = <forth_test.ForthTest testMethod=test_combined_arithmetic_addition_and_subtraction>
++
++    def test_combined_arithmetic_addition_and_subtraction(self):
++>       self.assertEqual(evaluate(["1 2 + 4 -"]), [-1])
++E       AssertionError: None != [-1]
++
++forth_test.py:119: AssertionError
++________ ForthTest.test_combined_arithmetic_multiplication_and_addition ________
++
++self = <forth_test.ForthTest testMethod=test_combined_arithmetic_multiplication_and_addition>
++
++    def test_combined_arithmetic_multiplication_and_addition(self):
++>       self.assertEqual(evaluate(["1 3 4 * +"]), [13])
++E       AssertionError: None != [13]
++
++forth_test.py:125: AssertionError
++________ ForthTest.test_combined_arithmetic_multiplication_and_division ________
++
++self = <forth_test.ForthTest testMethod=test_combined_arithmetic_multiplication_and_division>
++
++    def test_combined_arithmetic_multiplication_and_division(self):
++>       self.assertEqual(evaluate(["2 4 * 3 /"]), [2])
++E       AssertionError: None != [2]
++
++forth_test.py:122: AssertionError
++________________ ForthTest.test_division_can_divide_two_numbers ________________
++
++self = <forth_test.ForthTest testMethod=test_division_can_divide_two_numbers>
++
++    def test_division_can_divide_two_numbers(self):
++>       self.assertEqual(evaluate(["12 3 /"]), [4])
++E       AssertionError: None != [4]
++
++forth_test.py:87: AssertionError
++______________ ForthTest.test_division_errors_if_dividing_by_zero ______________
++
++self = <forth_test.ForthTest testMethod=test_division_errors_if_dividing_by_zero>
++
++    def test_division_errors_if_dividing_by_zero(self):
++        # divide by zero
++>       with self.assertRaises(ZeroDivisionError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ZeroDivisionError not raised
++
++forth_test.py:94: AssertionError
++_______ ForthTest.test_division_errors_if_there_is_nothing_on_the_stack ________
++
++self = <forth_test.ForthTest testMethod=test_division_errors_if_there_is_nothing_on_the_stack>
++
++    def test_division_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:100: AssertionError
++____ ForthTest.test_division_errors_if_there_is_only_one_value_on_the_stack ____
++
++self = <forth_test.ForthTest testMethod=test_division_errors_if_there_is_only_one_value_on_the_stack>
++
++    def test_division_errors_if_there_is_only_one_value_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:108: AssertionError
++__________ ForthTest.test_division_more_than_two_values_on_the_stack ___________
++
++self = <forth_test.ForthTest testMethod=test_division_more_than_two_values_on_the_stack>
++
++    def test_division_more_than_two_values_on_the_stack(self):
++>       self.assertEqual(evaluate(["1 12 3 /"]), [1, 4])
++E       AssertionError: None != [1, 4]
++
++forth_test.py:116: AssertionError
++______________ ForthTest.test_division_performs_integer_division _______________
++
++self = <forth_test.ForthTest testMethod=test_division_performs_integer_division>
++
++    def test_division_performs_integer_division(self):
++>       self.assertEqual(evaluate(["8 3 /"]), [2])
++E       AssertionError: None != [2]
++
++forth_test.py:90: AssertionError
++_________ ForthTest.test_drop_errors_if_there_is_nothing_on_the_stack __________
++
++self = <forth_test.ForthTest testMethod=test_drop_errors_if_there_is_nothing_on_the_stack>
++
++    def test_drop_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:151: AssertionError
++_ ForthTest.test_drop_removes_the_top_value_on_the_stack_if_it_is_not_the_only_one _
++
++self = <forth_test.ForthTest testMethod=test_drop_removes_the_top_value_on_the_stack_if_it_is_not_the_only_one>
++
++    def test_drop_removes_the_top_value_on_the_stack_if_it_is_not_the_only_one(self):
++>       self.assertEqual(evaluate(["1 2 drop"]), [1])
++E       AssertionError: None != [1]
++
++forth_test.py:148: AssertionError
++_ ForthTest.test_drop_removes_the_top_value_on_the_stack_if_it_is_the_only_one _
++
++self = <forth_test.ForthTest testMethod=test_drop_removes_the_top_value_on_the_stack_if_it_is_the_only_one>
++
++    def test_drop_removes_the_top_value_on_the_stack_if_it_is_the_only_one(self):
++>       self.assertEqual(evaluate(["1 drop"]), [])
++E       AssertionError: None != []
++
++forth_test.py:145: AssertionError
++________________ ForthTest.test_dup_copies_a_value_on_the_stack ________________
++
++self = <forth_test.ForthTest testMethod=test_dup_copies_a_value_on_the_stack>
++
++    def test_dup_copies_a_value_on_the_stack(self):
++>       self.assertEqual(evaluate(["1 dup"]), [1, 1])
++E       AssertionError: None != [1, 1]
++
++forth_test.py:131: AssertionError
++_____________ ForthTest.test_dup_copies_the_top_value_on_the_stack _____________
++
++self = <forth_test.ForthTest testMethod=test_dup_copies_the_top_value_on_the_stack>
++
++    def test_dup_copies_the_top_value_on_the_stack(self):
++>       self.assertEqual(evaluate(["1 2 dup"]), [1, 2, 2])
++E       AssertionError: None != [1, 2, 2]
++
++forth_test.py:134: AssertionError
++__________ ForthTest.test_dup_errors_if_there_is_nothing_on_the_stack __________
++
++self = <forth_test.ForthTest testMethod=test_dup_errors_if_there_is_nothing_on_the_stack>
++
++    def test_dup_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:137: AssertionError
++____________ ForthTest.test_multiplication_can_multiply_two_numbers ____________
++
++self = <forth_test.ForthTest testMethod=test_multiplication_can_multiply_two_numbers>
++
++    def test_multiplication_can_multiply_two_numbers(self):
++>       self.assertEqual(evaluate(["2 4 *"]), [8])
++E       AssertionError: None != [8]
++
++forth_test.py:65: AssertionError
++____ ForthTest.test_multiplication_errors_if_there_is_nothing_on_the_stack _____
++
++self = <forth_test.ForthTest testMethod=test_multiplication_errors_if_there_is_nothing_on_the_stack>
++
++    def test_multiplication_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:68: AssertionError
++_ ForthTest.test_multiplication_errors_if_there_is_only_one_value_on_the_stack _
++
++self = <forth_test.ForthTest testMethod=test_multiplication_errors_if_there_is_only_one_value_on_the_stack>
++
++    def test_multiplication_errors_if_there_is_only_one_value_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:76: AssertionError
++_______ ForthTest.test_multiplication_more_than_two_values_on_the_stack ________
++
++self = <forth_test.ForthTest testMethod=test_multiplication_more_than_two_values_on_the_stack>
++
++    def test_multiplication_more_than_two_values_on_the_stack(self):
++>       self.assertEqual(evaluate(["1 2 3 *"]), [1, 6])
++E       AssertionError: None != [1, 6]
++
++forth_test.py:84: AssertionError
++___ ForthTest.test_over_copies_the_second_element_if_there_are_more_than_two ___
++
++self = <forth_test.ForthTest testMethod=test_over_copies_the_second_element_if_there_are_more_than_two>
++
++    def test_over_copies_the_second_element_if_there_are_more_than_two(self):
++>       self.assertEqual(evaluate(["1 2 3 over"]), [1, 2, 3, 2])
++E       AssertionError: None != [1, 2, 3, 2]
++
++forth_test.py:186: AssertionError
++_____ ForthTest.test_over_copies_the_second_element_if_there_are_only_two ______
++
++self = <forth_test.ForthTest testMethod=test_over_copies_the_second_element_if_there_are_only_two>
++
++    def test_over_copies_the_second_element_if_there_are_only_two(self):
++>       self.assertEqual(evaluate(["1 2 over"]), [1, 2, 1])
++E       AssertionError: None != [1, 2, 1]
++
++forth_test.py:183: AssertionError
++_________ ForthTest.test_over_errors_if_there_is_nothing_on_the_stack __________
++
++self = <forth_test.ForthTest testMethod=test_over_errors_if_there_is_nothing_on_the_stack>
++
++    def test_over_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:189: AssertionError
++______ ForthTest.test_over_errors_if_there_is_only_one_value_on_the_stack ______
++
++self = <forth_test.ForthTest testMethod=test_over_errors_if_there_is_only_one_value_on_the_stack>
++
++    def test_over_errors_if_there_is_only_one_value_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:197: AssertionError
++__ ForthTest.test_parsing_and_numbers_numbers_just_get_pushed_onto_the_stack ___
++
++self = <forth_test.ForthTest testMethod=test_parsing_and_numbers_numbers_just_get_pushed_onto_the_stack>
++
++    def test_parsing_and_numbers_numbers_just_get_pushed_onto_the_stack(self):
++>       self.assertEqual(evaluate(["1 2 3 4 5"]), [1, 2, 3, 4, 5])
++E       AssertionError: None != [1, 2, 3, 4, 5]
++
++forth_test.py:15: AssertionError
++__ ForthTest.test_parsing_and_numbers_pushes_negative_numbers_onto_the_stack ___
++
++self = <forth_test.ForthTest testMethod=test_parsing_and_numbers_pushes_negative_numbers_onto_the_stack>
++
++    def test_parsing_and_numbers_pushes_negative_numbers_onto_the_stack(self):
++>       self.assertEqual(evaluate(["-1 -2 -3 -4 -5"]), [-1, -2, -3, -4, -5])
++E       AssertionError: None != [-1, -2, -3, -4, -5]
++
++forth_test.py:18: AssertionError
++_____________ ForthTest.test_subtraction_can_subtract_two_numbers ______________
++
++self = <forth_test.ForthTest testMethod=test_subtraction_can_subtract_two_numbers>
++
++    def test_subtraction_can_subtract_two_numbers(self):
++>       self.assertEqual(evaluate(["3 4 -"]), [-1])
++E       AssertionError: None != [-1]
++
++forth_test.py:43: AssertionError
++______ ForthTest.test_subtraction_errors_if_there_is_nothing_on_the_stack ______
++
++self = <forth_test.ForthTest testMethod=test_subtraction_errors_if_there_is_nothing_on_the_stack>
++
++    def test_subtraction_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:46: AssertionError
++__ ForthTest.test_subtraction_errors_if_there_is_only_one_value_on_the_stack ___
++
++self = <forth_test.ForthTest testMethod=test_subtraction_errors_if_there_is_only_one_value_on_the_stack>
++
++    def test_subtraction_errors_if_there_is_only_one_value_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:54: AssertionError
++_________ ForthTest.test_subtraction_more_than_two_values_on_the_stack _________
++
++self = <forth_test.ForthTest testMethod=test_subtraction_more_than_two_values_on_the_stack>
++
++    def test_subtraction_more_than_two_values_on_the_stack(self):
++>       self.assertEqual(evaluate(["1 12 3 -"]), [1, 9])
++E       AssertionError: None != [1, 9]
++
++forth_test.py:62: AssertionError
++_________ ForthTest.test_swap_errors_if_there_is_nothing_on_the_stack __________
++
++self = <forth_test.ForthTest testMethod=test_swap_errors_if_there_is_nothing_on_the_stack>
++
++    def test_swap_errors_if_there_is_nothing_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:167: AssertionError
++______ ForthTest.test_swap_errors_if_there_is_only_one_value_on_the_stack ______
++
++self = <forth_test.ForthTest testMethod=test_swap_errors_if_there_is_only_one_value_on_the_stack>
++
++    def test_swap_errors_if_there_is_only_one_value_on_the_stack(self):
++>       with self.assertRaises(StackUnderflowError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: StackUnderflowError not raised
++
++forth_test.py:175: AssertionError
++_ ForthTest.test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_not_the_only_ones _
++
++self = <forth_test.ForthTest testMethod=test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_not_the_only_ones>
++
++    def test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_not_the_only_ones(
++        self,
++    ):
++>       self.assertEqual(evaluate(["1 2 3 swap"]), [1, 3, 2])
++E       AssertionError: None != [1, 3, 2]
++
++forth_test.py:164: AssertionError
++_ ForthTest.test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_the_only_ones _
++
++self = <forth_test.ForthTest testMethod=test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_the_only_ones>
++
++    def test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_the_only_ones(self):
++>       self.assertEqual(evaluate(["1 2 swap"]), [2, 1])
++E       AssertionError: None != [2, 1]
++
++forth_test.py:159: AssertionError
++_______ ForthTest.test_user_defined_words_can_consist_of_built_in_words ________
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_consist_of_built_in_words>
++
++    def test_user_defined_words_can_consist_of_built_in_words(self):
++>       self.assertEqual(evaluate([": dup-twice dup dup ;", "1 dup-twice"]), [1, 1, 1])
++E       AssertionError: None != [1, 1, 1]
++
++forth_test.py:205: AssertionError
++_ ForthTest.test_user_defined_words_can_define_word_that_uses_word_with_the_same_name _
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_define_word_that_uses_word_with_the_same_name>
++
++    def test_user_defined_words_can_define_word_that_uses_word_with_the_same_name(self):
++>       self.assertEqual(evaluate([": foo 10 ;", ": foo foo 1 + ;", "foo"]), [11])
++E       AssertionError: None != [11]
++
++forth_test.py:227: AssertionError
++______ ForthTest.test_user_defined_words_can_override_built_in_operators _______
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_override_built_in_operators>
++
++    def test_user_defined_words_can_override_built_in_operators(self):
++>       self.assertEqual(evaluate([": + * ;", "3 4 +"]), [12])
++E       AssertionError: None != [12]
++
++forth_test.py:219: AssertionError
++________ ForthTest.test_user_defined_words_can_override_built_in_words _________
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_override_built_in_words>
++
++    def test_user_defined_words_can_override_built_in_words(self):
++>       self.assertEqual(evaluate([": swap dup ;", "1 swap"]), [1, 1])
++E       AssertionError: None != [1, 1]
++
++forth_test.py:216: AssertionError
++___ ForthTest.test_user_defined_words_can_override_other_user_defined_words ____
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_override_other_user_defined_words>
++
++    def test_user_defined_words_can_override_other_user_defined_words(self):
++>       self.assertEqual(
++            evaluate([": foo dup ;", ": foo dup dup ;", "1 foo"]), [1, 1, 1]
++        )
++E       AssertionError: None != [1, 1, 1]
++
++forth_test.py:211: AssertionError
++_ ForthTest.test_user_defined_words_can_use_different_words_with_the_same_name _
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_use_different_words_with_the_same_name>
++
++    def test_user_defined_words_can_use_different_words_with_the_same_name(self):
++>       self.assertEqual(
++            evaluate([": foo 5 ;", ": bar foo ;", ": foo 6 ;", "bar foo"]), [5, 6]
++        )
++E       AssertionError: None != [5, 6]
++
++forth_test.py:222: AssertionError
++______ ForthTest.test_user_defined_words_cannot_redefine_negative_numbers ______
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_cannot_redefine_negative_numbers>
++
++    def test_user_defined_words_cannot_redefine_negative_numbers(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++forth_test.py:236: AssertionError
++____ ForthTest.test_user_defined_words_cannot_redefine_non_negative_numbers ____
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_cannot_redefine_non_negative_numbers>
++
++    def test_user_defined_words_cannot_redefine_non_negative_numbers(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++forth_test.py:230: AssertionError
++__ ForthTest.test_user_defined_words_errors_if_executing_a_non_existent_word ___
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_errors_if_executing_a_non_existent_word>
++
++    def test_user_defined_words_errors_if_executing_a_non_existent_word(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++forth_test.py:242: AssertionError
++_________ ForthTest.test_user_defined_words_execute_in_the_right_order _________
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_execute_in_the_right_order>
++
++    def test_user_defined_words_execute_in_the_right_order(self):
++>       self.assertEqual(evaluate([": countup 1 2 3 ;", "countup"]), [1, 2, 3])
++E       AssertionError: None != [1, 2, 3]
++
++forth_test.py:208: AssertionError
++=========================== short test summary info ============================
++FAILED forth_test.py::ForthTest::test_addition_can_add_two_numbers - Assertio...
++FAILED forth_test.py::ForthTest::test_addition_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_addition_errors_if_there_is_only_one_value_on_the_stack
++FAILED forth_test.py::ForthTest::test_addition_more_than_two_values_on_the_stack
++FAILED forth_test.py::ForthTest::test_case_insensitivity_definitions_are_case_insensitive
++FAILED forth_test.py::ForthTest::test_case_insensitivity_drop_is_case_insensitive
++FAILED forth_test.py::ForthTest::test_case_insensitivity_dup_is_case_insensitive
++FAILED forth_test.py::ForthTest::test_case_insensitivity_over_is_case_insensitive
++FAILED forth_test.py::ForthTest::test_case_insensitivity_swap_is_case_insensitive
++FAILED forth_test.py::ForthTest::test_case_insensitivity_user_defined_words_are_case_insensitive
++FAILED forth_test.py::ForthTest::test_combined_arithmetic_addition_and_multiplication
++FAILED forth_test.py::ForthTest::test_combined_arithmetic_addition_and_subtraction
++FAILED forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_addition
++FAILED forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_division
++FAILED forth_test.py::ForthTest::test_division_can_divide_two_numbers - Asser...
++FAILED forth_test.py::ForthTest::test_division_errors_if_dividing_by_zero - A...
++FAILED forth_test.py::ForthTest::test_division_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_division_errors_if_there_is_only_one_value_on_the_stack
++FAILED forth_test.py::ForthTest::test_division_more_than_two_values_on_the_stack
++FAILED forth_test.py::ForthTest::test_division_performs_integer_division - As...
++FAILED forth_test.py::ForthTest::test_drop_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_not_the_only_one
++FAILED forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_the_only_one
++FAILED forth_test.py::ForthTest::test_dup_copies_a_value_on_the_stack - Asser...
++FAILED forth_test.py::ForthTest::test_dup_copies_the_top_value_on_the_stack
++FAILED forth_test.py::ForthTest::test_dup_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_multiplication_can_multiply_two_numbers
++FAILED forth_test.py::ForthTest::test_multiplication_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_multiplication_errors_if_there_is_only_one_value_on_the_stack
++FAILED forth_test.py::ForthTest::test_multiplication_more_than_two_values_on_the_stack
++FAILED forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_more_than_two
++FAILED forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_only_two
++FAILED forth_test.py::ForthTest::test_over_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_over_errors_if_there_is_only_one_value_on_the_stack
++FAILED forth_test.py::ForthTest::test_parsing_and_numbers_numbers_just_get_pushed_onto_the_stack
++FAILED forth_test.py::ForthTest::test_parsing_and_numbers_pushes_negative_numbers_onto_the_stack
++FAILED forth_test.py::ForthTest::test_subtraction_can_subtract_two_numbers - ...
++FAILED forth_test.py::ForthTest::test_subtraction_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_subtraction_errors_if_there_is_only_one_value_on_the_stack
++FAILED forth_test.py::ForthTest::test_subtraction_more_than_two_values_on_the_stack
++FAILED forth_test.py::ForthTest::test_swap_errors_if_there_is_nothing_on_the_stack
++FAILED forth_test.py::ForthTest::test_swap_errors_if_there_is_only_one_value_on_the_stack
++FAILED forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_not_the_only_ones
++FAILED forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_the_only_ones
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_consist_of_built_in_words
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_define_word_that_uses_word_with_the_same_name
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_operators
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_words
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_override_other_user_defined_words
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_use_different_words_with_the_same_name
++FAILED forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_negative_numbers
++FAILED forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_non_negative_numbers
++FAILED forth_test.py::ForthTest::test_user_defined_words_errors_if_executing_a_non_existent_word
++FAILED forth_test.py::ForthTest::test_user_defined_words_execute_in_the_right_order
++54 failed in 0.57s
+diff --git a/work/.pytest_cache/.gitignore b/.pytest_cache/.gitignore
+new file mode 100644
+index 0000000..bc1a1f6
+--- /dev/null
++++ b/.pytest_cache/.gitignore
+@@ -0,0 +1,2 @@
++# Created by pytest automatically.
++*
+diff --git a/work/.pytest_cache/CACHEDIR.TAG b/.pytest_cache/CACHEDIR.TAG
+new file mode 100644
+index 0000000..fce15ad
+--- /dev/null
++++ b/.pytest_cache/CACHEDIR.TAG
+@@ -0,0 +1,4 @@
++Signature: 8a477f597d28d172789f06886806bc55
++# This file is a cache directory tag created by pytest.
++# For information about cache directory tags, see:
++#	https://bford.info/cachedir/spec.html
+diff --git a/work/.pytest_cache/README.md b/.pytest_cache/README.md
+new file mode 100644
+index 0000000..b89018c
+--- /dev/null
++++ b/.pytest_cache/README.md
+@@ -0,0 +1,8 @@
++# pytest cache directory #
++
++This directory contains data from the pytest's cache plugin,
++which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
++
++**Do not** commit this to version control.
++
++See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+diff --git a/work/.pytest_cache/v/cache/lastfailed b/.pytest_cache/v/cache/lastfailed
+new file mode 100644
+index 0000000..205dba3
+--- /dev/null
++++ b/.pytest_cache/v/cache/lastfailed
+@@ -0,0 +1,56 @@
++{
++  "forth_test.py::ForthTest::test_addition_can_add_two_numbers": true,
++  "forth_test.py::ForthTest::test_addition_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_addition_errors_if_there_is_only_one_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_addition_more_than_two_values_on_the_stack": true,
++  "forth_test.py::ForthTest::test_case_insensitivity_definitions_are_case_insensitive": true,
++  "forth_test.py::ForthTest::test_case_insensitivity_drop_is_case_insensitive": true,
++  "forth_test.py::ForthTest::test_case_insensitivity_dup_is_case_insensitive": true,
++  "forth_test.py::ForthTest::test_case_insensitivity_over_is_case_insensitive": true,
++  "forth_test.py::ForthTest::test_case_insensitivity_swap_is_case_insensitive": true,
++  "forth_test.py::ForthTest::test_case_insensitivity_user_defined_words_are_case_insensitive": true,
++  "forth_test.py::ForthTest::test_combined_arithmetic_addition_and_multiplication": true,
++  "forth_test.py::ForthTest::test_combined_arithmetic_addition_and_subtraction": true,
++  "forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_addition": true,
++  "forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_division": true,
++  "forth_test.py::ForthTest::test_division_can_divide_two_numbers": true,
++  "forth_test.py::ForthTest::test_division_errors_if_dividing_by_zero": true,
++  "forth_test.py::ForthTest::test_division_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_division_errors_if_there_is_only_one_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_division_more_than_two_values_on_the_stack": true,
++  "forth_test.py::ForthTest::test_division_performs_integer_division": true,
++  "forth_test.py::ForthTest::test_drop_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_not_the_only_one": true,
++  "forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_the_only_one": true,
++  "forth_test.py::ForthTest::test_dup_copies_a_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_dup_copies_the_top_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_dup_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_multiplication_can_multiply_two_numbers": true,
++  "forth_test.py::ForthTest::test_multiplication_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_multiplication_errors_if_there_is_only_one_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_multiplication_more_than_two_values_on_the_stack": true,
++  "forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_more_than_two": true,
++  "forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_only_two": true,
++  "forth_test.py::ForthTest::test_over_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_over_errors_if_there_is_only_one_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_parsing_and_numbers_numbers_just_get_pushed_onto_the_stack": true,
++  "forth_test.py::ForthTest::test_parsing_and_numbers_pushes_negative_numbers_onto_the_stack": true,
++  "forth_test.py::ForthTest::test_subtraction_can_subtract_two_numbers": true,
++  "forth_test.py::ForthTest::test_subtraction_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_subtraction_errors_if_there_is_only_one_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_subtraction_more_than_two_values_on_the_stack": true,
++  "forth_test.py::ForthTest::test_swap_errors_if_there_is_nothing_on_the_stack": true,
++  "forth_test.py::ForthTest::test_swap_errors_if_there_is_only_one_value_on_the_stack": true,
++  "forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_not_the_only_ones": true,
++  "forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_the_only_ones": true,
++  "forth_test.py::ForthTest::test_user_defined_words_can_consist_of_built_in_words": true,
++  "forth_test.py::ForthTest::test_user_defined_words_can_define_word_that_uses_word_with_the_same_name": true,
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_operators": true,
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_words": true,
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_other_user_defined_words": true,
++  "forth_test.py::ForthTest::test_user_defined_words_can_use_different_words_with_the_same_name": true,
++  "forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_negative_numbers": true,
++  "forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_non_negative_numbers": true,
++  "forth_test.py::ForthTest::test_user_defined_words_errors_if_executing_a_non_existent_word": true,
++  "forth_test.py::ForthTest::test_user_defined_words_execute_in_the_right_order": true
++}
+\ No newline at end of file
+diff --git a/work/.pytest_cache/v/cache/nodeids b/.pytest_cache/v/cache/nodeids
+new file mode 100644
+index 0000000..c251b2d
+--- /dev/null
++++ b/.pytest_cache/v/cache/nodeids
+@@ -0,0 +1,56 @@
++[
++  "forth_test.py::ForthTest::test_addition_can_add_two_numbers",
++  "forth_test.py::ForthTest::test_addition_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_addition_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_addition_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_case_insensitivity_definitions_are_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_drop_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_dup_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_over_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_swap_is_case_insensitive",
++  "forth_test.py::ForthTest::test_case_insensitivity_user_defined_words_are_case_insensitive",
++  "forth_test.py::ForthTest::test_combined_arithmetic_addition_and_multiplication",
++  "forth_test.py::ForthTest::test_combined_arithmetic_addition_and_subtraction",
++  "forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_addition",
++  "forth_test.py::ForthTest::test_combined_arithmetic_multiplication_and_division",
++  "forth_test.py::ForthTest::test_division_can_divide_two_numbers",
++  "forth_test.py::ForthTest::test_division_errors_if_dividing_by_zero",
++  "forth_test.py::ForthTest::test_division_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_division_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_division_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_division_performs_integer_division",
++  "forth_test.py::ForthTest::test_drop_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_not_the_only_one",
++  "forth_test.py::ForthTest::test_drop_removes_the_top_value_on_the_stack_if_it_is_the_only_one",
++  "forth_test.py::ForthTest::test_dup_copies_a_value_on_the_stack",
++  "forth_test.py::ForthTest::test_dup_copies_the_top_value_on_the_stack",
++  "forth_test.py::ForthTest::test_dup_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_multiplication_can_multiply_two_numbers",
++  "forth_test.py::ForthTest::test_multiplication_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_multiplication_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_multiplication_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_more_than_two",
++  "forth_test.py::ForthTest::test_over_copies_the_second_element_if_there_are_only_two",
++  "forth_test.py::ForthTest::test_over_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_over_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_parsing_and_numbers_numbers_just_get_pushed_onto_the_stack",
++  "forth_test.py::ForthTest::test_parsing_and_numbers_pushes_negative_numbers_onto_the_stack",
++  "forth_test.py::ForthTest::test_subtraction_can_subtract_two_numbers",
++  "forth_test.py::ForthTest::test_subtraction_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_subtraction_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_subtraction_more_than_two_values_on_the_stack",
++  "forth_test.py::ForthTest::test_swap_errors_if_there_is_nothing_on_the_stack",
++  "forth_test.py::ForthTest::test_swap_errors_if_there_is_only_one_value_on_the_stack",
++  "forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_not_the_only_ones",
++  "forth_test.py::ForthTest::test_swap_swaps_the_top_two_values_on_the_stack_if_they_are_the_only_ones",
++  "forth_test.py::ForthTest::test_user_defined_words_can_consist_of_built_in_words",
++  "forth_test.py::ForthTest::test_user_defined_words_can_define_word_that_uses_word_with_the_same_name",
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_operators",
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_built_in_words",
++  "forth_test.py::ForthTest::test_user_defined_words_can_override_other_user_defined_words",
++  "forth_test.py::ForthTest::test_user_defined_words_can_use_different_words_with_the_same_name",
++  "forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_negative_numbers",
++  "forth_test.py::ForthTest::test_user_defined_words_cannot_redefine_non_negative_numbers",
++  "forth_test.py::ForthTest::test_user_defined_words_errors_if_executing_a_non_existent_word",
++  "forth_test.py::ForthTest::test_user_defined_words_execute_in_the_right_order"
++]
+\ No newline at end of file

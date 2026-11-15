@@ -1,0 +1,96 @@
+The reactive system implementation uses a simple dependency propagation model. When an `InputCell`'s value is set, it triggers a `_propagate` method that repeatedly recomputes all affected `ComputeCell`s until the system reaches a stable state (where no more values change). After stability is reached, `ComputeCell`s that have changed their value since the last callback notification fire their registered callbacks.
+
+```python
+class InputCell:
+    def __init__(self, initial_value):
+        self._value = initial_value
+        self._observers = []
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        if self._value != new_value:
+            self._value = new_value
+            self._propagate()
+
+    def _propagate(self):
+        all_cells = []
+        def get_all(cell):
+            for obs in cell._observers:
+                if obs not in all_cells:
+                    all_cells.append(obs)
+                    get_all(obs)
+        get_all(self)
+        
+        changed = True
+        while changed:
+            changed = False
+            for cell in all_cells:
+                if cell._recompute():
+                    changed = True
+        
+        for cell in all_cells:
+            cell._notify_callbacks()
+
+class ComputeCell:
+    def __init__(self, inputs, compute_function):
+        self.inputs = inputs
+        self.compute_function = compute_function
+        self.callbacks = []
+        self._value = self.compute_function([i.value for i in self.inputs])
+        self._observers = []
+        for input in self.inputs:
+            input._observers.append(self)
+        self._last_notified_value = self._value
+
+    @property
+    def value(self):
+        return self._value
+
+    def _recompute(self):
+        new_value = self.compute_function([i.value for i in self.inputs])
+        if new_value != self._value:
+            self._value = new_value
+            return True
+        return False
+        
+    def _notify_callbacks(self):
+        if self._value != self._last_notified_value:
+            self._last_notified_value = self._value
+            for callback in self.callbacks:
+                callback(self._value)
+
+    def add_callback(self, callback):
+        self.callbacks.append(callback)
+
+    def remove_callback(self, callback):
+        if callback in self.callbacks:
+            self.callbacks.remove(callback)
+```
+
+--- stderr ---
+pinch session 20261115-103110-6b1064  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+[read] read_file
+[read] read_file
+Auto-approved (shell): run_command {"command": "cat <<EOF > react.py\nclass InputCell:\n    def __init__(self, initial_value):\n        self._value = initial_value\n        self._observers = []\n\n    @property\n    def value(self):\n        return self._value\n\n    @value.setter\n    def value(self, new_value):\n        if self._va...
+[shell] run_command
+Auto-approved (shell): run_command {"command": "cat <<EOF > react.py\nclass Cell:\n    def __init__(self):\n        self._observers = []\n\n    def _notify_observers(self):\n        for observer in self._observers:\n            observer._recompute()\n\nclass InputCell(Cell):\n    def __init__(self, initial_value):\n        super().__...
+[shell] run_command
+Auto-approved (shell): run_command {"command": "cat <<EOF > react.py\nclass Cell:\n    def __init__(self):\n        self._observers = []\n\n    def _notify(self):\n        # We need to collect all affected compute cells\n        # and recompute them in topological order.\n        # However, for this problem, simply recomputing\n     ...
+[shell] run_command
+Auto-approved (shell): run_command {"command": "grep -C 5 \"test_callbacks_should_not_be_called_if_dependencies_change_but_output_value_doesn_t_change\" react_test.py\n"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "sed -n '/def test_callbacks_should_not_be_called_if_dependencies_change_but_output_value_doesn_t_change/,/self.assertEqual(cb1_observer, \\[\\])/p' react_test.py\n"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "cat <<EOF > react.py\nclass Cell:\n    def __init__(self):\n        self._observers = []\n\nclass InputCell(Cell):\n    def __init__(self, initial_value):\n        super().__init__()\n        self._value = initial_value\n\n    @property\n    def value(self):\n        return self._value\...
+[shell] run_command
+Auto-approved (shell): run_command {"command": "cat <<EOF > react.py\nclass Cell:\n    def __init__(self):\n        self._observers = []\n\nclass InputCell(Cell):\n    def __init__(self, initial_value):\n        super().__init__()\n        self._value = initial_value\n\n    @property\n    def value(self):\n        return self._value\...
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py\n"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "cat react.py\n"}
+[shell] run_command

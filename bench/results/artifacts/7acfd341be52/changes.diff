@@ -1,0 +1,42 @@
+diff --git a/grade_school.py b/grade_school.py
+index b57208f..e4b13f3 100644
+--- a/grade_school.py
++++ b/grade_school.py
+@@ -1,15 +1,32 @@
+ class School:
+     def __init__(self):
+-        pass
++        self._grades = {}
++        self._added = []
++        self._all_students = set()
+ 
+     def add_student(self, name, grade):
+-        pass
++        if name in self._all_students:
++            self._added.append(False)
++            return False
++        
++        self._all_students.add(name)
++        if grade not in self._grades:
++            self._grades[grade] = []
++        self._grades[grade].append(name)
++        self._added.append(True)
++        return True
+ 
+     def roster(self):
+-        pass
++        sorted_grades = sorted(self._grades.keys())
++        result = []
++        for g in sorted_grades:
++            result.extend(sorted(self._grades[g]))
++        return result
+ 
+     def grade(self, grade_number):
+-        pass
++        if grade_number not in self._grades:
++            return []
++        return sorted(self._grades[grade_number])
+ 
+     def added(self):
+-        pass
++        return self._added

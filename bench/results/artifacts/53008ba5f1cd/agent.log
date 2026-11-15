@@ -1,0 +1,29 @@
+The model endpoint answered HTTP 429: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 500, model: gemini-3.1-flash-lite, description: Generate content requests per day limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.
+Please retry in 20h30m27.317501125s. The session is saved. Resume it with: pinch --resume 20261115-112428-cf0810
+
+--- stderr ---
+pinch session 20261115-112428-cf0810  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+pinch proposes running the tests once before starting.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_number.py"}
+Auto-approved (write): write_file {"content": "import humanize\nimport pytest\n\ndef test_intword_rounding_issue():\n    assert humanize.intword(10**24 - 1) == '1.0 septillion'\n    assert humanize.intword(10**24 - 1, \"%.0f\") == \"1 septillion\"\n    assert humanize.intword(10**21 - 1) == '1.0 sextillion'\n    assert humanize.intw...
+[write] write_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_number.py"}
+Auto-approved (shell): run_command {"command": "pytest -q tests/test_issue_repro.py"}
+[shell] run_command
+[read] read_file
+Auto-approved (write): edit_file {"file_path": "src/humanize/number.py", "old_string": "    # Consider the biggest power of 10 that is smaller than value\n    ordinal -= 1\n    power = powers[ordinal]\n    chopped = value / power\n    rounded_value = float(format % chopped)\n\n    if not largest_ordinal and rounded_value * power ==...
+[write] edit_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_number.py"}
+Auto-approved (write): edit_file {"old_string": "    if rounded_value >= 1000:\n        # After rounding, we end up just at the next power\n        ordinal += 1\n        rounded_value = 1.0\n", "file_path": "src/humanize/number.py", "new_string": "    if not largest_ordinal and rounded_value * power == powers[ordinal + 1]:\n       ...
+[write] edit_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_number.py"}
+Auto-approved (write): edit_file {"new_string": "    if not largest_ordinal and rounded_value * power == powers[ordinal + 1]:\n        # After rounding, we end up just at the next power\n        ordinal += 1\n        rounded_value = 1.0\n\n    if rounded_value >= 1000 and not largest_ordinal and ordinal < len(powers) - 1:\n        ...
+[write] edit_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_number.py"}
+The gateway answered HTTP 504 (every provider it tried failed for now): waiting 2 s, then retrying (retry 1 of 4). Your session is saved.

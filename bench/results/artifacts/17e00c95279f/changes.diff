@@ -1,0 +1,96 @@
+diff --git a/react.py b/react.py
+index ab6be31..f433ae7 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,86 @@
+ class InputCell:
+     def __init__(self, initial_value):
+-        self.value = None
++        self._value = initial_value
++        self.observers = []
+ 
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value != new_value:
++            self._value = new_value
++            self._propagate()
++
++    def _propagate(self):
++        # Build the graph and identify all affected cells.
++        affected = []
++        queue = list(self.observers)
++        visited = set()
++        
++        while queue:
++            cell = queue.pop(0)
++            if cell not in visited:
++                visited.add(cell)
++                affected.append(cell)
++                queue.extend(cell.observers)
++        
++        # Topological sort for dependencies
++        # Since it's a small graph, just re-order until no dependencies are out of order
++        # Actually, sorting by depth in the dependency graph is standard
++        sorted_affected = []
++        def get_depth(c, memo):
++            if c in memo: return memo[c]
++            if not hasattr(c, 'inputs'): return 0
++            depth = 0
++            for i in c.inputs:
++                depth = max(depth, get_depth(i, memo) + 1)
++            memo[c] = depth
++            return depth
++        
++        memo = {}
++        affected.sort(key=lambda c: get_depth(c, memo))
++        
++        # Update cells
++        old_values = {cell: cell.value for cell in affected}
++        
++        for cell in affected:
++            cell.update()
++            
++        # Notify callbacks
++        for cell in affected:
++            if cell.value != old_values[cell]:
++                cell._fire_callbacks()
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.callbacks = []
++        self._value = self._compute()
++        self.observers = []
++        for input_cell in self.inputs:
++            input_cell.observers.append(self)
++
++    def _compute(self):
++        return self.compute_function([i.value for i in self.inputs])
++
++    @property
++    def value(self):
++        return self._value
++
++    def update(self):
++        self._value = self._compute()
++
++    def _fire_callbacks(self):
++        for callback in self.callbacks:
++            callback(self._value)
+ 
+     def add_callback(self, callback):
+-        pass
++        self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)
+     
+\ No newline at end of file

@@ -1,0 +1,59 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..e8f05fd 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,53 @@
++import re
++from operator import add, sub, mul, floordiv
++
+ def answer(question):
+-    pass
++    if not question.startswith("What is"):
++        raise ValueError("unknown operation")
++    if not question.endswith("?"):
++        raise ValueError("syntax error")
++    
++    # Remove prefix and suffix
++    expr = question[7:-1].strip()
++    if not expr:
++        raise ValueError("syntax error")
++        
++    # Replace known operations with symbols
++    expr = expr.replace("plus", "+").replace("minus", "-")
++    expr = expr.replace("multiplied by", "*").replace("divided by", "/")
++    
++    # Check for unknown operations
++    if any(word.isalpha() for word in expr.split() if word not in ["+", "-", "*", "/"]):
++        raise ValueError("unknown operation")
++        
++    tokens = expr.split()
++    
++    # Validate structure
++    try:
++        # Check first token is a number
++        res = int(tokens[0])
++    except ValueError:
++        raise ValueError("syntax error")
++        
++    i = 1
++    while i < len(tokens):
++        op = tokens[i]
++        if op not in ["+", "-", "*", "/"]:
++            raise ValueError("syntax error")
++        
++        if i + 1 >= len(tokens):
++            raise ValueError("syntax error")
++            
++        try:
++            val = int(tokens[i+1])
++        except ValueError:
++            raise ValueError("syntax error")
++            
++        if op == "+": res += val
++        elif op == "-": res -= val
++        elif op == "*": res *= val
++        elif op == "/": res //= val
++            
++        i += 2
++        
++    return res

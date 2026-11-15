@@ -1,0 +1,53 @@
+diff --git a/dot_dsl.py b/dot_dsl.py
+index e22a618..10e1ca8 100644
+--- a/dot_dsl.py
++++ b/dot_dsl.py
+@@ -24,4 +24,47 @@ class Edge:
+ 
+ class Graph:
+     def __init__(self, data=None):
+-        pass
++        self.nodes = []
++        self.edges = []
++        self.attrs = {}
++
++        if data is None:
++            return
++
++        if not isinstance(data, (list, tuple)):
++            raise TypeError("Graph data malformed")
++
++        for item in data:
++            if not isinstance(item, (list, tuple)) or len(item) == 0:
++                raise TypeError("Graph item incomplete")
++
++            kind = item[0]
++            if kind == ATTR:
++                if len(item) < 3:
++                    raise TypeError("Graph item incomplete")
++                if len(item) != 3:
++                    raise ValueError("Attribute is malformed")
++                _, key, val = item
++                if not isinstance(key, str):
++                    raise ValueError("Attribute is malformed")
++                self.attrs[key] = val
++            elif kind == NODE:
++                if len(item) < 3:
++                    raise TypeError("Graph item incomplete")
++                if len(item) != 3:
++                    raise ValueError("Node is malformed")
++                _, name, attrs = item
++                if not isinstance(name, str) or not isinstance(attrs, dict):
++                    raise ValueError("Node is malformed")
++                self.nodes.append(Node(name, attrs))
++            elif kind == EDGE:
++                if len(item) < 4:
++                    raise TypeError("Graph item incomplete")
++                if len(item) != 4:
++                    raise ValueError("Edge is malformed")
++                _, src, dst, attrs = item
++                if not isinstance(src, str) or not isinstance(dst, str) or not isinstance(attrs, dict):
++                    raise ValueError("Edge is malformed")
++                self.edges.append(Edge(src, dst, attrs))
++            else:
++                raise ValueError("Unknown item")

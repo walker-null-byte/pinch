@@ -1,0 +1,101 @@
+The reactive system is implemented by tracking the dependency graph from input cells. When an input cell's value is set, it triggers a stable state recalculation of all dependent compute cells. Callbacks are stored in each cell and only triggered if the cell's final computed value differs from its value before the input change.
+
+```python
+class Cell:
+    def __init__(self, value):
+        self._value = value
+        self.callbacks = []
+        self.dependents = []
+
+    @property
+    def value(self):
+        return self._value
+
+    def add_callback(self, callback):
+        self.callbacks.append(callback)
+
+    def remove_callback(self, callback):
+        if callback in self.callbacks:
+            self.callbacks.remove(callback)
+
+
+class InputCell(Cell):
+    def __init__(self, value):
+        super().__init__(value)
+
+    @Cell.value.setter
+    def value(self, new_value):
+        if self._value == new_value:
+            return
+        self._value = new_value
+        self._trigger_update()
+
+    def _trigger_update(self):
+        cells = []
+        def collect(cell):
+            if cell not in cells:
+                cells.append(cell)
+                for dep in cell.dependents:
+                    collect(dep)
+        collect(self)
+        
+        old_stable_values = {cell: cell.value for cell in cells}
+        
+        changed = True
+        while changed:
+            changed = False
+            for cell in cells:
+                if isinstance(cell, ComputeCell):
+                    new = cell._compute()
+                    if cell.value != new:
+                        cell._value = new
+                        changed = True
+                        
+        for cell in cells:
+            if isinstance(cell, ComputeCell) and cell.value != old_stable_values[cell]:
+                for cb in cell.callbacks:
+                    cb(cell.value)
+
+
+class ComputeCell(Cell):
+    def __init__(self, inputs, compute_function):
+        self.inputs = inputs
+        self.compute_function = compute_function
+        super().__init__(self._compute())
+        for i in inputs:
+            i.dependents.append(self)
+
+    def _compute(self):
+        return self.compute_function([i.value for i in self.inputs])
+```
+
+--- stderr ---
+pinch session 20261115-102131-9152b1  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+[read] read_file
+[read] read_file
+Auto-approved (write): edit_file {"file_path": "react.py", "new_string": "class Cell:\n    def __init__(self):\n        self.observers = []\n        self._value = None\n\n    def add_callback(self, callback):\n        self.observers.append(callback)\n\n    def remove_callback(self, callback):\n        if callback in self.observers:...
+[write] edit_file
+Auto-approved (write): write_file {"content": "class Cell:\n    def __init__(self):\n        self.observers = []\n        self._value = None\n        self.callbacks = []\n\n    @property\n    def value(self):\n        return self._value\n\n    def add_callback(self, callback):\n        self.callbacks.append(callback)\n\n    def remo...
+[write] write_file
+Auto-approved (write): write_file {"file_path": "react.py", "content": "class Cell:\n    def __init__(self, value):\n        self._value = value\n        self.callbacks = []\n        self.dependents = []\n\n    @property\n    def value(self):\n        return self._value\n\n    def add_callback(self, callback):\n        self.callback...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python3 -m pytest react_test.py"}
+[shell] run_command
+Auto-approved (write): write_file {"content": "class Cell:\n    def __init__(self, value):\n        self._value = value\n        self.callbacks = []\n        self.dependents = []\n\n    @property\n    def value(self):\n        return self._value\n\n    def add_callback(self, callback):\n        self.callbacks.append(callback)\n\n   ...
+[write] write_file
+Auto-approved (write): write_file {"content": "class Cell:\n    def __init__(self, value):\n        self._value = value\n        self.callbacks = []\n        self.dependents = []\n\n    @property\n    def value(self):\n        return self._value\n\n    def add_callback(self, callback):\n        self.callbacks.append(callback)\n\n   ...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python3 -m pytest react_test.py"}
+[shell] run_command
+Auto-approved (write): write_file {"file_path": "react.py", "content": "class Cell:\n    def __init__(self, value):\n        self._value = value\n        self.callbacks = []\n        self.dependents = []\n\n    @property\n    def value(self):\n        return self._value\n\n    def add_callback(self, callback):\n        self.callback...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python3 -m pytest react_test.py"}
+[shell] run_command
+[read] read_file
+Auto-approved (shell): run_command {"command": "python3 -m pytest react_test.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "rm -rf __pycache__ .pytest_cache"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python3 -m pytest react_test.py"}
+[shell] run_command

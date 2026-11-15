@@ -1,0 +1,40 @@
+diff --git a/book_store.py b/book_store.py
+index 8a84288..05f1b68 100644
+--- a/book_store.py
++++ b/book_store.py
+@@ -1,2 +1,34 @@
+ def total(basket):
+-    pass
++    if not basket:
++        return 0
++    
++    counts = [0] * 5
++    for book in basket:
++        if 1 <= book <= 5:
++            counts[book - 1] += 1
++            
++    memo = {}
++    
++    def solve(counts_tuple):
++        if sum(counts_tuple) == 0:
++            return 0
++        sorted_counts = tuple(sorted(counts_tuple, reverse=True))
++        if sorted_counts in memo:
++            return memo[sorted_counts]
++        
++        discounts = [1.0, 0.95, 0.90, 0.80, 0.75]
++        min_cost = float('inf')
++        
++        for size in range(5, 0, -1):
++            if size <= len(sorted_counts) and sorted_counts[size - 1] > 0:
++                new_counts = list(sorted_counts)
++                for i in range(size):
++                    new_counts[i] -= 1
++                cost = 800 * size * discounts[size - 1] + solve(tuple(new_counts))
++                if cost < min_cost:
++                    min_cost = cost
++                    
++        memo[sorted_counts] = min_cost
++        return min_cost
++
++    return int(solve(tuple(counts)))

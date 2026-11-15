@@ -1,0 +1,69 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..20f3a3c 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,63 @@
++from operator import add, sub, mul, floordiv
++
+ def answer(question):
+-    pass
++    # Basic structural check
++    if not question.startswith("What is") or not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    # Extract content
++    content = question[len("What is"): -1].strip()
++    if not content:
++        raise ValueError("syntax error")
++    
++    # Preprocess operators
++    content = content.replace("multiplied by", "multiplied").replace("divided by", "divided")
++    
++    # Tokenize
++    tokens = content.split()
++    
++    # Initial value
++    try:
++        current_val = int(tokens[0])
++    except ValueError:
++        raise ValueError("syntax error")
++    
++    idx = 1
++    while idx < len(tokens):
++        # We need an operator
++        op_str = tokens[idx]
++        
++        # Check if it's a known operator
++        if op_str in ["plus", "minus", "multiplied", "divided"]:
++            op = {"plus": add, "minus": sub, "multiplied": mul, "divided": floordiv}[op_str]
++        else:
++            # If it's not a known operator, it could be a number (syntax error) or unknown operation
++            try:
++                int(op_str)
++                raise ValueError("syntax error")
++            except ValueError:
++                # Based on tests, any non-number/non-operator here is likely an unknown operation
++                # if it's a word.
++                raise ValueError("unknown operation")
++        
++        idx += 1
++        if idx >= len(tokens):
++            raise ValueError("syntax error")
++        
++        # We need a number
++        try:
++            next_val = int(tokens[idx])
++        except ValueError:
++            # It might be an operator (syntax error) or an unknown word
++            # If it's an operator, definitely syntax error.
++            # If it's something else, it might be syntax error or unknown operation
++            if tokens[idx] in ["plus", "minus", "multiplied", "divided"]:
++                raise ValueError("syntax error")
++            else:
++                # Based on tests, this is also a syntax error
++                raise ValueError("syntax error")
++        
++        current_val = op(current_val, next_val)
++        idx += 1
++        
++    return current_val

@@ -1,0 +1,38 @@
+The `TLRUCache` was failing to remove an existing key if the new value provided was expired upon arrival. This was updated to ensure that if the time-to-use (ttu) for a new value indicates immediate expiration, the key is removed from the cache if it already exists, matching expected `MutableMapping` behavior.
+
+```python
+        with self.timer as time:
+            expires = self.__ttu(key, value, time)
+            if not (time < expires):
+                if key in self:
+                    del self[key]
+                return  # skip expired items
+            self.expire(time)
+            cache_setitem(self, key, value)
+```
+
+--- stderr ---
+pinch session 20261115-111606-37ded2  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+pinch proposes running the tests once before starting.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_tlru.py"}
+Auto-approved (write): write_file {"file_path": "tests/reproduce_issue.py", "content": "from cachetools import TLRUCache\n\ndef test_tlru_overwrite_expired():\n    def ttu(_key, value, now):\n        return now + value\n\n    cache = TLRUCache(maxsize=2, ttu=ttu)\n    cache[1] = 5\n    assert cache[1] == 5\n    assert len(cache) == ...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python -m pytest tests/reproduce_issue.py"}
+[shell] run_command
+[read] read_file
+[read] read_file
+Auto-approved (write): edit_file {"file_path": "src/cachetools/__init__.py", "new_string": "        with self.timer as time:\n            expires = self.__ttu(key, value, time)\n            if not (time < expires):\n                if key in self:\n                    del self[key]\n                return  # skip expired items\n   ...
+[write] edit_file
+Auto-approved (shell): run_command {"command": "python -m pytest tests/reproduce_issue.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest -q tests/test_tlru.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest tests/"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "rm tests/reproduce_issue.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest tests/test_tlru.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest tests/"}
+[shell] run_command

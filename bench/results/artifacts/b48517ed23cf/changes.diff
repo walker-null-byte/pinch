@@ -1,0 +1,72 @@
+diff --git a/react.py b/react.py
+index ab6be31..3377a6e 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,61 @@
+ class InputCell:
+     def __init__(self, initial_value):
+-        self.value = None
++        self._value = initial_value
++        self._observers = []
++
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value != new_value:
++            self._value = new_value
++            # Propagate updates to all downstream compute cells
++            # We need to collect all changes first to handle diamond dependencies
++            changed_cells = []
++            for observer in self._observers:
++                observer._update_and_collect(changed_cells)
++            
++            # Fire callbacks for all cells whose value changed
++            for cell in changed_cells:
++                cell._fire_callbacks()
+ 
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        self._inputs = inputs
++        self._compute_function = compute_function
++        self._callbacks = []
++        self._value = self._compute_function([i.value for i in self._inputs])
++        self._last_reported_value = self._value
++        self._observers = []
++
++        for input in inputs:
++            input._observers.append(self)
++    
++    @property
++    def value(self):
++        return self._value
++
++    def _update_and_collect(self, changed_cells):
++        new_value = self._compute_function([i.value for i in self._inputs])
++        if new_value != self._value:
++            self._value = new_value
++            if self not in changed_cells:
++                changed_cells.append(self)
++            for observer in self._observers:
++                observer._update_and_collect(changed_cells)
++
++    def _fire_callbacks(self):
++        if self._value != self._last_reported_value:
++            self._last_reported_value = self._value
++            for callback in self._callbacks:
++                callback(self._value)
+ 
+     def add_callback(self, callback):
+-        pass
++        self._callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self._callbacks:
++            self._callbacks.remove(callback)

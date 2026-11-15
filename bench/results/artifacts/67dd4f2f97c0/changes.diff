@@ -1,0 +1,64 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..382c66a 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,58 @@
++import re
++from operator import add, sub, mul, floordiv
++
+ def answer(question):
+-    pass
++    if not question.startswith("What is") or not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    # Extract the core expression
++    core = question[len("What is"):-1].strip()
++    if not core:
++        raise ValueError("syntax error")
++    
++    # Replace known phrases with operators
++    core = core.replace("plus", "+")
++    core = core.replace("minus", "-")
++    core = core.replace("multiplied by", "*")
++    core = core.replace("divided by", "/")
++    
++    # Tokenize
++    tokens = core.split()
++    
++    # Check for invalid operations or characters that weren't replaced
++    # If it contains alphabetical characters (except what we expect), it's unknown operation
++    if any(c.isalpha() for c in core if c not in "+-*/"):
++        raise ValueError("unknown operation")
++        
++    # Check syntax: expected number, operator, number, operator, number...
++    # Or just a number
++    if len(tokens) == 1:
++        try:
++            return int(tokens[0])
++        except ValueError:
++            raise ValueError("syntax error")
++            
++    if len(tokens) % 2 == 0:
++        raise ValueError("syntax error")
++        
++    # Evaluate left to right
++    try:
++        result = int(tokens[0])
++        i = 1
++        while i < len(tokens):
++            op = tokens[i]
++            val = int(tokens[i+1])
++            if op == "+":
++                result = add(result, val)
++            elif op == "-":
++                result = sub(result, val)
++            elif op == "*":
++                result = mul(result, val)
++            elif op == "/":
++                result = floordiv(result, val)
++            else:
++                raise ValueError("syntax error")
++            i += 2
++        return result
++    except (ValueError, ZeroDivisionError):
++        raise ValueError("syntax error")

@@ -1,0 +1,46 @@
+The `TLRUCache` was failing to remove an existing key when it was updated with an expired value. I modified the `__setitem__` method to explicitly delete the key if it exists in the cache when an expired value is provided.
+
+```python
+        with self.timer as time:
+            expires = self.__ttu(key, value, time)
+            if not (time < expires):
+                if key in self:
+                    del self[key]
+                return  # skip expired items
+            self.expire(time)
+            cache_setitem(self, key, value)
+```
+
+Verified with a reproduction script and ran all existing tests to ensure no regressions.
+
+--- stderr ---
+pinch session 20261115-111446-d48ca3  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+Auto-approved (write): write_file {"file_path": "tests/reproduce_issue.py", "content": "from cachetools import TLRUCache\nimport unittest\n\ndef ttu(_key, value, now):\n    return now + value\n\nclass Timer:\n    def __init__(self):\n        self.time = 0\n    def __call__(self):\n        return self.time\n    def tick(self):\n     ...
+[write] write_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_tlru.py"}
+Auto-approved (shell): run_command {"command": "python3 tests/reproduce_issue.py"}
+[shell] run_command
+[read] read_file
+[read] read_file
+Auto-approved (write): edit_file {"new_string": "        with self.timer as time:\n            expires = self.__ttu(key, value, time)\n            if not (time < expires):\n                if key in self:\n                    del self[key]\n                return  # skip expired items\n            self.expire(time)\n            cac...
+[write] edit_file
+pinch proposes running the tests to check this edit.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_tlru.py"}
+Auto-approved (shell): run_command {"command": "python3 tests/reproduce_issue.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python3 -m pytest -q tests/test_tlru.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python3 -m pytest -q tests/"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "rm tests/reproduce_issue.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python3 -m pytest -q tests/test_tlru.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python3 -m pytest -q tests/test_ttl.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python3 -m pytest -q tests/test_cache.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python3 -m pytest -q tests/"}
+[shell] run_command

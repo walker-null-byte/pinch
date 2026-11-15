@@ -1,0 +1,241 @@
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..ff68239
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,182 @@
++FFFFFFFFFFFFFFFF                                                         [100%]
++=================================== FAILURES ===================================
++___________________ AffineCipherTest.test_decode_a_sentence ____________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_decode_a_sentence>
++
++    def test_decode_a_sentence(self):
++>       self.assertEqual(
++            decode("qdwju nqcro muwhn odqun oppmd aunwd o", 19, 16),
++            "anobstacleisoftenasteppingstone",
++        )
++E       AssertionError: None != 'anobstacleisoftenasteppingstone'
++
++affine_cipher_test.py:53: AssertionError
++_________________ AffineCipherTest.test_decode_all_the_letters _________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_decode_all_the_letters>
++
++    def test_decode_all_the_letters(self):
++>       self.assertEqual(
++            decode("swxtj npvyk lruol iejdc blaxk swxmh qzglf", 17, 33),
++            "thequickbrownfoxjumpsoverthelazydog",
++        )
++E       AssertionError: None != 'thequickbrownfoxjumpsoverthelazydog'
++
++affine_cipher_test.py:62: AssertionError
++____________________ AffineCipherTest.test_decode_exercism _____________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_decode_exercism>
++
++    def test_decode_exercism(self):
++>       self.assertEqual(decode("tytgn fjr", 3, 7), "exercism")
++E       AssertionError: None != 'exercism'
++
++affine_cipher_test.py:50: AssertionError
++_____________________ AffineCipherTest.test_decode_numbers _____________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_decode_numbers>
++
++    def test_decode_numbers(self):
++>       self.assertEqual(decode("odpoz ub123 odpoz ub", 25, 7), "testing123testing")
++E       AssertionError: None != 'testing123testing'
++
++affine_cipher_test.py:59: AssertionError
++_____________ AffineCipherTest.test_decode_with_a_not_coprime_to_m _____________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_decode_with_a_not_coprime_to_m>
++
++    def test_decode_with_a_not_coprime_to_m(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++affine_cipher_test.py:79: AssertionError
++_____________ AffineCipherTest.test_decode_with_no_spaces_in_input _____________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_decode_with_no_spaces_in_input>
++
++    def test_decode_with_no_spaces_in_input(self):
++>       self.assertEqual(
++            decode("swxtjnpvyklruoliejdcblaxkswxmhqzglf", 17, 33),
++            "thequickbrownfoxjumpsoverthelazydog",
++        )
++E       AssertionError: None != 'thequickbrownfoxjumpsoverthelazydog'
++
++affine_cipher_test.py:68: AssertionError
++______________ AffineCipherTest.test_decode_with_too_many_spaces _______________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_decode_with_too_many_spaces>
++
++    def test_decode_with_too_many_spaces(self):
++>       self.assertEqual(
++            decode("vszzm    cly   yd cg    qdp", 15, 16), "jollygreengiant"
++        )
++E       AssertionError: None != 'jollygreengiant'
++
++affine_cipher_test.py:74: AssertionError
++_________________ AffineCipherTest.test_encode_all_the_letters _________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_all_the_letters>
++
++    def test_encode_all_the_letters(self):
++>       self.assertEqual(
++            encode("The quick brown fox jumps over the lazy dog.", 17, 33),
++            "swxtj npvyk lruol iejdc blaxk swxmh qzglf",
++        )
++E       AssertionError: None != 'swxtj npvyk lruol iejdc blaxk swxmh qzglf'
++
++affine_cipher_test.py:38: AssertionError
++__________________ AffineCipherTest.test_encode_deep_thought ___________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_deep_thought>
++
++    def test_encode_deep_thought(self):
++>       self.assertEqual(encode("Truth is fiction.", 5, 17), "iynia fdqfb ifje")
++E       AssertionError: None != 'iynia fdqfb ifje'
++
++affine_cipher_test.py:35: AssertionError
++__________________ AffineCipherTest.test_encode_mindblowingly __________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_mindblowingly>
++
++    def test_encode_mindblowingly(self):
++>       self.assertEqual(encode("mindblowingly", 11, 15), "rzcwa gnxzc dgt")
++E       AssertionError: None != 'rzcwa gnxzc dgt'
++
++affine_cipher_test.py:27: AssertionError
++_______________________ AffineCipherTest.test_encode_no ________________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_no>
++
++    def test_encode_no(self):
++>       self.assertEqual(encode("no", 15, 18), "fu")
++E       AssertionError: None != 'fu'
++
++affine_cipher_test.py:18: AssertionError
++_____________________ AffineCipherTest.test_encode_numbers _____________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_numbers>
++
++    def test_encode_numbers(self):
++>       self.assertEqual(
++            encode("Testing,1 2 3, testing.", 3, 4), "jqgjc rw123 jqgjc rw"
++        )
++E       AssertionError: None != 'jqgjc rw123 jqgjc rw'
++
++affine_cipher_test.py:30: AssertionError
++______________________ AffineCipherTest.test_encode_o_m_g ______________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_o_m_g>
++
++    def test_encode_o_m_g(self):
++>       self.assertEqual(encode("O M G", 25, 47), "hjp")
++E       AssertionError: None != 'hjp'
++
++affine_cipher_test.py:24: AssertionError
++_______________________ AffineCipherTest.test_encode_omg _______________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_omg>
++
++    def test_encode_omg(self):
++>       self.assertEqual(encode("OMG", 21, 3), "lvz")
++E       AssertionError: None != 'lvz'
++
++affine_cipher_test.py:21: AssertionError
++_____________ AffineCipherTest.test_encode_with_a_not_coprime_to_m _____________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_with_a_not_coprime_to_m>
++
++    def test_encode_with_a_not_coprime_to_m(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++affine_cipher_test.py:44: AssertionError
++_______________________ AffineCipherTest.test_encode_yes _______________________
++
++self = <affine_cipher_test.AffineCipherTest testMethod=test_encode_yes>
++
++    def test_encode_yes(self):
++>       self.assertEqual(encode("yes", 5, 7), "xbt")
++E       AssertionError: None != 'xbt'
++
++affine_cipher_test.py:15: AssertionError
++=========================== short test summary info ============================
++FAILED affine_cipher_test.py::AffineCipherTest::test_decode_a_sentence - Asse...
++FAILED affine_cipher_test.py::AffineCipherTest::test_decode_all_the_letters
++FAILED affine_cipher_test.py::AffineCipherTest::test_decode_exercism - Assert...
++FAILED affine_cipher_test.py::AffineCipherTest::test_decode_numbers - Asserti...
++FAILED affine_cipher_test.py::AffineCipherTest::test_decode_with_a_not_coprime_to_m
++FAILED affine_cipher_test.py::AffineCipherTest::test_decode_with_no_spaces_in_input
++FAILED affine_cipher_test.py::AffineCipherTest::test_decode_with_too_many_spaces
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_all_the_letters
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_deep_thought - As...
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_mindblowingly - A...
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_no - AssertionErr...
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_numbers - Asserti...
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_o_m_g - Assertion...
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_omg - AssertionEr...
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_with_a_not_coprime_to_m
++FAILED affine_cipher_test.py::AffineCipherTest::test_encode_yes - AssertionEr...
++16 failed in 0.04s
+diff --git a/affine_cipher.py b/affine_cipher.py
+index 2d41e04..6a6f393 100644
+--- a/affine_cipher.py
++++ b/affine_cipher.py
+@@ -1,6 +1,46 @@
++import math
++
++m = 26
++
++def _check_coprime(a):
++    if math.gcd(a, m) != 1:
++        raise ValueError("a and m must be coprime.")
++
++def _mod_inverse(a):
++    for x in range(1, m):
++        if (a * x) % m == 1:
++            return x
++    raise ValueError("a and m must be coprime.")
++
+ def encode(plain_text, a, b):
+-    pass
++    _check_coprime(a)
++    chars = []
++    for char in plain_text.lower():
++        if char.isalpha():
++            i = ord(char) - ord('a')
++            encrypted_val = (a * i + b) % m
++            chars.append(chr(encrypted_val + ord('a')))
++        elif char.isdigit():
++            chars.append(char)
++    
++    # group by 5
++    result = "".join(chars)
++    grouped = []
++    for i in range(0, len(result), 5):
++        grouped.append(result[i:i+5])
++    return " ".join(grouped)
+ 
+ 
+ def decode(ciphered_text, a, b):
+-    pass
++    _check_coprime(a)
++    a_inv = _mod_inverse(a)
++    chars = []
++    for char in ciphered_text.lower():
++        if char.isalpha():
++            y = ord(char) - ord('a')
++            decrypted_val = (a_inv * (y - b)) % m
++            chars.append(chr(decrypted_val + ord('a')))
++        elif char.isdigit():
++            chars.append(char)
++    return "".join(chars)
++

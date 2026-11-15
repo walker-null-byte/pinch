@@ -1,0 +1,60 @@
+diff --git a/poker.py b/poker.py
+index 49824d3..d8e2e66 100644
+--- a/poker.py
++++ b/poker.py
+@@ -1,2 +1,54 @@
++
++from collections import Counter
++
++VALUES = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14}
++
++def parse_card(c):
++    return VALUES[c[:-1]], c[-1]
++
++def hand_score(hand_str):
++    cards = [parse_card(c) for c in hand_str.split()]
++    orig_ranks = sorted([c[0] for c in cards], reverse=True)
++    suits = [c[1] for c in cards]
++    
++    is_flush = len(set(suits)) == 1
++    uniq = sorted(list(set(orig_ranks)), reverse=True)
++    is_straight = False
++    straight_ranks = orig_ranks
++    if len(uniq) == 5:
++        if uniq[0] - uniq[4] == 4:
++            is_straight = True
++            straight_ranks = uniq
++        elif uniq == [14, 5, 4, 3, 2]:
++            is_straight = True
++            straight_ranks = [5, 4, 3, 2, 1]
++            
++    counts = Counter(orig_ranks)
++    sorted_counts = sorted(counts.items(), key=lambda x: (x[1], x[0]), reverse=True)
++    freq_ranks = [r for r, f in sorted_counts]
++    freqs = [f for r, f in sorted_counts]
++    
++    if is_flush and is_straight:
++        return (8, straight_ranks)
++    elif freqs == [4, 1]:
++        return (7, freq_ranks)
++    elif freqs == [3, 2]:
++        return (6, freq_ranks)
++    elif is_flush:
++        return (5, orig_ranks)
++    elif is_straight:
++        return (4, straight_ranks)
++    elif freqs == [3, 1, 1]:
++        return (3, freq_ranks)
++    elif freqs == [2, 2, 1]:
++        return (2, freq_ranks)
++    elif freqs == [2, 1, 1, 1]:
++        return (1, freq_ranks)
++    else:
++        return (0, orig_ranks)
++
+ def best_hands(hands):
+-    pass
++    scored = [(h, hand_score(h)) for h in hands]
++    scored.sort(key=lambda x: x[1], reverse=True)
++    best_score = scored[0][1]
++    return [h for h, s in scored if s == best_score]

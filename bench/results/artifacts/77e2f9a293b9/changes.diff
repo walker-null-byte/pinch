@@ -1,0 +1,60 @@
+diff --git a/pig_latin.py b/pig_latin.py
+index dda3f07..e794153 100644
+--- a/pig_latin.py
++++ b/pig_latin.py
+@@ -1,2 +1,54 @@
++def translate_word(word):
++    if word.startswith(('a', 'e', 'i', 'o', 'u', 'xr', 'yt')):
++        return word + 'ay'
++    
++    # Check rule 3: zero or more consonants followed by "qu"
++    # Wait, let's find where "qu" is located or match rule 3/2/4 carefully.
++    # Rule 3: starts with zero or more consonants followed by "qu".
++    # e.g., "quick" -> "qu" is at index 0. "square" -> "s" (1 consonant) followed by "qu".
++    # Let's check if "qu" appears after some consonants before any vowel (or treat 'u' after 'q' correctly).
++    # Actually, let's check index of "qu".
++    qu_pos = word.find('qu')
++    if qu_pos != -1:
++        # verify all chars before qu_pos are consonants (or qu_pos == 0)
++        prefix = word[:qu_pos]
++        if all(c not in 'aeiouy' for c in prefix):
++            # move prefix + "qu" to end
++            cut = qu_pos + 2
++            return word[cut:] + word[:cut] + 'ay'
++
++    # Rule 4: one or more consonants followed by "y"
++    # e.g. "my", "rhythm"
++    # Find first 'y' that is preceded by at least one consonant.
++    # Wait, for "my", 'm' is consonant, 'y' follows.
++    # For "rhythm", consonants before 'y': "rh" or "rhythm" has 'y' at index 1 and index 4.
++    # Rule 4 says: "If a word starts with one or more consonants followed by 'y', first move the consonants preceding the 'y' to the end..."
++    # Wait, in "rhythm", y is at index 1 and index 4? No, r-h-y-t-h-m -> y is at index 2.
++    # Let's check test: "rhythm" -> "ythmrhay". Consonants preceding 'y' at index 2 is "rh" (index 0 and 1).
++    # So find the first 'y' that is preceded by consonants (index > 0).
++    y_pos = -1
++    for i in range(1, len(word)):
++        if word[i] == 'y':
++            y_pos = i
++            break
++    if y_pos != -1:
++        # check if all chars before y_pos are consonants
++        if all(c not in 'aeiou' for c in word[:y_pos]):
++            return word[y_pos:] + word[:y_pos] + 'ay'
++
++    # Rule 2: begins with one or more consonants
++    # Move all leading consonants up to the first vowel (or 'y') to the end.
++    # Note: 'y' acts as a vowel here if it's after consonants (covered by rule 4 or general vowel search).
++    # Let's find first vowel or 'y' (if index > 0).
++    first_vowel_pos = -1
++    for i, c in enumerate(word):
++        if c in 'aeiou' or (c == 'y' and i > 0):
++            first_vowel_pos = i
++            break
++    if first_vowel_pos != -1:
++        return word[first_vowel_pos:] + word[:first_vowel_pos] + 'ay'
++
++    return word + 'ay'
++
+ def translate(text):
+-    pass
++    return " ".join(translate_word(word) for word in text.split())

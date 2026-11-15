@@ -1,0 +1,74 @@
+diff --git a/react.py b/react.py
+index ab6be31..b21f0ed 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,64 @@
+ class InputCell:
+     def __init__(self, initial_value):
+-        self.value = None
++        self._value = initial_value
++        self._observers = []
+ 
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value != new_value:
++            self._value = new_value
++            # Collect all dependent cells
++            all_cells = self._get_all_dependent_cells()
++            old_values = {cell: cell.value for cell in all_cells}
++            
++            # Trigger updates
++            for observer in self._observers:
++                observer._update()
++                
++            # Fire callbacks for those that changed
++            for cell in all_cells:
++                if cell.value != old_values[cell]:
++                    for callback in cell.callbacks:
++                        callback(cell.value)
++
++    def _get_all_dependent_cells(self):
++        cells = set()
++        def _collect(cell):
++            for obs in cell._observers:
++                if obs not in cells:
++                    cells.add(obs)
++                    _collect(obs)
++        _collect(self)
++        return cells
+ 
+ class ComputeCell:
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.callbacks = []
++        self._value = self.compute_function([i.value for i in self.inputs])
++        self._observers = []
++        for input_cell in inputs:
++            if hasattr(input_cell, '_observers'):
++                input_cell._observers.append(self)
++
++    @property
++    def value(self):
++        return self._value
++
++    def _update(self):
++        self._value = self.compute_function([i.value for i in self.inputs])
++        for observer in self._observers:
++            observer._update()
+ 
+     def add_callback(self, callback):
+-        pass
++        self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)
+     
+\ No newline at end of file

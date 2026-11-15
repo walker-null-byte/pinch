@@ -1,0 +1,65 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..5c339cd 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,59 @@
++import re
++
+ def answer(question):
+-    pass
++    if not question.startswith("What is "):
++        raise ValueError("unknown operation")
++    if not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    expr = question[len("What is "):-1]
++    
++    # replace phrases first
++    expr = expr.replace("plus", "+").replace("minus", "-").replace("multiplied by", "*").replace("divided by", "/")
++    
++    parts = expr.split()
++    
++    # If expression is empty, it's a syntax error
++    if not parts:
++        raise ValueError("syntax error")
++    
++    # Check for remaining words
++    if re.search(r'[a-zA-Z]', expr):
++         raise ValueError("unknown operation")
++
++    try:
++        current = int(parts[0])
++    except ValueError:
++        raise ValueError("syntax error")
++    
++    i = 1
++    while i < len(parts):
++        op = parts[i]
++        
++        # Check if it's an operator
++        if op not in ("+", "-", "*", "/"):
++            raise ValueError("syntax error")
++        
++        if i + 1 >= len(parts):
++            raise ValueError("syntax error")
++            
++        try:
++            next_val = int(parts[i+1])
++        except ValueError:
++            raise ValueError("syntax error")
++            
++        if op == "+":
++            current += next_val
++        elif op == "-":
++            current -= next_val
++        elif op == "*":
++            current *= next_val
++        elif op == "/":
++            current //= next_val
++        
++        i += 2
++        
++    if i != len(parts):
++        raise ValueError("syntax error")
++        
++    return current

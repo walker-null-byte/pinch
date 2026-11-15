@@ -1,0 +1,64 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..e3eb6bc 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,58 @@
++from operator import add, sub, mul, floordiv
++
+ def answer(question):
+-    pass
++    if not question.startswith("What is") or not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    body = question[len("What is"): -1].strip()
++    if not body:
++        raise ValueError("syntax error")
++    
++    # Check if it is a known structure starting with "What is"
++    # If it contains unexpected words that look like operations but aren't supported, 
++    # it's an "unknown operation". If it's just malformed, "syntax error".
++
++    # Let's refine the validation
++    # Supported: plus, minus, multiplied by, divided by
++    
++    # First, simple check for unsupported words
++    words = body.split()
++    for word in words:
++        if word in ["cubed", "squared", "to"] or (word.isalpha() and word not in ["plus", "minus", "multiplied", "by", "divided"]):
++             raise ValueError("unknown operation")
++
++    parts = body.replace("plus", "+").replace("minus", "-")\
++                .replace("multiplied by", "*").replace("divided by", "/")\
++                .split()
++    
++    if not parts:
++        raise ValueError("syntax error")
++    
++    try:
++        current = int(parts[0])
++    except ValueError:
++        raise ValueError("syntax error")
++        
++    i = 1
++    while i < len(parts):
++        op = parts[i]
++        if i + 1 >= len(parts):
++            raise ValueError("syntax error")
++        try:
++            next_val = int(parts[i+1])
++        except ValueError:
++            raise ValueError("syntax error")
++            
++        if op == "+":
++            current = add(current, next_val)
++        elif op == "-":
++            current = sub(current, next_val)
++        elif op == "*":
++            current = mul(current, next_val)
++        elif op == "/":
++            current = floordiv(current, next_val)
++        else:
++            raise ValueError("unknown operation")
++        i += 2
++        
++    return current

@@ -1,0 +1,63 @@
+diff --git a/connect.py b/connect.py
+index 688dd68..14e96e6 100644
+--- a/connect.py
++++ b/connect.py
+@@ -1,7 +1,56 @@
+ 
+ class ConnectGame:
+     def __init__(self, board):
+-        pass
++        self.board = [line.strip().split() for line in board.strip().splitlines()]
++        self.height = len(self.board)
++        self.width = len(self.board[0]) if self.height > 0 else 0
+ 
+     def get_winner(self):
+-        pass
++        if self._check_win("O"):
++            return "O"
++        if self._check_win("X"):
++            return "X"
++        return ""
++
++    def _check_win(self, player):
++        if not self.board:
++            return False
++
++        visited = set()
++        queue = []
++
++        if player == "O":
++            # Top to bottom: row 0 to row height - 1
++            for c in range(self.width):
++                if self.board[0][c] == "O":
++                    queue.append((0, c))
++                    visited.add((0, c))
++        else:
++            # Left to right: col 0 to col width - 1
++            for r in range(self.height):
++                if self.board[r][0] == "X":
++                    queue.append((r, 0))
++                    visited.add((r, 0))
++
++        directions = [
++            (-1, 0), (1, 0),
++            (0, -1), (0, 1),
++            (-1, 1), (1, -1)
++        ]
++
++        while queue:
++            r, c = queue.pop(0)
++
++            if player == "O" and r == self.height - 1:
++                return True
++            if player == "X" and c == self.width - 1:
++                return True
++
++            for dr, dc in directions:
++                nr, nc = r + dr, c + dc
++                if 0 <= nr < self.height and 0 <= nc < self.width:
++                    if (nr, nc) not in visited and self.board[nr][nc] == player:
++                        visited.add((nr, nc))
++                        queue.append((nr, nc))
++
++        return False

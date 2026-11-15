@@ -1,0 +1,404 @@
+diff --git a/work/.pinch/outputs/20261108-204021-f02405-proposed-step11.txt b/.pinch/outputs/20261108-204021-f02405-proposed-step11.txt
+new file mode 100644
+index 0000000..cf408f2
+--- /dev/null
++++ b/.pinch/outputs/20261108-204021-f02405-proposed-step11.txt
+@@ -0,0 +1,57 @@
++......F.....                                                             [100%]
++=================================== FAILURES ===================================
++________________________ DotDslTest.test_malformed_EDGE ________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_EDGE>
++
++    def test_malformed_EDGE(self):
++        with self.assertRaises(ValueError) as err:
++>           Graph([(EDGE, 1, 2)])
++
++dot_dsl_test.py:113: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++    def __init__(self, data=None):
++        self.nodes = []
++        self.edges = []
++        self.attrs = {}
++    
++        if data is None:
++            return
++    
++        if not isinstance(data, list):
++            raise TypeError("Graph data malformed")
++    
++        for item in data:
++            if not isinstance(item, tuple) or len(item) == 0:
++                raise TypeError("Graph item incomplete")
++    
++            kind = item[0]
++            if kind == ATTR:
++                if len(item) != 3:
++                    if len(item) < 3:
++                        raise TypeError("Graph item incomplete")
++                    raise ValueError("Attribute is malformed")
++                _, key, value = item
++                if not isinstance(key, str):
++                    raise ValueError("Attribute is malformed")
++                self.attrs[key] = value
++            elif kind == NODE:
++                if len(item) != 3:
++                    if len(item) < 3:
++                        raise TypeError("Graph item incomplete")
++                    raise ValueError("Node is malformed")
++                _, name, attrs = item
++                if not isinstance(name, str) or not isinstance(attrs, dict):
++                    raise ValueError("Node is malformed")
++                self.nodes.append(Node(name, attrs))
++            elif kind == EDGE:
++                if len(item) != 4:
++                    if len(item) < 4:
++>                       raise TypeError("Graph item incomplete")
++E                       TypeError: Graph item incomplete
++
++dot_dsl.py:63: TypeError
++=========================== short test summary info ============================
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_EDGE - TypeError: Graph it...
++1 failed, 11 passed in 0.02s
+diff --git a/work/.pinch/outputs/20261108-204021-f02405-proposed-step5.txt b/.pinch/outputs/20261108-204021-f02405-proposed-step5.txt
+new file mode 100644
+index 0000000..4c184a3
+--- /dev/null
++++ b/.pinch/outputs/20261108-204021-f02405-proposed-step5.txt
+@@ -0,0 +1,44 @@
++.........F..                                                             [100%]
++=================================== FAILURES ===================================
++_____________________ DotDslTest.test_malformed_graph_item _____________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_graph_item>
++
++    def test_malformed_graph_item(self):
++        with self.assertRaises(TypeError) as err:
++            Graph([()])
++        self.assertEqual(type(err.exception), TypeError)
++        self.assertEqual(err.exception.args[0], "Graph item incomplete")
++    
++    
++        with self.assertRaises(TypeError) as err:
++>               Graph([(ATTR, )])
++
++dot_dsl_test.py:92: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++    def __init__(self, data=None):
++        self.nodes = []
++        self.edges = []
++        self.attrs = {}
++    
++        if data is None:
++            return
++    
++        if not isinstance(data, list):
++            raise TypeError("Graph data malformed")
++    
++        for item in data:
++            if not isinstance(item, tuple) or len(item) < 1:
++                raise TypeError("Graph item incomplete")
++    
++            kind = item[0]
++            if kind == ATTR:
++                if len(item) != 3:
++>                   raise ValueError("Attribute is malformed")
++E                   ValueError: Attribute is malformed
++
++dot_dsl.py:44: ValueError
++=========================== short test summary info ============================
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_graph_item - ValueError: A...
++1 failed, 11 passed in 0.02s
+diff --git a/work/.pinch/outputs/20261108-204021-f02405-proposed-step7.txt b/.pinch/outputs/20261108-204021-f02405-proposed-step7.txt
+new file mode 100644
+index 0000000..cf408f2
+--- /dev/null
++++ b/.pinch/outputs/20261108-204021-f02405-proposed-step7.txt
+@@ -0,0 +1,57 @@
++......F.....                                                             [100%]
++=================================== FAILURES ===================================
++________________________ DotDslTest.test_malformed_EDGE ________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_EDGE>
++
++    def test_malformed_EDGE(self):
++        with self.assertRaises(ValueError) as err:
++>           Graph([(EDGE, 1, 2)])
++
++dot_dsl_test.py:113: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++    def __init__(self, data=None):
++        self.nodes = []
++        self.edges = []
++        self.attrs = {}
++    
++        if data is None:
++            return
++    
++        if not isinstance(data, list):
++            raise TypeError("Graph data malformed")
++    
++        for item in data:
++            if not isinstance(item, tuple) or len(item) == 0:
++                raise TypeError("Graph item incomplete")
++    
++            kind = item[0]
++            if kind == ATTR:
++                if len(item) != 3:
++                    if len(item) < 3:
++                        raise TypeError("Graph item incomplete")
++                    raise ValueError("Attribute is malformed")
++                _, key, value = item
++                if not isinstance(key, str):
++                    raise ValueError("Attribute is malformed")
++                self.attrs[key] = value
++            elif kind == NODE:
++                if len(item) != 3:
++                    if len(item) < 3:
++                        raise TypeError("Graph item incomplete")
++                    raise ValueError("Node is malformed")
++                _, name, attrs = item
++                if not isinstance(name, str) or not isinstance(attrs, dict):
++                    raise ValueError("Node is malformed")
++                self.nodes.append(Node(name, attrs))
++            elif kind == EDGE:
++                if len(item) != 4:
++                    if len(item) < 4:
++>                       raise TypeError("Graph item incomplete")
++E                       TypeError: Graph item incomplete
++
++dot_dsl.py:63: TypeError
++=========================== short test summary info ============================
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_EDGE - TypeError: Graph it...
++1 failed, 11 passed in 0.02s
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..f65de43
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,167 @@
++FFFFFFFFFFFF                                                             [100%]
++=================================== FAILURES ===================================
++_________________________ DotDslTest.test_empty_graph __________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_empty_graph>
++
++    def test_empty_graph(self):
++        g = Graph()
++    
++>       self.assertEqual(g.nodes, [])
++                         ^^^^^^^
++E       AttributeError: 'Graph' object has no attribute 'nodes'
++
++dot_dsl_test.py:10: AttributeError
++____________________ DotDslTest.test_graph_with_attributes _____________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_graph_with_attributes>
++
++    def test_graph_with_attributes(self):
++        g = Graph([
++            (ATTR, "foo", "1"),
++            (ATTR, "title", "Testing Attrs"),
++            (NODE, "a", {"color": "green"}),
++            (NODE, "c", {}),
++            (NODE, "b", {"label": "Beta!"}),
++            (EDGE, "b", "c", {}),
++            (EDGE, "a", "b", {"color": "blue"}),
++            (ATTR, "bar", "true")
++        ])
++    
++>       self.assertEqual(g.nodes, [Node("a", {"color": "green"}),
++                         ^^^^^^^
++                                   Node("c", {}),
++                                   Node("b", {"label": "Beta!"})])
++E       AttributeError: 'Graph' object has no attribute 'nodes'
++
++dot_dsl_test.py:62: AttributeError
++___________________ DotDslTest.test_graph_with_one_attribute ___________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_graph_with_one_attribute>
++
++    def test_graph_with_one_attribute(self):
++        g = Graph([
++            (ATTR, "foo", "1")
++        ])
++    
++>       self.assertEqual(g.nodes, [])
++                         ^^^^^^^
++E       AttributeError: 'Graph' object has no attribute 'nodes'
++
++dot_dsl_test.py:46: AttributeError
++_____________________ DotDslTest.test_graph_with_one_edge ______________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_graph_with_one_edge>
++
++    def test_graph_with_one_edge(self):
++        g = Graph([
++            (EDGE, "a", "b", {})
++        ])
++    
++>       self.assertEqual(g.nodes, [])
++                         ^^^^^^^
++E       AttributeError: 'Graph' object has no attribute 'nodes'
++
++dot_dsl_test.py:37: AttributeError
++_____________________ DotDslTest.test_graph_with_one_node ______________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_graph_with_one_node>
++
++    def test_graph_with_one_node(self):
++        g = Graph([
++            (NODE, "a", {})
++        ])
++    
++>       self.assertEqual(g.nodes, [Node("a", {})])
++                         ^^^^^^^
++E       AttributeError: 'Graph' object has no attribute 'nodes'
++
++dot_dsl_test.py:19: AttributeError
++______________ DotDslTest.test_graph_with_one_node_with_keywords _______________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_graph_with_one_node_with_keywords>
++
++    def test_graph_with_one_node_with_keywords(self):
++        g = Graph([
++            (NODE, "a", {"color": "green"})
++        ])
++    
++>       self.assertEqual(g.nodes, [Node("a", {"color": "green"})])
++                         ^^^^^^^
++E       AttributeError: 'Graph' object has no attribute 'nodes'
++
++dot_dsl_test.py:28: AttributeError
++________________________ DotDslTest.test_malformed_EDGE ________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_EDGE>
++
++    def test_malformed_EDGE(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++dot_dsl_test.py:112: AssertionError
++________________________ DotDslTest.test_malformed_attr ________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_attr>
++
++    def test_malformed_attr(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++dot_dsl_test.py:98: AssertionError
++_______________________ DotDslTest.test_malformed_graph ________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_graph>
++
++    def test_malformed_graph(self):
++>       with self.assertRaises(TypeError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: TypeError not raised
++
++dot_dsl_test.py:74: AssertionError
++_____________________ DotDslTest.test_malformed_graph_item _____________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_graph_item>
++
++    def test_malformed_graph_item(self):
++>       with self.assertRaises(TypeError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: TypeError not raised
++
++dot_dsl_test.py:85: AssertionError
++________________________ DotDslTest.test_malformed_node ________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_malformed_node>
++
++    def test_malformed_node(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++dot_dsl_test.py:105: AssertionError
++_________________________ DotDslTest.test_unknown_item _________________________
++
++self = <dot_dsl_test.DotDslTest testMethod=test_unknown_item>
++
++    def test_unknown_item(self):
++>       with self.assertRaises(ValueError) as err:
++             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++E       AssertionError: ValueError not raised
++
++dot_dsl_test.py:118: AssertionError
++=========================== short test summary info ============================
++FAILED dot_dsl_test.py::DotDslTest::test_empty_graph - AttributeError: 'Graph...
++FAILED dot_dsl_test.py::DotDslTest::test_graph_with_attributes - AttributeErr...
++FAILED dot_dsl_test.py::DotDslTest::test_graph_with_one_attribute - Attribute...
++FAILED dot_dsl_test.py::DotDslTest::test_graph_with_one_edge - AttributeError...
++FAILED dot_dsl_test.py::DotDslTest::test_graph_with_one_node - AttributeError...
++FAILED dot_dsl_test.py::DotDslTest::test_graph_with_one_node_with_keywords - ...
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_EDGE - AssertionError: Val...
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_attr - AssertionError: Val...
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_graph - AssertionError: Ty...
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_graph_item - AssertionErro...
++FAILED dot_dsl_test.py::DotDslTest::test_malformed_node - AssertionError: Val...
++FAILED dot_dsl_test.py::DotDslTest::test_unknown_item - AssertionError: Value...
++12 failed in 0.04s
+diff --git a/dot_dsl.py b/dot_dsl.py
+index e22a618..f3603a2 100644
+--- a/dot_dsl.py
++++ b/dot_dsl.py
+@@ -24,4 +24,49 @@ class Edge:
+ 
+ class Graph:
+     def __init__(self, data=None):
+-        pass
++        self.nodes = []
++        self.edges = []
++        self.attrs = {}
++
++        if data is None:
++            return
++
++        if not isinstance(data, list):
++            raise TypeError("Graph data malformed")
++
++        for item in data:
++            if not isinstance(item, tuple) or len(item) == 0:
++                raise TypeError("Graph item incomplete")
++
++            kind = item[0]
++            if kind == ATTR:
++                if len(item) != 3:
++                    if len(item) < 3:
++                        raise TypeError("Graph item incomplete")
++                    raise ValueError("Attribute is malformed")
++                _, key, value = item
++                if not isinstance(key, str):
++                    raise ValueError("Attribute is malformed")
++                self.attrs[key] = value
++            elif kind == NODE:
++                if len(item) != 3:
++                    if len(item) < 3:
++                        raise TypeError("Graph item incomplete")
++                    raise ValueError("Node is malformed")
++                _, name, attrs = item
++                if not isinstance(name, str) or not isinstance(attrs, dict):
++                    raise ValueError("Node is malformed")
++                self.nodes.append(Node(name, attrs))
++            elif kind == EDGE:
++                if len(item) != 4:
++                    if len(item) < 4 and len(item) < 3:
++                        raise TypeError("Graph item incomplete")
++                    raise ValueError("Edge is malformed")
++                _, src, dst, attrs = item
++                if not isinstance(src, str) or not isinstance(dst, str) or not isinstance(attrs, dict):
++                    raise ValueError("Edge is malformed")
++                self.edges.append(Edge(src, dst, attrs))
++            else:
++                if len(item) < 3:
++                    raise TypeError("Graph item incomplete")
++                raise ValueError("Unknown item")

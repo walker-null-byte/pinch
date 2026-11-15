@@ -1,0 +1,359 @@
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..27de5df
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,313 @@
++FFFFFFFFFFFFFFFFFFFF                                                     [100%]
++=================================== FAILURES ===================================
++______________________ GradeSchoolTest.test_add_a_student ______________________
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_add_a_student>
++
++    def test_add_a_student(self):
++        school = School()
++        school.add_student(name="Aimee", grade=2)
++        expected = [True]
++>       self.assertEqual(school.added(), expected)
++E       AssertionError: None != [True]
++
++grade_school_test.py:23: AssertionError
++_ GradeSchoolTest.test_adding_multiple_students_in_the_same_grade_in_the_roster _
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_adding_multiple_students_in_the_same_grade_in_the_roster>
++
++    def test_adding_multiple_students_in_the_same_grade_in_the_roster(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="Paul", grade=2)
++        expected = [True, True, True]
++>       self.assertEqual(school.added(), expected)
++E       AssertionError: None != [True, True, True]
++
++grade_school_test.py:38: AssertionError
++___________ GradeSchoolTest.test_adding_students_in_multiple_grades ____________
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_adding_students_in_multiple_grades>
++
++    def test_adding_students_in_multiple_grades(self):
++        school = School()
++        school.add_student(name="Chelsea", grade=3)
++        school.add_student(name="Logan", grade=7)
++        expected = [True, True]
++>       self.assertEqual(school.added(), expected)
++E       AssertionError: None != [True, True]
++
++grade_school_test.py:73: AssertionError
++_ GradeSchoolTest.test_cannot_add_same_student_to_multiple_grades_in_the_roster _
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_cannot_add_same_student_to_multiple_grades_in_the_roster>
++
++    def test_cannot_add_same_student_to_multiple_grades_in_the_roster(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="James", grade=3)
++        school.add_student(name="Paul", grade=3)
++        expected = [True, True, False, True]
++>       self.assertEqual(school.added(), expected)
++E       AssertionError: None != [True, True, False, True]
++
++grade_school_test.py:90: AssertionError
++_ GradeSchoolTest.test_cannot_add_student_to_same_grade_in_the_roster_more_than_once _
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_cannot_add_student_to_same_grade_in_the_roster_more_than_once>
++
++    def test_cannot_add_student_to_same_grade_in_the_roster_more_than_once(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="Paul", grade=2)
++        expected = [True, True, False, True]
++>       self.assertEqual(school.added(), expected)
++E       AssertionError: None != [True, True, False, True]
++
++grade_school_test.py:56: AssertionError
++_______ GradeSchoolTest.test_grade_is_empty_if_no_students_in_that_grade _______
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_grade_is_empty_if_no_students_in_that_grade>
++
++    def test_grade_is_empty_if_no_students_in_that_grade(self):
++        school = School()
++        school.add_student(name="Peter", grade=2)
++        school.add_student(name="Zoe", grade=2)
++        school.add_student(name="Alex", grade=2)
++        school.add_student(name="Jim", grade=3)
++        expected = []
++>       self.assertEqual(school.grade(1), expected)
++E       AssertionError: None != []
++
++grade_school_test.py:145: AssertionError
++_______ GradeSchoolTest.test_grade_is_empty_if_no_students_in_the_roster _______
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_grade_is_empty_if_no_students_in_the_roster>
++
++    def test_grade_is_empty_if_no_students_in_the_roster(self):
++        school = School()
++        expected = []
++>       self.assertEqual(school.grade(1), expected)
++E       AssertionError: None != []
++
++grade_school_test.py:136: AssertionError
++_ GradeSchoolTest.test_multiple_students_in_the_same_grade_are_added_to_the_roster _
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_multiple_students_in_the_same_grade_are_added_to_the_roster>
++
++    def test_multiple_students_in_the_same_grade_are_added_to_the_roster(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="Paul", grade=2)
++        expected = ["Blair", "James", "Paul"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Blair', 'James', 'Paul']
++
++grade_school_test.py:47: AssertionError
++________ GradeSchoolTest.test_roster_is_empty_when_no_student_is_added _________
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_roster_is_empty_when_no_student_is_added>
++
++    def test_roster_is_empty_when_no_student_is_added(self):
++        school = School()
++        expected = []
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != []
++
++grade_school_test.py:17: AssertionError
++_____________ GradeSchoolTest.test_student_is_added_to_the_roster ______________
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_student_is_added_to_the_roster>
++
++    def test_student_is_added_to_the_roster(self):
++        school = School()
++        school.add_student(name="Aimee", grade=2)
++        expected = ["Aimee"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Aimee']
++
++grade_school_test.py:30: AssertionError
++__________ GradeSchoolTest.test_student_not_added_to_multiple_grades ___________
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_student_not_added_to_multiple_grades>
++
++    def test_student_not_added_to_multiple_grades(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="James", grade=3)
++        school.add_student(name="Paul", grade=3)
++        expected = ["Blair", "James"]
++>       self.assertEqual(school.grade(2), expected)
++E       AssertionError: None != ['Blair', 'James']
++
++grade_school_test.py:163: AssertionError
++___ GradeSchoolTest.test_student_not_added_to_multiple_grades_in_the_roster ____
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_student_not_added_to_multiple_grades_in_the_roster>
++
++    def test_student_not_added_to_multiple_grades_in_the_roster(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="James", grade=3)
++        school.add_student(name="Paul", grade=3)
++        expected = ["Blair", "James", "Paul"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Blair', 'James', 'Paul']
++
++grade_school_test.py:100: AssertionError
++__ GradeSchoolTest.test_student_not_added_to_other_grade_for_multiple_grades ___
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_student_not_added_to_other_grade_for_multiple_grades>
++
++    def test_student_not_added_to_other_grade_for_multiple_grades(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="James", grade=3)
++        school.add_student(name="Paul", grade=3)
++        expected = ["Paul"]
++>       self.assertEqual(school.grade(3), expected)
++E       AssertionError: None != ['Paul']
++
++grade_school_test.py:172: AssertionError
++_ GradeSchoolTest.test_student_not_added_to_same_grade_in_the_roster_more_than_once _
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_student_not_added_to_same_grade_in_the_roster_more_than_once>
++
++    def test_student_not_added_to_same_grade_in_the_roster_more_than_once(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="Paul", grade=2)
++        expected = ["Blair", "James", "Paul"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Blair', 'James', 'Paul']
++
++grade_school_test.py:66: AssertionError
++_____ GradeSchoolTest.test_student_not_added_to_same_grade_more_than_once ______
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_student_not_added_to_same_grade_more_than_once>
++
++    def test_student_not_added_to_same_grade_more_than_once(self):
++        school = School()
++        school.add_student(name="Blair", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="James", grade=2)
++        school.add_student(name="Paul", grade=2)
++        expected = ["Blair", "James", "Paul"]
++>       self.assertEqual(school.grade(2), expected)
++E       AssertionError: None != ['Blair', 'James', 'Paul']
++
++grade_school_test.py:154: AssertionError
++_ GradeSchoolTest.test_students_are_sorted_by_grades_and_then_by_name_in_the_roster _
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_students_are_sorted_by_grades_and_then_by_name_in_the_roster>
++
++    def test_students_are_sorted_by_grades_and_then_by_name_in_the_roster(self):
++        school = School()
++        school.add_student(name="Peter", grade=2)
++        school.add_student(name="Anna", grade=1)
++        school.add_student(name="Barb", grade=1)
++        school.add_student(name="Zoe", grade=2)
++        school.add_student(name="Alex", grade=2)
++        school.add_student(name="Jim", grade=3)
++        school.add_student(name="Charlie", grade=1)
++        expected = ["Anna", "Barb", "Charlie", "Alex", "Peter", "Zoe", "Jim"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Anna', 'Barb', 'Charlie', 'Alex', 'Peter', 'Zoe', 'Jim']
++
++grade_school_test.py:131: AssertionError
++_______ GradeSchoolTest.test_students_are_sorted_by_grades_in_the_roster _______
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_students_are_sorted_by_grades_in_the_roster>
++
++    def test_students_are_sorted_by_grades_in_the_roster(self):
++        school = School()
++        school.add_student(name="Jim", grade=3)
++        school.add_student(name="Peter", grade=2)
++        school.add_student(name="Anna", grade=1)
++        expected = ["Anna", "Peter", "Jim"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Anna', 'Peter', 'Jim']
++
++grade_school_test.py:109: AssertionError
++_________ GradeSchoolTest.test_students_are_sorted_by_name_in_a_grade __________
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_students_are_sorted_by_name_in_a_grade>
++
++    def test_students_are_sorted_by_name_in_a_grade(self):
++        school = School()
++        school.add_student(name="Franklin", grade=5)
++        school.add_student(name="Bradley", grade=5)
++        school.add_student(name="Jeff", grade=1)
++        expected = ["Bradley", "Franklin"]
++>       self.assertEqual(school.grade(5), expected)
++E       AssertionError: None != ['Bradley', 'Franklin']
++
++grade_school_test.py:180: AssertionError
++________ GradeSchoolTest.test_students_are_sorted_by_name_in_the_roster ________
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_students_are_sorted_by_name_in_the_roster>
++
++    def test_students_are_sorted_by_name_in_the_roster(self):
++        school = School()
++        school.add_student(name="Peter", grade=2)
++        school.add_student(name="Zoe", grade=2)
++        school.add_student(name="Alex", grade=2)
++        expected = ["Alex", "Peter", "Zoe"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Alex', 'Peter', 'Zoe']
++
++grade_school_test.py:118: AssertionError
++___ GradeSchoolTest.test_students_in_multiple_grades_are_added_to_the_roster ___
++
++self = <grade_school_test.GradeSchoolTest testMethod=test_students_in_multiple_grades_are_added_to_the_roster>
++
++    def test_students_in_multiple_grades_are_added_to_the_roster(self):
++        school = School()
++        school.add_student(name="Chelsea", grade=3)
++        school.add_student(name="Logan", grade=7)
++        expected = ["Chelsea", "Logan"]
++    
++>       self.assertEqual(school.roster(), expected)
++E       AssertionError: None != ['Chelsea', 'Logan']
++
++grade_school_test.py:81: AssertionError
++=========================== short test summary info ============================
++FAILED grade_school_test.py::GradeSchoolTest::test_add_a_student - AssertionE...
++FAILED grade_school_test.py::GradeSchoolTest::test_adding_multiple_students_in_the_same_grade_in_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_adding_students_in_multiple_grades
++FAILED grade_school_test.py::GradeSchoolTest::test_cannot_add_same_student_to_multiple_grades_in_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_cannot_add_student_to_same_grade_in_the_roster_more_than_once
++FAILED grade_school_test.py::GradeSchoolTest::test_grade_is_empty_if_no_students_in_that_grade
++FAILED grade_school_test.py::GradeSchoolTest::test_grade_is_empty_if_no_students_in_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_multiple_students_in_the_same_grade_are_added_to_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_roster_is_empty_when_no_student_is_added
++FAILED grade_school_test.py::GradeSchoolTest::test_student_is_added_to_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_student_not_added_to_multiple_grades
++FAILED grade_school_test.py::GradeSchoolTest::test_student_not_added_to_multiple_grades_in_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_student_not_added_to_other_grade_for_multiple_grades
++FAILED grade_school_test.py::GradeSchoolTest::test_student_not_added_to_same_grade_in_the_roster_more_than_once
++FAILED grade_school_test.py::GradeSchoolTest::test_student_not_added_to_same_grade_more_than_once
++FAILED grade_school_test.py::GradeSchoolTest::test_students_are_sorted_by_grades_and_then_by_name_in_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_students_are_sorted_by_grades_in_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_students_are_sorted_by_name_in_a_grade
++FAILED grade_school_test.py::GradeSchoolTest::test_students_are_sorted_by_name_in_the_roster
++FAILED grade_school_test.py::GradeSchoolTest::test_students_in_multiple_grades_are_added_to_the_roster
++20 failed in 0.21s
+diff --git a/grade_school.py b/grade_school.py
+index b57208f..575df05 100644
+--- a/grade_school.py
++++ b/grade_school.py
+@@ -1,15 +1,30 @@
++from collections import defaultdict
++
+ class School:
+     def __init__(self):
+-        pass
++        self._students = set()
++        self._grades = defaultdict(list)
++        self._added = []
+ 
+     def add_student(self, name, grade):
+-        pass
++        if name in self._students:
++            self._added.append(False)
++            return False
++        self._students.add(name)
++        self._grades[grade].append(name)
++        self._added.append(True)
++        return True
+ 
+     def roster(self):
+-        pass
++        sorted_grades = sorted(self._grades.keys())
++        result = []
++        for g in sorted_grades:
++            result.extend(sorted(self._grades[g]))
++        return result
+ 
+     def grade(self, grade_number):
+-        pass
++        return sorted(self._grades.get(grade_number, []))
+ 
+     def added(self):
+-        pass
++        return self._added
++

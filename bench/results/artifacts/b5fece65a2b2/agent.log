@@ -1,0 +1,84 @@
+The reactive system is implemented with `InputCell` and `ComputeCell`. Input cells propagate changes to all dependent compute cells. Compute cells maintain their current value and compute it from their inputs. Callbacks are stored in compute cells and fired only when their value changes in a stable state.
+
+```python
+class InputCell:
+    def __init__(self, initial_value):
+        self._value = initial_value
+        self._dependents = []
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        if self._value != new_value:
+            self._value = new_value
+            self._notify()
+
+    def _notify(self):
+        # Gather all affected compute cells
+        changed_cells = []
+        
+        def update_and_collect(cell):
+            old_val = cell._value
+            cell._value = cell._compute()
+            if old_val != cell._value:
+                changed_cells.append(cell)
+                for dep in cell._dependents:
+                    update_and_collect(dep)
+        
+        for dep in self._dependents:
+            update_and_collect(dep)
+        
+        # Fire callbacks for all cells that changed
+        for cell in changed_cells:
+            if cell._value != cell._last_reported_value:
+                for cb in cell._callbacks:
+                    cb(cell._value)
+                cell._last_reported_value = cell._value
+
+
+class ComputeCell:
+    def __init__(self, inputs, compute_function):
+        self._inputs = inputs
+        self._compute_function = compute_function
+        self._callbacks = []
+        self._dependents = []
+        self._value = self._compute()
+        self._last_reported_value = self._value
+        for input_cell in self._inputs:
+            input_cell._dependents.append(self)
+
+    def _compute(self):
+        return self._compute_function([i.value for i in self._inputs])
+
+    @property
+    def value(self):
+        return self._value
+
+    def add_callback(self, callback):
+        self._callbacks.append(callback)
+
+    def remove_callback(self, callback):
+        if callback in self._callbacks:
+            self._callbacks.remove(callback)
+```
+
+--- stderr ---
+pinch session 20261115-103208-0ee055  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+pinch proposes running the tests once before starting.
+Auto-approved (shell): run_test {"command": "python -m pytest -q react_test.py"}
+[read] read_file
+Auto-approved (write): edit_file {"new_string": "class InputCell:\n    def __init__(self, initial_value):\n        self._value = initial_value\n        self._dependents = []\n\n    @property\n    def value(self):\n        return self._value\n\n    @value.setter\n    def value(self, new_value):\n        if self._value != new_value:\...
+[write] edit_file
+Auto-approved (write): edit_file {"new_string": "class InputCell:\n    def __init__(self, initial_value):\n        self._value = initial_value\n        self._dependents = []\n\n    @property\n    def value(self):\n        return self._value\n\n    @value.setter\n    def value(self, new_value):\n        if self._value != new_value:\...
+[write] edit_file
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest -q react_test.py"}
+[shell] run_command
+[read] read_file
+Auto-approved (shell): run_command {"command": "# No changes needed, tests passed."}
+[shell] run_command

@@ -1,0 +1,78 @@
+diff --git a/wordy.py b/wordy.py
+index 6fdad1f..c4072d3 100644
+--- a/wordy.py
++++ b/wordy.py
+@@ -1,2 +1,72 @@
++import re
++from operator import add, sub, mul, floordiv
++
+ def answer(question):
+-    pass
++    # Rule 1: Structural check
++    if not question.startswith("What is") or not question.endswith("?"):
++        raise ValueError("unknown operation")
++    
++    # Extract core
++    core = question[len("What is"): -1].strip()
++    if not core:
++        raise ValueError("syntax error")
++    
++    # If it contains "cubed", it should be "unknown operation"
++    if "cubed" in core:
++        raise ValueError("unknown operation")
++        
++    # Replace "multiplied by" and "divided by"
++    expression = core.replace("multiplied by", "multiplied").replace("divided by", "divided")
++    tokens = expression.split()
++    
++    # If we have only 1 token and it's not a number, it's a syntax error
++    if len(tokens) == 1:
++        try:
++            return int(tokens[0])
++        except ValueError:
++            raise ValueError("syntax error")
++            
++    # Check if we have valid operators
++    # If the expression contains words, but they aren't numbers OR known operators, it might be "unknown operation"
++    # Actually, the requirement "What is 52 cubed?" is "unknown operation"
++    # "Who is the President..." is "unknown operation"
++    
++    # Let's check for unknown ops specifically
++    known_ops = {"plus", "minus", "multiplied", "divided"}
++    for t in tokens:
++        if not t.lstrip('-').isdigit() and t not in known_ops:
++            # If it's a word and not a known operator, it's probably "unknown operation"
++            # But "Who is the President..." contains words.
++            raise ValueError("unknown operation")
++            
++    # Validate structure: [num, op, num, op, num...]
++    if len(tokens) % 2 == 0:
++        raise ValueError("syntax error")
++    
++    try:
++        res = int(tokens[0])
++    except ValueError:
++        raise ValueError("syntax error")
++        
++    i = 1
++    while i < len(tokens):
++        op = tokens[i]
++        try:
++            val = int(tokens[i+1])
++        except (IndexError, ValueError):
++            raise ValueError("syntax error")
++            
++        if op == "plus":
++            res += val
++        elif op == "minus":
++            res -= val
++        elif op == "multiplied":
++            res *= val
++        elif op == "divided":
++            res //= val
++        else:
++            raise ValueError("unknown operation")
++            
++        i += 2
++        
++    return res

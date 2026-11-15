@@ -1,0 +1,77 @@
+diff --git a/affine_cipher.py b/affine_cipher.py
+index 2d41e04..5aad69f 100644
+--- a/affine_cipher.py
++++ b/affine_cipher.py
+@@ -1,6 +1,70 @@
++import math
++
++M = 26
++
++def check_coprime(a):
++    if math.gcd(a, M) != 1:
++        raise ValueError("a and m must be coprime.")
++
++def mod_inverse(a, m):
++    for x in range(m):
++        if (a * x) % m == 1:
++            return x
++    raise ValueError("a and m must be coprime.")
++
+ def encode(plain_text, a, b):
+-    pass
++    check_coprime(a)
++    chars = []
++    for ch in plain_text.lower():
++        if ch.isalpha():
++            i = ord(ch) - ord('a')
++            enc = (a * i + b) % M
++            chars.append(chr(enc + ord('a')))
++        elif ch.isdigit():
++            chars.append(ch)
++    
++    # group by 5
++    result = "".join(chars)
++    # wait, grouping needs to be applied in blocks of 5 letters, but digits? Let's check test:
++    # "Testing,1 2 3, testing." -> "jqgjc rw123 jqgjc rw"
++    # Wait, spaces are removed first, but how are groups formed?
++    # Let's check how grouping works with letters/digits or if whitespace/punctuation is stripped.
++    # Let's write a robust grouper or inspect standard implementation.
++    
++    # Actually let's group letters and digits or just filter out non-alphanumeric.
++    clean = "".join(ch for ch in plain_text.lower() if ch.isalnum())
++    # Wait, encode characters:
++    encoded_chars = []
++    for ch in plain_text.lower():
++        if ch.isalpha():
++            i = ord(ch) - ord('a')
++            enc = (a * i + b) % M
++            encoded_chars.append(chr(enc + ord('a')))
++        elif ch.isdigit():
++            encoded_chars.append(ch)
++    
++    # Wait, how does grouping work? Is grouping only on letters or all chars? Let's check the test:
++    # "Testing,1 2 3, testing." -> "jqgjc rw123 jqgjc rw"
++    # Length of "jqgjc" is 5. Then space, then "rw123" (len 5), then space, then "jqgjc", then space, then "rw".
++    # So every 5 characters of the filtered/transformed string? Or only letters grouped by 5?
++    # "jqgjc rw123 jqgjc rw" -> length of blocks separated by spaces: 5, 5, 5, 2. Total chars 17.
++    # "testing123testing" length is 17 (t, e, s, t, i, n, g, 1, 2, 3, t, e, s, t, i, n, g).
++    # So every 5 characters of the encoded sequence are separated by a space!
++    
++    res = "".join(encoded_chars)
++    return " ".join(res[i:i+5] for i in range(0, len(res), 5))
+ 
+ 
+ def decode(ciphered_text, a, b):
+-    pass
++    check_coprime(a)
++    a_inv = mod_inverse(a, M)
++    clean = "".join(ciphered_text.split())
++    chars = []
++    for ch in clean:
++        if ch.isalpha():
++            y = ord(ch) - ord('a')
++            dec = (a_inv * (y - b)) % M
++            chars.append(chr(dec + ord('a')))
++        elif ch.isdigit():
++            chars.append(ch)
++    return "".join(chars)

@@ -1,0 +1,37 @@
+Fixed `backoff_iter` to handle `factor=1.0` correctly. If `count` is specified, it behaves as expected. If `start == stop` and `count` is missing, it returns a single value. Otherwise, it raises a `ValueError`. Added tests to `tests/test_iterutils.py`.
+
+--- stderr ---
+pinch session 20261115-110241-157ced  repo /work  model gemini/gemini-3.1-flash-lite  tools lazy  style brief
+--auto-approve is on: writes, shell and git will run without asking. Each one is logged.
+pinch proposes running the tests once before starting.
+Auto-approved (shell): run_test {"command": "python -m pytest -q tests/test_iterutils.py"}
+[read] grep_search
+[read] read_file
+[read] read_file
+Auto-approved (write): write_file {"file_path": "tests/test_backoff_factor_1_0.py", "content": "\nimport pytest\nfrom boltons.iterutils import backoff\n\ndef test_backoff_factor_1_0():\n    # Explicit count\n    assert backoff(1, 10, count=5, factor=1.0) == [1.0, 1.0, 1.0, 1.0, 1.0]\n    assert backoff(2, 10, count=3, factor=1.0) ==...
+[write] write_file
+Auto-approved (shell): run_command {"command": "python -m pytest tests/test_backoff_factor_1_0.py"}
+[shell] run_command
+[read] grep_search
+Auto-approved (write): edit_file {"old_string": "    if count is None:\n        denom = start if start else 1\n        count = 1 + math.ceil(math.log(stop/denom, factor))\n        count = count if start else count + 1", "file_path": "boltons/iterutils.py", "new_string": "    if count is None:\n        if factor == 1.0:\n           ...
+[write] edit_file
+Auto-approved (shell): run_command {"command": "python -m pytest tests/test_backoff_factor_1_0.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest tests/test_iterutils.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "rm tests/test_backoff_factor_1_0.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest tests/test_iterutils.py"}
+[shell] run_command
+[read] read_file
+Auto-approved (shell): run_command {"command": "cat >> tests/test_iterutils.py <<EOF\n\ndef test_backoff_factor_1_0():\n    # Explicit count\n    assert list(backoff(1, 10, count=5, factor=1.0)) == [1.0, 1.0, 1.0, 1.0, 1.0]\n    assert list(backoff(2, 10, count=3, factor=1.0)) == [2.0, 2.0, 2.0]\n\n    # start == stop, no count\n    ...
+[shell] run_command
+Auto-approved (shell): run_command {"command": "python -m pytest tests/test_iterutils.py"}
+[shell] run_command
+[read] read_file
+Auto-approved (write): edit_file {"new_string": "from boltons.iterutils import (first,\n                               split,\n                               pairwise,\n                               pairwise_iter,\n                               windowed,\n                               windowed_iter,\n                            ...
+[write] edit_file
+Auto-approved (shell): run_command {"command": "python -m pytest tests/test_iterutils.py"}
+[shell] run_command
+Auto-approved (shell): run_command {"command": "# No further changes needed. Tests passing."}
+[shell] run_command

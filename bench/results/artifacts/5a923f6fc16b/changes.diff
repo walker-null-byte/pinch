@@ -1,0 +1,85 @@
+diff --git a/work/.pytest_cache/.gitignore b/.pytest_cache/.gitignore
+new file mode 100644
+index 0000000..bc1a1f6
+--- /dev/null
++++ b/.pytest_cache/.gitignore
+@@ -0,0 +1,2 @@
++# Created by pytest automatically.
++*
+diff --git a/work/.pytest_cache/CACHEDIR.TAG b/.pytest_cache/CACHEDIR.TAG
+new file mode 100644
+index 0000000..fce15ad
+--- /dev/null
++++ b/.pytest_cache/CACHEDIR.TAG
+@@ -0,0 +1,4 @@
++Signature: 8a477f597d28d172789f06886806bc55
++# This file is a cache directory tag created by pytest.
++# For information about cache directory tags, see:
++#	https://bford.info/cachedir/spec.html
+diff --git a/work/.pytest_cache/README.md b/.pytest_cache/README.md
+new file mode 100644
+index 0000000..b89018c
+--- /dev/null
++++ b/.pytest_cache/README.md
+@@ -0,0 +1,8 @@
++# pytest cache directory #
++
++This directory contains data from the pytest's cache plugin,
++which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
++
++**Do not** commit this to version control.
++
++See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+diff --git a/work/.pytest_cache/v/cache/nodeids b/.pytest_cache/v/cache/nodeids
+new file mode 100644
+index 0000000..3081125
+--- /dev/null
++++ b/.pytest_cache/v/cache/nodeids
+@@ -0,0 +1,46 @@
++[
++  "tests/test_iterutils.py::TestFirst::test_default_value",
++  "tests/test_iterutils.py::TestFirst::test_empty_iterables",
++  "tests/test_iterutils.py::TestFirst::test_selection",
++  "tests/test_iterutils.py::TestGetPath::test_depth_one",
++  "tests/test_iterutils.py::TestGetPath::test_depth_two",
++  "tests/test_iterutils.py::TestRemap::test_add_length",
++  "tests/test_iterutils.py::TestRemap::test_basic_clone",
++  "tests/test_iterutils.py::TestRemap::test_basic_upper",
++  "tests/test_iterutils.py::TestRemap::test_collector_pattern",
++  "tests/test_iterutils.py::TestRemap::test_dict_to_omd",
++  "tests/test_iterutils.py::TestRemap::test_drop_nones",
++  "tests/test_iterutils.py::TestRemap::test_duperef",
++  "tests/test_iterutils.py::TestRemap::test_empty",
++  "tests/test_iterutils.py::TestRemap::test_item_drop",
++  "tests/test_iterutils.py::TestRemap::test_namedtuple",
++  "tests/test_iterutils.py::TestRemap::test_noncallables",
++  "tests/test_iterutils.py::TestRemap::test_path",
++  "tests/test_iterutils.py::TestRemap::test_prepop",
++  "tests/test_iterutils.py::TestRemap::test_remap_file",
++  "tests/test_iterutils.py::TestRemap::test_remap_set",
++  "tests/test_iterutils.py::TestRemap::test_reraise_visit",
++  "tests/test_iterutils.py::TestRemap::test_root_selfref",
++  "tests/test_iterutils.py::TestRemap::test_sort_all_lists",
++  "tests/test_iterutils.py::TestRemap::test_sub_selfref",
++  "tests/test_iterutils.py::TestRemap::test_unremappable",
++  "tests/test_iterutils.py::TestSplit::test_maxsplit_zero_returns_unsplit_values",
++  "tests/test_iterutils.py::test_backoff_basic",
++  "tests/test_iterutils.py::test_backoff_jitter",
++  "tests/test_iterutils.py::test_backoff_repeat",
++  "tests/test_iterutils.py::test_backoff_validation",
++  "tests/test_iterutils.py::test_backoff_zero_start",
++  "tests/test_iterutils.py::test_chunk_ranges",
++  "tests/test_iterutils.py::test_chunked_bytes",
++  "tests/test_iterutils.py::test_guiderator",
++  "tests/test_iterutils.py::test_lstrip",
++  "tests/test_iterutils.py::test_pairwise_filled",
++  "tests/test_iterutils.py::test_partition_default",
++  "tests/test_iterutils.py::test_partition_multiple",
++  "tests/test_iterutils.py::test_research",
++  "tests/test_iterutils.py::test_research_custom_enter",
++  "tests/test_iterutils.py::test_rstrip",
++  "tests/test_iterutils.py::test_seqguiderator",
++  "tests/test_iterutils.py::test_strip",
++  "tests/test_iterutils.py::test_windowed_filled"
++]
+\ No newline at end of file

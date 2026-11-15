@@ -1,0 +1,115 @@
+diff --git a/work/.pytest_cache/.gitignore b/.pytest_cache/.gitignore
+new file mode 100644
+index 0000000..bc1a1f6
+--- /dev/null
++++ b/.pytest_cache/.gitignore
+@@ -0,0 +1,2 @@
++# Created by pytest automatically.
++*
+diff --git a/work/.pytest_cache/CACHEDIR.TAG b/.pytest_cache/CACHEDIR.TAG
+new file mode 100644
+index 0000000..fce15ad
+--- /dev/null
++++ b/.pytest_cache/CACHEDIR.TAG
+@@ -0,0 +1,4 @@
++Signature: 8a477f597d28d172789f06886806bc55
++# This file is a cache directory tag created by pytest.
++# For information about cache directory tags, see:
++#	https://bford.info/cachedir/spec.html
+diff --git a/work/.pytest_cache/README.md b/.pytest_cache/README.md
+new file mode 100644
+index 0000000..b89018c
+--- /dev/null
++++ b/.pytest_cache/README.md
+@@ -0,0 +1,8 @@
++# pytest cache directory #
++
++This directory contains data from the pytest's cache plugin,
++which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
++
++**Do not** commit this to version control.
++
++See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+diff --git a/work/.pytest_cache/v/cache/lastfailed b/.pytest_cache/v/cache/lastfailed
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/.pytest_cache/v/cache/lastfailed
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/work/.pytest_cache/v/cache/nodeids b/.pytest_cache/v/cache/nodeids
+new file mode 100644
+index 0000000..7f68a10
+--- /dev/null
++++ b/.pytest_cache/v/cache/nodeids
+@@ -0,0 +1,18 @@
++[
++  "affine_cipher_test.py::AffineCipherTest::test_decode_a_sentence",
++  "affine_cipher_test.py::AffineCipherTest::test_decode_all_the_letters",
++  "affine_cipher_test.py::AffineCipherTest::test_decode_exercism",
++  "affine_cipher_test.py::AffineCipherTest::test_decode_numbers",
++  "affine_cipher_test.py::AffineCipherTest::test_decode_with_a_not_coprime_to_m",
++  "affine_cipher_test.py::AffineCipherTest::test_decode_with_no_spaces_in_input",
++  "affine_cipher_test.py::AffineCipherTest::test_decode_with_too_many_spaces",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_all_the_letters",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_deep_thought",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_mindblowingly",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_no",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_numbers",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_o_m_g",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_omg",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_with_a_not_coprime_to_m",
++  "affine_cipher_test.py::AffineCipherTest::test_encode_yes"
++]
+\ No newline at end of file
+diff --git a/affine_cipher.py b/affine_cipher.py
+index 2d41e04..e9a8b15 100644
+--- a/affine_cipher.py
++++ b/affine_cipher.py
+@@ -1,6 +1,43 @@
++import math
++
++m = 26
++
++def check_coprime(a):
++    if math.gcd(a, m) != 1:
++        raise ValueError("a and m must be coprime.")
++
++def mod_inverse(a, m):
++    for x in range(1, m):
++        if (a * x) % m == 1:
++            return x
++    raise ValueError("a and m must be coprime.")
++
+ def encode(plain_text, a, b):
+-    pass
++    check_coprime(a)
++    chars = []
++    for char in plain_text.lower():
++        if char.isalpha():
++            i = ord(char) - ord('a')
++            encrypted_i = (a * i + b) % m
++            chars.append(chr(encrypted_i + ord('a')))
++        elif char.isdigit():
++            chars.append(char)
++    
++    # group by 5
++    result = "".join(chars)
++    grouped = " ".join(result[i:i+5] for i in range(0, len(result), 5))
++    return grouped
+ 
+ 
+ def decode(ciphered_text, a, b):
+-    pass
++    check_coprime(a)
++    a_inv = mod_inverse(a, m)
++    chars = []
++    for char in ciphered_text.lower():
++        if char.isalpha():
++            y = ord(char) - ord('a')
++            decrypted_y = (a_inv * (y - b)) % m
++            chars.append(chr(decrypted_y + ord('a')))
++        elif char.isdigit():
++            chars.append(char)
++    return "".join(chars)

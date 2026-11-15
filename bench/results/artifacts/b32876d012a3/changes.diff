@@ -1,0 +1,127 @@
+diff --git a/react.py b/react.py
+index ab6be31..37ed3cf 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,114 @@
+-class InputCell:
++class Cell:
++    def __init__(self):
++        self.observers = []
++
++
++class InputCell(Cell):
+     def __init__(self, initial_value):
+-        self.value = None
++        super().__init__()
++        self._value = initial_value
++
++    @property
++    def value(self):
++        return self._value
++
++    @value.setter
++    def value(self, new_value):
++        if self._value == new_value:
++            return
++        self._value = new_value
++        
++        # Trigger updates
++        # 1. Recalculate all downstream compute cells in topological order
++        # Collect all affected compute cells
++        compute_cells = set()
++        stack = list(self.observers)
++        visited = set()
++        while stack:
++            cell = stack.pop()
++            if cell not in visited:
++                visited.add(cell)
++                compute_cells.add(cell)
++                for obs in cell.observers:
++                    stack.append(obs)
++
++        # Topological sort or level order or iterative re-evaluation until stable.
++        # Since dependencies can form DAGs, let's evaluate cells iteratively until values stabilize or using topological sorting.
++        # Alternatively, find all dependent compute cells and sort them topologically.
++        
++        # Let's build a dependency graph of the affected compute cells.
++        # A compute cell depends on cells in its inputs.
++        changed_cells = []
++        
++        # Keep evaluating compute cells until no values change.
++        # Or better: compute in topological order.
++        
++        # Let's find all compute cells reachable from inputs that changed.
++        # Actually, standard propagation:
++        # Step 1: Update values of all affected compute cells.
++        # We can do topological sort on the subgraph of compute cells.
++        
++        all_compute = set()
++        q = list(self.observers)
++        while q:
++            c = q.pop()
++            if c not in all_compute:
++                all_compute.add(c)
++                q.extend(c.observers)
+ 
++        # Build in-degree and adjacency for topological sort among all_compute
++        in_degree = {c: 0 for c in all_compute}
++        dependents = {c: [] for c in all_compute}
++        
++        for c in all_compute:
++            for inp in c.inputs:
++                if inp in all_compute:
++                    dependents[inp].append(c)
++                    in_degree[c] += 1
+ 
+-class ComputeCell:
++        # Kahn's algorithm
++        zero_in = [c for c in all_compute if in_degree[c] == 0]
++        topo_order = []
++        while zero_in:
++            n = zero_in.pop(0)
++            topo_order.append(n)
++            for m in dependents[n]:
++                in_degree[m] -= 1
++                if in_degree[m] == 0:
++                    zero_in.append(m)
++
++        # Now evaluate in topo_order and record old values
++        old_values = {c: c._value for c in all_compute}
++        
++        for c in topo_order:
++            new_val = c.compute_function([inp.value for inp in c.inputs])
++            c._value = new_val
++
++        # Fire callbacks for cells whose value changed
++        for c in topo_order:
++            if c._value != old_values[c]:
++                for cb in list(c.callbacks):
++                    cb(c._value)
++
++
++class ComputeCell(Cell):
+     def __init__(self, inputs, compute_function):
+-        self.value = None
++        super().__init__()
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self.callbacks = []
++        for inp in inputs:
++            inp.observers.append(self)
++        self._value = self.compute_function([inp.value for inp in self.inputs])
++
++    @property
++    def value(self):
++        return self._value
+ 
+     def add_callback(self, callback):
+-        pass
++        if callback not in self.callbacks:
++            self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)

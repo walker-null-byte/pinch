@@ -1,0 +1,92 @@
+diff --git a/react.py b/react.py
+index ab6be31..db542ba 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,76 @@
+-class InputCell:
+-    def __init__(self, initial_value):
+-        self.value = None
++class Cell:
++    def __init__(self, value):
++        self._value = value
++        self.callbacks = []
++        self.dependents = []
+ 
+-
+-class ComputeCell:
+-    def __init__(self, inputs, compute_function):
+-        self.value = None
++    @property
++    def value(self):
++        return self._value
+ 
+     def add_callback(self, callback):
+-        pass
++        self.callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self.callbacks:
++            self.callbacks.remove(callback)
++
++
++class InputCell(Cell):
++    def __init__(self, value):
++        super().__init__(value)
++
++    @Cell.value.setter
++    def value(self, new_value):
++        if self._value == new_value:
++            return
++        self._value = new_value
++        self._trigger_update()
++
++    def _trigger_update(self):
++        # 1. Gather all descendants
++        # 2. Recompute
++        # 3. Fire callbacks only if the final value actually changed from the *previous stable state*
++        
++        # We need to know the state before the update started.
++        
++        # Store old stable values
++        # Let's collect all cells in the graph
++        cells = []
++        def collect(cell):
++            if cell not in cells:
++                cells.append(cell)
++                for dep in cell.dependents:
++                    collect(dep)
++        collect(self)
++        
++        old_stable_values = {cell: cell.value for cell in cells}
++        
++        # Recompute
++        changed = True
++        while changed:
++            changed = False
++            for cell in cells:
++                if isinstance(cell, ComputeCell):
++                    new = cell._compute()
++                    if cell.value != new:
++                        cell._value = new
++                        changed = True
++                        
++        # Fire callbacks for changed cells
++        for cell in cells:
++            if isinstance(cell, ComputeCell) and cell.value != old_stable_values[cell]:
++                for cb in cell.callbacks:
++                    cb(cell.value)
++
++
++class ComputeCell(Cell):
++    def __init__(self, inputs, compute_function):
++        self.inputs = inputs
++        self.compute_function = compute_function
++        super().__init__(self._compute())
++        for i in inputs:
++            i.dependents.append(self)
++
++    def _compute(self):
++        return self.compute_function([i.value for i in self.inputs])

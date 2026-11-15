@@ -1,0 +1,533 @@
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..aa96506
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,470 @@
++FFFFFFFFFFFFFFFFFFFFFFFFF                                                [100%]
++=================================== FAILURES ===================================
++____________ GrepTest.test_multiple_files_no_matches_various_flags _____________
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_no_matches_various_flags>
++mock_file = <MagicMock name='StringIO' id='140545519228384'>
++mock_open = <MagicMock name='open' id='140545519233136'>
++
++    def test_multiple_files_no_matches_various_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep(
++                "Frodo",
++                "-n -l -x -i",
++                ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"],
++            ),
++            "",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:241: AssertionError
++________ GrepTest.test_multiple_files_one_match_match_entire_lines_flag ________
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_one_match_match_entire_lines_flag>
++mock_file = <MagicMock name='StringIO' id='140545519180912'>
++mock_open = <MagicMock name='open' id='140545519185184'>
++
++    def test_multiple_files_one_match_match_entire_lines_flag(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(
++            grep(
++                "But I beseech your grace that I may know",
++                "-x",
++                ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"],
++            ),
++            "midsummer-night.txt:But I beseech your grace that I may know\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:221: AssertionError
++____________ GrepTest.test_multiple_files_one_match_multiple_flags _____________
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_one_match_multiple_flags>
++mock_file = <MagicMock name='StringIO' id='140545519233040'>
++mock_open = <MagicMock name='open' id='140545529453392'>
++
++    def test_multiple_files_one_match_multiple_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep(
++                "WITH LOSS OF EDEN, TILL ONE GREATER MAN",
++                "-n -i -x",
++                ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"],
++            ),
++            "paradise-lost.txt:4:With loss of Eden, till one greater Man\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:231: AssertionError
++_______________ GrepTest.test_multiple_files_one_match_no_flags ________________
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_one_match_no_flags>
++mock_file = <MagicMock name='StringIO' id='140545521104176'>
++mock_open = <MagicMock name='open' id='140545519498400'>
++
++    def test_multiple_files_one_match_no_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep(
++                "Agamemnon",
++                "",
++                ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"],
++            ),
++            "iliad.txt:Of Atreus, Agamemnon, King of men.\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:155: AssertionError
++_________ GrepTest.test_multiple_files_one_match_print_file_names_flag _________
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_one_match_print_file_names_flag>
++mock_file = <MagicMock name='StringIO' id='140545519496960'>
++mock_open = <MagicMock name='open' id='140545520150640'>
++
++    def test_multiple_files_one_match_print_file_names_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep(
++                "who", "-l", ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"]
++            ),
++            "iliad.txt\n" "paradise-lost.txt\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:186: AssertionError
++______ GrepTest.test_multiple_files_several_matches_case_insensitive_flag ______
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_several_matches_case_insensitive_flag>
++mock_file = <MagicMock name='StringIO' id='140545520146128'>
++mock_open = <MagicMock name='open' id='140545520151072'>
++
++    def test_multiple_files_several_matches_case_insensitive_flag(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(
++            grep("TO", "-i", ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"]),
++            "iliad.txt:Caused to Achaia's host, sent many a soul\n"
++            "iliad.txt:Illustrious into Ades premature,\n"
++            "iliad.txt:And Heroes gave (so stood the will of Jove)\n"
++            "iliad.txt:To dogs and to all ravening fowls a prey,\n"
++            "midsummer-night.txt:I do entreat your grace to pardon me.\n"
++            "midsummer-night.txt:In such a presence here to plead my thoughts;\n"
++            "midsummer-night.txt:If I refuse to wed Demetrius.\n"
++            "paradise-lost.txt:Brought Death into the World, and all our woe,\n"
++            "paradise-lost.txt:Restore us, and regain the blissful Seat,\n"
++            "paradise-lost.txt:Sing Heav'nly Muse, that on the secret top\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:196: AssertionError
++_ GrepTest.test_multiple_files_several_matches_file_flag_takes_precedence_over_line_number_flag _
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_several_matches_file_flag_takes_precedence_over_line_number_flag>
++mock_file = <MagicMock name='StringIO' id='140545518534736'>
++mock_open = <MagicMock name='open' id='140545518544912'>
++
++    def test_multiple_files_several_matches_file_flag_takes_precedence_over_line_number_flag(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(
++            grep(
++                "who",
++                "-n -l",
++                ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"],
++            ),
++            "iliad.txt\n" "paradise-lost.txt\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:253: AssertionError
++_ GrepTest.test_multiple_files_several_matches_inverted_and_match_entire_lines_flags _
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_several_matches_inverted_and_match_entire_lines_flags>
++mock_file = <MagicMock name='StringIO' id='140545519303232'>
++mock_open = <MagicMock name='open' id='140545518961152'>
++
++    def test_multiple_files_several_matches_inverted_and_match_entire_lines_flags(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(
++            grep(
++                "Illustrious into Ades premature,",
++                "-x -v",
++                ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"],
++            ),
++            "iliad.txt:Achilles sing, O Goddess! Peleus' son;\n"
++            "iliad.txt:His wrath pernicious, who ten thousand woes\n"
++            "iliad.txt:Caused to Achaia's host, sent many a soul\n"
++            "iliad.txt:And Heroes gave (so stood the will of Jove)\n"
++            "iliad.txt:To dogs and to all ravening fowls a prey,\n"
++            "iliad.txt:When fierce dispute had separated once\n"
++            "iliad.txt:The noble Chief Achilles from the son\n"
++            "iliad.txt:Of Atreus, Agamemnon, King of men.\n"
++            "midsummer-night.txt:I do entreat your grace to pardon me.\n"
++            "midsummer-night.txt:I know not by what power I am made bold,\n"
++            "midsummer-night.txt:Nor how it may concern my modesty,\n"
++            "midsummer-night.txt:In such a presence here to plead my thoughts;\n"
++            "midsummer-night.txt:But I beseech your grace that I may know\n"
++            "midsummer-night.txt:The worst that may befall me in this case,\n"
++            "midsummer-night.txt:If I refuse to wed Demetrius.\n"
++            "paradise-lost.txt:Of Mans First Disobedience, and the Fruit\n"
++            "paradise-lost.txt:Of that Forbidden Tree, whose mortal tast\n"
++            "paradise-lost.txt:Brought Death into the World, and all our woe,\n"
++            "paradise-lost.txt:With loss of Eden, till one greater Man\n"
++            "paradise-lost.txt:Restore us, and regain the blissful Seat,\n"
++            "paradise-lost.txt:Sing Heav'nly Muse, that on the secret top\n"
++            "paradise-lost.txt:Of Oreb, or of Sinai, didst inspire\n"
++            "paradise-lost.txt:That Shepherd, who first taught the chosen Seed\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:265: AssertionError
++__________ GrepTest.test_multiple_files_several_matches_inverted_flag __________
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_several_matches_inverted_flag>
++mock_file = <MagicMock name='StringIO' id='140545518976272'>
++mock_open = <MagicMock name='open' id='140545518971328'>
++
++    def test_multiple_files_several_matches_inverted_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("a", "-v", ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"]),
++            "iliad.txt:Achilles sing, O Goddess! Peleus' son;\n"
++            "iliad.txt:The noble Chief Achilles from the son\n"
++            "midsummer-night.txt:If I refuse to wed Demetrius.\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:211: AssertionError
++____________ GrepTest.test_multiple_files_several_matches_no_flags _____________
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_several_matches_no_flags>
++mock_file = <MagicMock name='StringIO' id='140545519016928'>
++mock_open = <MagicMock name='open' id='140545519013568'>
++
++    def test_multiple_files_several_matches_no_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("may", "", ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"]),
++            "midsummer-night.txt:Nor how it may concern my modesty,\n"
++            "midsummer-night.txt:But I beseech your grace that I may know\n"
++            "midsummer-night.txt:The worst that may befall me in this case,\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:165: AssertionError
++_____ GrepTest.test_multiple_files_several_matches_print_line_numbers_flag _____
++
++self = <grep_test.GrepTest testMethod=test_multiple_files_several_matches_print_line_numbers_flag>
++mock_file = <MagicMock name='StringIO' id='140545518906272'>
++mock_open = <MagicMock name='open' id='140545518899936'>
++
++    def test_multiple_files_several_matches_print_line_numbers_flag(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(
++            grep(
++                "that", "-n", ["iliad.txt", "midsummer-night.txt", "paradise-lost.txt"]
++            ),
++            "midsummer-night.txt:5:But I beseech your grace that I may know\n"
++            "midsummer-night.txt:6:The worst that may befall me in this case,\n"
++            "paradise-lost.txt:2:Of that Forbidden Tree, whose mortal tast\n"
++            "paradise-lost.txt:6:Sing Heav'nly Muse, that on the secret top\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:175: AssertionError
++_______________ GrepTest.test_one_file_no_matches_various_flags ________________
++
++self = <grep_test.GrepTest testMethod=test_one_file_no_matches_various_flags>
++mock_file = <MagicMock name='StringIO' id='140545518896816'>
++mock_open = <MagicMock name='open' id='140545518910544'>
++
++    def test_one_file_no_matches_various_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(grep("Gandalf", "-n -l -x -i", ["iliad.txt"]), "")
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:131: AssertionError
++____________ GrepTest.test_one_file_one_match_case_insensitive_flag ____________
++
++self = <grep_test.GrepTest testMethod=test_one_file_one_match_case_insensitive_flag>
++mock_file = <MagicMock name='StringIO' id='140545516335664'>
++mock_open = <MagicMock name='open' id='140545516329376'>
++
++    def test_one_file_one_match_case_insensitive_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("FORBIDDEN", "-i", ["paradise-lost.txt"]),
++            "Of that Forbidden Tree, whose mortal tast\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:66: AssertionError
++__ GrepTest.test_one_file_one_match_file_flag_takes_precedence_over_line_flag __
++
++self = <grep_test.GrepTest testMethod=test_one_file_one_match_file_flag_takes_precedence_over_line_flag>
++mock_file = <MagicMock name='StringIO' id='140545516335952'>
++mock_open = <MagicMock name='open' id='140545516367376'>
++
++    def test_one_file_one_match_file_flag_takes_precedence_over_line_flag(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(grep("ten", "-n -l", ["iliad.txt"]), "iliad.txt\n")
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:136: AssertionError
++___________ GrepTest.test_one_file_one_match_match_entire_lines_flag ___________
++
++self = <grep_test.GrepTest testMethod=test_one_file_one_match_match_entire_lines_flag>
++mock_file = <MagicMock name='StringIO' id='140545516332304'>
++mock_open = <MagicMock name='open' id='140545516327456'>
++
++    def test_one_file_one_match_match_entire_lines_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep(
++                "With loss of Eden, till one greater Man", "-x", ["paradise-lost.txt"]
++            ),
++            "With loss of Eden, till one greater Man\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:77: AssertionError
++_______________ GrepTest.test_one_file_one_match_multiple_flags ________________
++
++self = <grep_test.GrepTest testMethod=test_one_file_one_match_multiple_flags>
++mock_file = <MagicMock name='StringIO' id='140545516327120'>
++mock_open = <MagicMock name='open' id='140545518909728'>
++
++    def test_one_file_one_match_multiple_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("OF ATREUS, Agamemnon, KIng of MEN.", "-n -i -x", ["iliad.txt"]),
++            "9:Of Atreus, Agamemnon, King of men.\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:85: AssertionError
++__________________ GrepTest.test_one_file_one_match_no_flags ___________________
++
++self = <grep_test.GrepTest testMethod=test_one_file_one_match_no_flags>
++mock_file = <MagicMock name='StringIO' id='140545518902192'>
++mock_open = <MagicMock name='open' id='140545518902624'>
++
++    def test_one_file_one_match_no_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("Agamemnon", "", ["iliad.txt"]), "Of Atreus, Agamemnon, King of men.\n"
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:55: AssertionError
++____________ GrepTest.test_one_file_one_match_print_file_names_flag ____________
++
++self = <grep_test.GrepTest testMethod=test_one_file_one_match_print_file_names_flag>
++mock_file = <MagicMock name='StringIO' id='140545519014912'>
++mock_open = <MagicMock name='open' id='140545519012128'>
++
++    def test_one_file_one_match_print_file_names_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("Forbidden", "-l", ["paradise-lost.txt"]), "paradise-lost.txt\n"
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:72: AssertionError
++___________ GrepTest.test_one_file_one_match_print_line_numbers_flag ___________
++
++self = <grep_test.GrepTest testMethod=test_one_file_one_match_print_line_numbers_flag>
++mock_file = <MagicMock name='StringIO' id='140545518964272'>
++mock_open = <MagicMock name='open' id='140545518967104'>
++
++    def test_one_file_one_match_print_line_numbers_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("Forbidden", "-n", ["paradise-lost.txt"]),
++            "2:Of that Forbidden Tree, whose mortal tast\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:60: AssertionError
++_________ GrepTest.test_one_file_several_matches_case_insensitive_flag _________
++
++self = <grep_test.GrepTest testMethod=test_one_file_several_matches_case_insensitive_flag>
++mock_file = <MagicMock name='StringIO' id='140545518971424'>
++mock_open = <MagicMock name='open' id='140545519302944'>
++
++    def test_one_file_several_matches_case_insensitive_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("ACHILLES", "-i", ["iliad.txt"]),
++            "Achilles sing, O Goddess! Peleus' son;\n"
++            "The noble Chief Achilles from the son\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:114: AssertionError
++_ GrepTest.test_one_file_several_matches_inverted_and_match_entire_lines_flags _
++
++self = <grep_test.GrepTest testMethod=test_one_file_several_matches_inverted_and_match_entire_lines_flags>
++mock_file = <MagicMock name='StringIO' id='140545518543424'>
++mock_open = <MagicMock name='open' id='140545520151216'>
++
++    def test_one_file_several_matches_inverted_and_match_entire_lines_flags(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(
++            grep("Illustrious into Ades premature,", "-x -v", ["iliad.txt"]),
++            "Achilles sing, O Goddess! Peleus' son;\n"
++            "His wrath pernicious, who ten thousand woes\n"
++            "Caused to Achaia's host, sent many a soul\n"
++            "And Heroes gave (so stood the will of Jove)\n"
++            "To dogs and to all ravening fowls a prey,\n"
++            "When fierce dispute had separated once\n"
++            "The noble Chief Achilles from the son\n"
++            "Of Atreus, Agamemnon, King of men.\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:141: AssertionError
++_____________ GrepTest.test_one_file_several_matches_inverted_flag _____________
++
++self = <grep_test.GrepTest testMethod=test_one_file_several_matches_inverted_flag>
++mock_file = <MagicMock name='StringIO' id='140545520149680'>
++mock_open = <MagicMock name='open' id='140545520144304'>
++
++    def test_one_file_several_matches_inverted_flag(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("Of", "-v", ["paradise-lost.txt"]),
++            "Brought Death into the World, and all our woe,\n"
++            "With loss of Eden, till one greater Man\n"
++            "Restore us, and regain the blissful Seat,\n"
++            "Sing Heav'nly Muse, that on the secret top\n"
++            "That Shepherd, who first taught the chosen Seed\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:121: AssertionError
++________ GrepTest.test_one_file_several_matches_match_entire_lines_flag ________
++
++self = <grep_test.GrepTest testMethod=test_one_file_several_matches_match_entire_lines_flag>
++mock_file = <MagicMock name='StringIO' id='140545519497536'>
++mock_open = <MagicMock name='open' id='140545519491008'>
++
++    def test_one_file_several_matches_match_entire_lines_flag(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(grep("may", "-x", ["midsummer-night.txt"]), "")
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:111: AssertionError
++_______________ GrepTest.test_one_file_several_matches_no_flags ________________
++
++self = <grep_test.GrepTest testMethod=test_one_file_several_matches_no_flags>
++mock_file = <MagicMock name='StringIO' id='140545519179136'>
++mock_open = <MagicMock name='open' id='140545521072800'>
++
++    def test_one_file_several_matches_no_flags(self, mock_file, mock_open):
++>       self.assertMultiLineEqual(
++            grep("may", "", ["midsummer-night.txt"]),
++            "Nor how it may concern my modesty,\n"
++            "But I beseech your grace that I may know\n"
++            "The worst that may befall me in this case,\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:91: AssertionError
++________ GrepTest.test_one_file_several_matches_print_line_numbers_flag ________
++
++self = <grep_test.GrepTest testMethod=test_one_file_several_matches_print_line_numbers_flag>
++mock_file = <MagicMock name='StringIO' id='140545519228240'>
++mock_open = <MagicMock name='open' id='140545516371216'>
++
++    def test_one_file_several_matches_print_line_numbers_flag(
++        self, mock_file, mock_open
++    ):
++>       self.assertMultiLineEqual(
++            grep("may", "-n", ["midsummer-night.txt"]),
++            "3:Nor how it may concern my modesty,\n"
++            "5:But I beseech your grace that I may know\n"
++            "6:The worst that may befall me in this case,\n",
++        )
++E       AssertionError: None is not an instance of <class 'str'> : First argument is not a string
++
++grep_test.py:101: AssertionError
++=========================== short test summary info ============================
++FAILED grep_test.py::GrepTest::test_multiple_files_no_matches_various_flags
++FAILED grep_test.py::GrepTest::test_multiple_files_one_match_match_entire_lines_flag
++FAILED grep_test.py::GrepTest::test_multiple_files_one_match_multiple_flags
++FAILED grep_test.py::GrepTest::test_multiple_files_one_match_no_flags - Asser...
++FAILED grep_test.py::GrepTest::test_multiple_files_one_match_print_file_names_flag
++FAILED grep_test.py::GrepTest::test_multiple_files_several_matches_case_insensitive_flag
++FAILED grep_test.py::GrepTest::test_multiple_files_several_matches_file_flag_takes_precedence_over_line_number_flag
++FAILED grep_test.py::GrepTest::test_multiple_files_several_matches_inverted_and_match_entire_lines_flags
++FAILED grep_test.py::GrepTest::test_multiple_files_several_matches_inverted_flag
++FAILED grep_test.py::GrepTest::test_multiple_files_several_matches_no_flags
++FAILED grep_test.py::GrepTest::test_multiple_files_several_matches_print_line_numbers_flag
++FAILED grep_test.py::GrepTest::test_one_file_no_matches_various_flags - Asser...
++FAILED grep_test.py::GrepTest::test_one_file_one_match_case_insensitive_flag
++FAILED grep_test.py::GrepTest::test_one_file_one_match_file_flag_takes_precedence_over_line_flag
++FAILED grep_test.py::GrepTest::test_one_file_one_match_match_entire_lines_flag
++FAILED grep_test.py::GrepTest::test_one_file_one_match_multiple_flags - Asser...
++FAILED grep_test.py::GrepTest::test_one_file_one_match_no_flags - AssertionEr...
++FAILED grep_test.py::GrepTest::test_one_file_one_match_print_file_names_flag
++FAILED grep_test.py::GrepTest::test_one_file_one_match_print_line_numbers_flag
++FAILED grep_test.py::GrepTest::test_one_file_several_matches_case_insensitive_flag
++FAILED grep_test.py::GrepTest::test_one_file_several_matches_inverted_and_match_entire_lines_flags
++FAILED grep_test.py::GrepTest::test_one_file_several_matches_inverted_flag - ...
++FAILED grep_test.py::GrepTest::test_one_file_several_matches_match_entire_lines_flag
++FAILED grep_test.py::GrepTest::test_one_file_several_matches_no_flags - Asser...
++FAILED grep_test.py::GrepTest::test_one_file_several_matches_print_line_numbers_flag
++25 failed in 0.42s
+diff --git a/grep.py b/grep.py
+index 3c8a8e1..87cb2d3 100644
+--- a/grep.py
++++ b/grep.py
+@@ -1,2 +1,51 @@
+ def grep(pattern, flags, files):
+-    pass
++    flag_list = flags.split() if flags else []
++    print_line_number = "-n" in flag_list
++    print_file_names = "-l" in flag_list
++    case_insensitive = "-i" in flag_list
++    invert = "-v" in flag_list
++    entire_line = "-x" in flag_list
++
++    multiple_files = len(files) > 1
++    results = []
++
++    for filename in files:
++        file_has_match = False
++        with open(filename, "r") as f:
++            for line_idx, line in enumerate(f, start=1):
++                stripped_line = line.rstrip("\n")
++                
++                # Check match
++                match_pattern = pattern
++                check_line = stripped_line
++                if case_insensitive:
++                    match_pattern = match_pattern.lower()
++                    check_line = check_line.lower()
++
++                if entire_line:
++                    is_match = (check_line == match_pattern)
++                else:
++                    is_match = (match_pattern in check_line)
++
++                if invert:
++                    is_match = not is_match
++
++                if is_match:
++                    file_has_match = True
++                    if print_file_names:
++                        break
++                    
++                    parts = []
++                    if multiple_files:
++                        parts.append(filename)
++                    if print_line_number:
++                        parts.append(str(line_idx))
++                    
++                    prefix = ":".join(parts)
++                    line_output = f"{prefix}:{stripped_line}" if prefix else stripped_line
++                    results.append(line_output + "\n")
++
++        if file_has_match and print_file_names:
++            results.append(filename + "\n")
++
++    return "".join(results)

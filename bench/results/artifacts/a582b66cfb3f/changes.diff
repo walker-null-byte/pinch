@@ -1,0 +1,97 @@
+diff --git a/react.py b/react.py
+index ab6be31..c6ca490 100644
+--- a/react.py
++++ b/react.py
+@@ -1,15 +1,81 @@
+-class InputCell:
+-    def __init__(self, initial_value):
+-        self.value = None
+-
++class Cell:
++    def __init__(self):
++        self._callbacks = []
++        self._value = None
++        self.dependents = []
+ 
+-class ComputeCell:
+-    def __init__(self, inputs, compute_function):
+-        self.value = None
++    @property
++    def value(self):
++        return self._value
+ 
+     def add_callback(self, callback):
+-        pass
++        self._callbacks.append(callback)
+ 
+     def remove_callback(self, callback):
+-        pass
+-    
+\ No newline at end of file
++        if callback in self._callbacks:
++            self._callbacks.remove(callback)
++
++    def _notify(self, new_value):
++        for callback in self._callbacks:
++            callback(new_value)
++
++
++class InputCell(Cell):
++    def __init__(self, initial_value):
++        super().__init__()
++        self._value = initial_value
++
++    @Cell.value.setter
++    def value(self, new_value):
++        if self._value == new_value:
++            return
++        self._value = new_value
++        self._update_dependents()
++
++    def _update_dependents(self):
++        # Gather all affected compute cells
++        affected = []
++        queue = list(self.dependents)
++        while queue:
++            cell = queue.pop(0)
++            if cell not in affected:
++                affected.append(cell)
++                queue.extend(cell.dependents)
++        
++        # Sort by topological order (simplified: just update all)
++        # Actually we need to do it in order.
++        # Let's just recompute until stable for now.
++        
++        # A better approach: 
++        # Update each compute cell and see if its value changes.
++        
++        # Track previous values to fire callbacks only on change
++        old_values = {cell: cell.value for cell in affected}
++        
++        # Recompute
++        changed = True
++        while changed:
++            changed = False
++            for cell in affected:
++                new_v = cell._compute()
++                if new_v != cell.value:
++                    cell._value = new_v
++                    changed = True
++        
++        # Notify
++        for cell in affected:
++            if cell.value != old_values[cell]:
++                cell._notify(cell.value)
++
++
++class ComputeCell(Cell):
++    def __init__(self, inputs, compute_function):
++        super().__init__()
++        self.inputs = inputs
++        self.compute_function = compute_function
++        self._value = self._compute()
++        for i in inputs:
++            i.dependents.append(self)
++
++    def _compute(self):
++        return self.compute_function([c.value for c in self.inputs])

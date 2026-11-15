@@ -1,0 +1,52 @@
+diff --git a/grep.py b/grep.py
+index 3c8a8e1..0d4b13a 100644
+--- a/grep.py
++++ b/grep.py
+@@ -1,2 +1,46 @@
+ def grep(pattern, flags, files):
+-    pass
++    flag_set = set(flags.split())
++    print_line_numbers = '-n' in flag_set
++    print_file_names_only = '-l' in flag_set
++    case_insensitive = '-i' in flag_set
++    invert = '-v' in flag_set
++    entire_line = '-x' in flag_set
++
++    multiple_files = len(files) > 1
++    result_lines = []
++
++    search_pattern = pattern.lower() if case_insensitive else pattern
++
++    for file in files:
++        file_matches = []
++        with open(file, 'r') as f:
++            for line_no, line in enumerate(f, 1):
++                stripped_line = line.rstrip('\r\n')
++                target_line = stripped_line.lower() if case_insensitive else stripped_line
++
++                if entire_line:
++                    matched = target_line == search_pattern
++                else:
++                    matched = search_pattern in target_line
++
++                if invert:
++                    matched = not matched
++
++                if matched:
++                    if print_file_names_only:
++                        file_matches.append(file)
++                        break
++                    
++                    parts = []
++                    if multiple_files:
++                        parts.append(file)
++                    if print_line_numbers:
++                        parts.append(str(line_no))
++                    parts.append(stripped_line)
++                    
++                    result_lines.append(":".join(parts) + "\n")
++
++        if print_file_names_only and file_matches:
++            result_lines.append(file + "\n")
++
++    return "".join(result_lines)

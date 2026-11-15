@@ -1,0 +1,124 @@
+diff --git a/forth.py b/forth.py
+index 7cf4ff3..2bf1be9 100644
+--- a/forth.py
++++ b/forth.py
+@@ -1,6 +1,117 @@
+ class StackUnderflowError(Exception):
+-    pass
++    """Exception raised when Stack is not full."""
++    def __init__(self, message="Insufficient number of items in stack"):
++        self.message = message
++        super().__init__(message)
+ 
+ 
+ def evaluate(input_data):
+-    pass
++    stack = []
++    definitions = {}
++
++    def is_number(token):
++        try:
++            int(token)
++            return True
++        except ValueError:
++            return False
++
++    def evaluate_tokens(tokens):
++        i = 0
++        while i < len(tokens):
++            token = tokens[i]
++            token_lower = token.lower()
++
++            if token == ':':
++                # Definition starts
++                # find ';'
++                j = i + 1
++                while j < len(tokens) and tokens[j] != ';':
++                    j += 1
++                if j >= len(tokens):
++                    raise ValueError("undefined operation") # or unfinished definition? But test doesn't specify.
++                def_tokens = tokens[i+1:j]
++                if not def_tokens:
++                    raise ValueError("undefined operation")
++                word_name = def_tokens[0]
++                if is_number(word_name):
++                    raise ValueError("illegal operation")
++                word_body = def_tokens[1:]
++                # Expand definitions in word_body? Wait, Forth definitions are compiled or expanded?
++                # Usually word definitions can use existing words (including words defined earlier, or even redefinitions).
++                # Let's expand/resolve tokens in word_body against current definitions at definition time or execution time?
++                # Wait, test_user_defined_words_can_use_different_words_with_same_name:
++                # `: foo 5 ; : bar foo ; : foo 6 ; bar foo` -> should return [5] (bar uses foo defined as 5).
++                # So words are resolved at definition time, or definitions store the expanded token sequence (or definitions store tokens that get evaluated).
++                # Wait, if we expand word definitions at definition time, let's see how `foo` inside `bar` gets evaluated.
++                compiled_body = []
++                for wt in word_body:
++                    wt_lower = wt.lower()
++                    if wt_lower in definitions:
++                        compiled_body.extend(definitions[wt_lower])
++                    else:
++                        compiled_body.append(wt)
++                definitions[token_lower] = definitions[word_name.lower()] = compiled_body # store lower and normal? Wait, definitions keys should be case-insensitive.
++                i = j + 1
++            else:
++                if token_lower in definitions:
++                    evaluate_tokens(definitions[token_lower])
++                elif is_number(token):
++                    stack.append(int(token))
++                else:
++                    # Built-in operators or words
++                    if token_lower == '+':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        a = stack.pop()
++                        stack.append(a + b)
++                    elif token_lower == '-':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        a = stack.pop()
++                        stack.append(a - b)
++                    elif token_lower == '*':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        a = stack.pop()
++                        stack.append(a * b)
++                    elif token_lower == '/':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        b = stack.pop()
++                        a = stack.pop()
++                        if b == 0:
++                            raise ZeroDivisionError("divide by zero")
++                        # Python integer division floors towards negative infinity. Forth / usually truncates towards zero.
++                        # Wait, what does Python's // do? Python // truncates towards -inf. Does Forth test care about negative division truncation?
++                        # Let's check python standard integer division // vs trunc. For positive numbers they are the same.
++                        val = int(a / b) # truncates towards zero in Python 3 for int/int? Wait, a/b returns float, int() truncates towards zero!
++                        stack.append(val)
++                    elif token_lower == 'dup':
++                        if len(stack) < 1:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        stack.append(stack[-1])
++                    elif token_lower == 'drop':
++                        if len(stack) < 1:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        stack.pop()
++                    elif token_lower == 'swap':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        stack.append(stack.pop(-2))
++                    elif token_lower == 'over':
++                        if len(stack) < 2:
++                            raise StackUnderflowError("Insufficient number of items in stack")
++                        stack.append(stack[-2])
++                    else:
++                        raise ValueError("undefined operation")
++                i += 1
++
++    for line in input_data:
++        tokens = line.split()
++        evaluate_tokens(tokens)
++
++    return stack

@@ -1,0 +1,75 @@
+diff --git a/dominoes.py b/dominoes.py
+index d71e6a8..efaacf5 100644
+--- a/dominoes.py
++++ b/dominoes.py
+@@ -1,2 +1,69 @@
++from collections import defaultdict
++
+ def can_chain(dominoes):
+-    pass
++    if not dominoes:
++        return []
++
++    # Check degree parity and connectivity (Hierholzer's algorithm / Eulerian circuit check)
++    degrees = defaultdict(int)
++    for a, b in dominoes:
++        degrees[a] += 1
++        degrees[b] += 1
++    
++    for node, deg in degrees.items():
++        if deg % 2 != 0:
++            return None
++
++    # Check connectivity of nodes with non-zero degrees
++    nodes = list(degrees.keys())
++    visited_nodes = set()
++    stack = [nodes[0]]
++    visited_nodes.add(nodes[0])
++    while stack:
++        curr = stack.pop()
++        for a, b in dominoes:
++            if a == curr or b == curr:
++                neighbor = b if a == curr else a
++                if neighbor not in visited_nodes:
++                    visited_nodes.add(neighbor)
++                    stack.append(neighbor)
++    
++    for node in nodes:
++        if node not in visited_nodes:
++            return None
++
++    # Find Eulerian circuit using backtracking / Hierholzer
++    # Since we need a specific output chain format (list of tuples representing the dominoes with correct orientation),
++    # let's write a backtracking DFS that tries to build the chain.
++
++    # Build adjacency list where each edge has an index and orientation
++    adj = defaultdict(list)
++    for i, (a, b) in enumerate(dominoes):
++        adj[a].append((b, i, False)) # False means original (a, b)
++        if a != b:
++            adj[b].append((a, i, True))  # True means reversed (b, a)
++
++    start_node = nodes[0]
++    used_edges = [False] * len(dominoes)
++
++    def dfs(curr, path):
++        if len(path) == len(dominoes):
++            if path[0][0] == path[-1][1]:
++                return path
++            return None
++
++        for neighbor, edge_idx, reversed_flag in adj[curr]:
++            if not used_edges[edge_idx]:
++                used_edges[edge_idx] = True
++                domino = (neighbor, edge_idx) if not reversed_flag else (curr, edge_idx) # wait, let's keep track of actual domino tuple
++                # Domino tuple in chain should be the oriented tuple
++                actual_domino = (curr, neighbor)
++                res = dfs(neighbor, path + [actual_domino])
++                if res is not None:
++                    return res
++                used_edges[edge_idx] = False
++        return None
++
++    # Try starting from any node present in dominoes, or specifically start_node
++    # Actually, Eulerian circuit can start anywhere as long as it's connected.
++    return dfs(start_node, [])

@@ -1,0 +1,2003 @@
+diff --git a/work/.pinch/outputs/20261112-132004-904990-proposed-step6.txt b/.pinch/outputs/20261112-132004-904990-proposed-step6.txt
+new file mode 100644
+index 0000000..07804dd
+--- /dev/null
++++ b/.pinch/outputs/20261112-132004-904990-proposed-step6.txt
+@@ -0,0 +1,1995 @@
++.............................................F...F....                   [100%]
++=================================== FAILURES ===================================
++_ ForthTest.test_user_defined_words_can_define_word_that_uses_word_with_the_same_name _
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_define_word_that_uses_word_with_the_same_name>
++
++    def test_user_defined_words_can_define_word_that_uses_word_with_the_same_name(self):
++>       self.assertEqual(evaluate([": foo 10 ;", ": foo foo 1 + ;", "foo"]), [11])
++                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++
++forth_test.py:227: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++forth.py:84: in evaluate
++    execute(line.split())
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++forth.py:35: in execute
++    execute(user_defined[token])
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++
++tokens = ['FOO', '1', '+']
++
++    def execute(tokens):
++        it = iter(tokens)
++        for token in it:
++            token = token.upper()
++            if token == ':':
++                name = next(it).upper()
++                if is_number(name):
++                    raise ValueError("illegal operation")
++                definition = []
++                while True:
++                    t = next(it).upper()
++                    if t == ';':
++                        break
++                    definition.append(t)
++                user_defined[name] = definition
++            elif token in user_defined:
++>               execute(user_defined[token])
++E               RecursionError: maximum recursion depth exceeded
++
++forth.py:35: RecursionError
++_ ForthTest.test_user_defined_words_can_use_different_words_with_the_same_name _
++
++self = <forth_test.ForthTest testMethod=test_user_defined_words_can_use_different_words_with_the_same_name>
++
++    def test_user_defined_words_can_use_different_words_with_the_same_name(self):
++>       self.assertEqual(
++            evaluate([": foo 5 ;", ": bar foo ;", ": foo 6 ;", "bar foo"]), [5, 6]
++        )
++E       AssertionError: Lists differ: [6, 6] != [5, 6]
++E       
++E       First differing element 0:
++E       6
++E       5
++E       
++E       - [6, 6]
++E       ?  ^
++E       
++E       + [5, 6]
++E       ?  ^
++
++forth_test.py:222: AssertionError
++=========================== short test summary info ============================
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_define_word_that_uses_word_with_the_same_name
++FAILED forth_test.py::ForthTest::test_user_defined_words_can_use_different_words_with_the_same_name
++2 failed, 52 passed in 1.90s
+diff --git a/work/.pinch/outputs/20261112-132004-904990-proposed-step7.txt b/.pinch/outputs/20261112-132004-904990-proposed-step7.txt
+new file mod

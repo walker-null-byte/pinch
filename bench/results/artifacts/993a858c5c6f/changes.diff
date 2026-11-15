@@ -1,0 +1,136 @@
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..0fc6ae6
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,95 @@
++FFFFFFF                                                                  [100%]
++=================================== FAILURES ===================================
++_____________ HangmanTests.test_after_10_failures_the_game_is_over _____________
++
++self = <hangman_test.HangmanTests testMethod=test_after_10_failures_the_game_is_over>
++
++    def test_after_10_failures_the_game_is_over(self):
++        game = Hangman('foo')
++    
++        for i in range(10):
++            game.guess('x')
++    
++>       self.assertEqual(game.get_status(), hangman.STATUS_LOSE)
++E       AssertionError: None != 'lose'
++
++hangman_test.py:26: AssertionError
++________ HangmanTests.test_feeding_a_correct_letter_removes_underscores ________
++
++self = <hangman_test.HangmanTests testMethod=test_feeding_a_correct_letter_removes_underscores>
++
++    def test_feeding_a_correct_letter_removes_underscores(self):
++        game = Hangman('foobar')
++    
++        game.guess('b')
++>       self.assertEqual(game.get_status(), hangman.STATUS_ONGOING)
++E       AssertionError: None != 'ongoing'
++
++hangman_test.py:36: AssertionError
++_____ HangmanTests.test_feeding_a_correct_letter_twice_counts_as_a_failure _____
++
++self = <hangman_test.HangmanTests testMethod=test_feeding_a_correct_letter_twice_counts_as_a_failure>
++
++    def test_feeding_a_correct_letter_twice_counts_as_a_failure(self):
++        game = Hangman('foobar')
++    
++        game.guess('b')
++>       self.assertEqual(game.get_status(), hangman.STATUS_ONGOING)
++E       AssertionError: None != 'ongoing'
++
++hangman_test.py:49: AssertionError
++_______ HangmanTests.test_getting_all_the_letters_right_makes_for_a_win ________
++
++self = <hangman_test.HangmanTests testMethod=test_getting_all_the_letters_right_makes_for_a_win>
++
++    def test_getting_all_the_letters_right_makes_for_a_win(self):
++        game = Hangman('hello')
++    
++        game.guess('b')
++>       self.assertEqual(game.get_status(), hangman.STATUS_ONGOING)
++E       AssertionError: None != 'ongoing'
++
++hangman_test.py:62: AssertionError
++______________ HangmanTests.test_initially_9_failures_are_allowed ______________
++
++self = <hangman_test.HangmanTests testMethod=test_initially_9_failures_are_allowed>
++
++    def test_initially_9_failures_are_allowed(self):
++        game = Hangman('foo')
++>       self.assertEqual(game.get_status(), hangman.STATUS_ONGOING)
++E       AssertionError: None != 'ongoing'
++
++hangman_test.py:12: AssertionError
++______________ HangmanTests.test_initially_no_letters_are_guessed ______________
++
++self = <hangman_test.HangmanTests testMethod=test_initially_no_letters_are_guessed>
++
++    def test_initially_no_letters_are_guessed(self):
++        game = Hangman('foo')
++    
++>       self.assertEqual(game.get_masked_word(), '___')
++E       AssertionError: None != '___'
++
++hangman_test.py:18: AssertionError
++________ HangmanTests.test_winning_on_last_guess_still_counts_as_a_win _________
++
++self = <hangman_test.HangmanTests testMethod=test_winning_on_last_guess_still_counts_as_a_win>
++
++    def test_winning_on_last_guess_still_counts_as_a_win(self):
++        game = Hangman('aaa')
++        for ch in 'bcdefghij':
++            game.guess(ch)
++        game.guess('a')
++>       self.assertEqual(game.remaining_guesses, 0)
++E       AssertionError: 9 != 0
++
++hangman_test.py:95: AssertionError
++=========================== short test summary info ============================
++FAILED hangman_test.py::HangmanTests::test_after_10_failures_the_game_is_over
++FAILED hangman_test.py::HangmanTests::test_feeding_a_correct_letter_removes_underscores
++FAILED hangman_test.py::HangmanTests::test_feeding_a_correct_letter_twice_counts_as_a_failure
++FAILED hangman_test.py::HangmanTests::test_getting_all_the_letters_right_makes_for_a_win
++FAILED hangman_test.py::HangmanTests::test_initially_9_failures_are_allowed
++FAILED hangman_test.py::HangmanTests::test_initially_no_letters_are_guessed
++FAILED hangman_test.py::HangmanTests::test_winning_on_last_guess_still_counts_as_a_win
++7 failed in 0.07s
+diff --git a/hangman.py b/hangman.py
+index 5f0db27..f14caa8 100644
+--- a/hangman.py
++++ b/hangman.py
+@@ -7,14 +7,27 @@ STATUS_ONGOING = 'ongoing'
+ 
+ class Hangman:
+     def __init__(self, word):
++        self.word = word
++        self.guesses = []
+         self.remaining_guesses = 9
+         self.status = STATUS_ONGOING
+ 
+     def guess(self, char):
+-        pass
++        if self.get_status() != STATUS_ONGOING:
++            raise ValueError("The game has already ended.")
++
++        if char in self.guesses or char not in self.word:
++            self.remaining_guesses -= 1
++
++        if char not in self.guesses:
++            self.guesses.append(char)
+ 
+     def get_masked_word(self):
+-        pass
++        return "".join([c if c in self.guesses else "_" for c in self.word])
+ 
+     def get_status(self):
+-        pass
++        if self.get_masked_word() == self.word:
++            return STATUS_WIN
++        if self.remaining_guesses < 0:
++            return STATUS_LOSE
++        return STATUS_ONGOING

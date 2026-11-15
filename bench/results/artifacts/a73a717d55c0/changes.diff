@@ -1,0 +1,164 @@
+diff --git a/work/.pinch/outputs/pretest.txt b/.pinch/outputs/pretest.txt
+new file mode 100644
+index 0000000..e700af3
+--- /dev/null
++++ b/.pinch/outputs/pretest.txt
+@@ -0,0 +1,119 @@
++F....FFFF.F.F                                                            [100%]
++=================================== FAILURES ===================================
++____________________ DominoesTest.test_can_reverse_dominoes ____________________
++
++self = <dominoes_test.DominoesTest testMethod=test_can_reverse_dominoes>
++
++    def test_can_reverse_dominoes(self):
++        input_dominoes = [(1, 2), (1, 3), (2, 3)]
++        output_chain = can_chain(input_dominoes)
++>       self.assert_correct_chain(input_dominoes, output_chain)
++
++dominoes_test.py:36: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++dominoes_test.py:123: in assert_correct_chain
++    self.assertIsNotNone(output_chain, msg)
++E   AssertionError: unexpectedly None : There should be a chain for [(1, 2), (1, 3), (2, 3)]
++__________________ DominoesTest.test_empty_input_empty_output __________________
++
++self = <dominoes_test.DominoesTest testMethod=test_empty_input_empty_output>
++
++    def test_empty_input_empty_output(self):
++        input_dominoes = []
++        output_chain = can_chain(input_dominoes)
++>       self.assert_correct_chain(input_dominoes, output_chain)
++
++dominoes_test.py:16: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++dominoes_test.py:123: in assert_correct_chain
++    self.assertIsNotNone(output_chain, msg)
++E   AssertionError: unexpectedly None : There should be a chain for []
++_______________________ DominoesTest.test_need_backtrack _______________________
++
++self = <dominoes_test.DominoesTest testMethod=test_need_backtrack>
++
++    def test_need_backtrack(self):
++        input_dominoes = [(1, 2), (2, 3), (3, 1), (2, 4), (2, 4)]
++        output_chain = can_chain(input_dominoes)
++>       self.assert_correct_chain(input_dominoes, output_chain)
++
++dominoes_test.py:61: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++dominoes_test.py:123: in assert_correct_chain
++    self.assertIsNotNone(output_chain, msg)
++E   AssertionError: unexpectedly None : There should be a chain for [(1, 2), (2, 3), (3, 1), (2, 4), (2, 4)]
++_______________________ DominoesTest.test_nine_elements ________________________
++
++self = <dominoes_test.DominoesTest testMethod=test_nine_elements>
++
++    def test_nine_elements(self):
++        input_dominoes = [
++            (1, 2),
++            (5, 3),
++            (3, 1),
++            (1, 2),
++            (2, 4),
++            (1, 6),
++            (2, 3),
++            (3, 4),
++            (5, 6),
++        ]
++        output_chain = can_chain(input_dominoes)
++>       self.assert_correct_chain(input_dominoes, output_chain)
++
++dominoes_test.py:81: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++dominoes_test.py:123: in assert_correct_chain
++    self.assertIsNotNone(output_chain, msg)
++E   AssertionError: unexpectedly None : There should be a chain for [(1, 2), (5, 3), (3, 1), (1, 2), (2, 4), (1, 6), (2, 3), (3, 4), (5, 6)]
++_______________________ DominoesTest.test_separate_loops _______________________
++
++self = <dominoes_test.DominoesTest testMethod=test_separate_loops>
++
++    def test_separate_loops(self):
++        input_dominoes = [(1, 2), (2, 3), (3, 1), (1, 1), (2, 2), (3, 3)]
++        output_chain = can_chain(input_dominoes)
++>       self.assert_correct_chain(input_dominoes, output_chain)
++
++dominoes_test.py:66: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++dominoes_test.py:123: in assert_correct_chain
++    self.assertIsNotNone(output_chain, msg)
++E   AssertionError: unexpectedly None : There should be a chain for [(1, 2), (2, 3), (3, 1), (1, 1), (2, 2), (3, 3)]
++______________ DominoesTest.test_singleton_input_singleton_output ______________
++
++self = <dominoes_test.DominoesTest testMethod=test_singleton_input_singleton_output>
++
++    def test_singleton_input_singleton_output(self):
++        input_dominoes = [(1, 1)]
++        output_chain = can_chain(input_dominoes)
++>       self.assert_correct_chain(input_dominoes, output_chain)
++
++dominoes_test.py:21: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++dominoes_test.py:123: in assert_correct_chain
++    self.assertIsNotNone(output_chain, msg)
++E   AssertionError: unexpectedly None : There should be a chain for [(1, 1)]
++_______________________ DominoesTest.test_three_elements _______________________
++
++self = <dominoes_test.DominoesTest testMethod=test_three_elements>
++
++    def test_three_elements(self):
++        input_dominoes = [(1, 2), (3, 1), (2, 3)]
++        output_chain = can_chain(input_dominoes)
++>       self.assert_correct_chain(input_dominoes, output_chain)
++
++dominoes_test.py:31: 
++_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
++dominoes_test.py:123: in assert_correct_chain
++    self.assertIsNotNone(output_chain, msg)
++E   AssertionError: unexpectedly None : There should be a chain for [(1, 2), (3, 1), (2, 3)]
++=========================== short test summary info ============================
++FAILED dominoes_test.py::DominoesTest::test_can_reverse_dominoes - AssertionE...
++FAILED dominoes_test.py::DominoesTest::test_empty_input_empty_output - Assert...
++FAILED dominoes_test.py::DominoesTest::test_need_backtrack - AssertionError: ...
++FAILED dominoes_test.py::DominoesTest::test_nine_elements - AssertionError: u...
++FAILED dominoes_test.py::DominoesTest::test_separate_loops - AssertionError: ...
++FAILED dominoes_test.py::DominoesTest::test_singleton_input_singleton_output
++FAILED dominoes_test.py::DominoesTest::test_three_elements - AssertionError: ...
++7 failed, 6 passed in 0.09s
+diff --git a/dominoes.py b/dominoes.py
+index d71e6a8..5070fab 100644
+--- a/dominoes.py
++++ b/dominoes.py
+@@ -1,2 +1,33 @@
+ def can_chain(dominoes):
+-    pass
++    if not dominoes:
++        return []
++
++    def solve(current_chain, remaining_dominoes):
++        if not remaining_dominoes:
++            if current_chain[0][0] == current_chain[-1][1]:
++                return current_chain
++            return None
++
++        last_val = current_chain[-1][1]
++        for i, domino in enumerate(remaining_dominoes):
++            if domino[0] == last_val:
++                result = solve(current_chain + [domino], remaining_dominoes[:i] + remaining_dominoes[i+1:])
++                if result:
++                    return result
++            elif domino[1] == last_val:
++                result = solve(current_chain + [(domino[1], domino[0])], remaining_dominoes[:i] + remaining_dominoes[i+1:])
++                if result:
++                    return result
++        return None
++
++    for i, domino in enumerate(dominoes):
++        # Start with this domino
++        res = solve([domino], dominoes[:i] + dominoes[i+1:])
++        if res:
++            return res
++        # Or reversed
++        res = solve([(domino[1], domino[0])], dominoes[:i] + dominoes[i+1:])
++        if res:
++            return res
++            
++    return None
